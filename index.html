@@ -101,7 +101,7 @@
         #toast { visibility: hidden; min-width: 250px; background-color: rgba(15, 23, 42, 0.9); backdrop-filter: blur(4px); color: #fff; text-align: center; border-radius: 12px; padding: 16px; position: fixed; z-index: 100; left: 50%; bottom: 30px; transform: translateX(-50%) translateY(20px); font-size: 14px; opacity: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2); }
         #toast.show { visibility: visible; opacity: 1; transform: translateX(-50%) translateY(0); bottom: 50px; }
         
-        .msg-bubble { max-width: 80%; padding: 12px 18px; border-radius: 20px; position: relative; word-wrap: break-word; font-size: 0.95rem; line-height: 1.5; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: transform 0.2s; }
+        .msg-bubble { max-width: 100%; padding: 12px 18px; border-radius: 20px; position: relative; word-wrap: break-word; font-size: 0.95rem; line-height: 1.5; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: transform 0.2s; }
         .msg-bubble:hover { transform: scale(1.01); }
         .msg-me { background: linear-gradient(135deg, #2563eb, #4f46e5); color: white; border-bottom-right-radius: 4px; margin-left: auto; }
         .msg-them { background: white; color: #334155; border-bottom-left-radius: 4px; margin-right: auto; border: 1px solid #e2e8f0; }
@@ -152,6 +152,10 @@
         
         /* View Transitions */
         .view-section { animation-duration: 0.4s; animation-fill-mode: both; }
+
+        /* Message Actions */
+        .msg-actions { opacity: 0; transition: opacity 0.2s ease; }
+        .msg-group:hover .msg-actions { opacity: 1; }
     </style>
 </head>
 <body class="text-slate-800 font-sans antialiased overflow-x-hidden selection:bg-blue-100 selection:text-blue-900">
@@ -404,10 +408,14 @@
                                 </div>
                             </div>
                             <div id="chat-messages" class="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50/30 custom-scrollbar flex flex-col"><div class="flex h-full items-center justify-center text-slate-400 text-sm flex-col gap-2"><i class="fa-regular fa-paper-plane text-4xl mb-2 opacity-50 animate-float"></i><p>Select a user to start chatting.</p></div></div>
-                            <div class="p-4 border-t border-slate-100 bg-white/80 backdrop-blur-sm">
-                                <form id="message-form" class="flex gap-2" onsubmit="sendMessage(event)">
+                            <div class="p-4 border-t border-slate-100 bg-white/80 backdrop-blur-sm relative">
+                                <form id="message-form" class="flex gap-2 relative items-end" onsubmit="sendMessage(event)">
+                                    <div id="edit-indicator" class="hidden absolute -top-10 left-4 bg-slate-800/80 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-xl shadow-lg flex items-center gap-2 animate-pop-in">
+                                        <span>Editing message...</span>
+                                        <button type="button" onclick="cancelEdit()" class="hover:text-red-300 ml-1"><i class="fa-solid fa-xmark"></i></button>
+                                    </div>
                                     <input id="message-input" type="text" placeholder="Type a message..." class="flex-1 bg-slate-100 border-transparent focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-full px-4 py-3 outline-none transition-all duration-300 text-sm" disabled>
-                                    <button id="message-send-btn" type="submit" class="text-blue-600 text-xl px-2 hover:text-blue-700 transition-colors disabled:opacity-50 btn-bounce" disabled><i class="fa-solid fa-paper-plane"></i></button>
+                                    <button id="message-send-btn" type="submit" class="text-blue-600 text-xl px-2 hover:text-blue-700 transition-colors disabled:opacity-50 btn-bounce" disabled><i id="msg-send-icon" class="fa-solid fa-paper-plane"></i></button>
                                 </form>
                             </div>
                         </div>
@@ -436,6 +444,24 @@
         </main>
 
         <!-- Modals -->
+
+        <!-- MESSAGE OPTIONS MODAL -->
+        <div id="msg-options-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] hidden flex items-center justify-center p-4 transition-all duration-300">
+             <div class="bg-white p-6 rounded-2xl shadow-xl max-w-xs w-full animate-pop-in transform scale-100">
+                 <h3 class="font-heading font-bold text-lg text-slate-800 mb-4 text-center">Message Options</h3>
+                 <div class="space-y-3">
+                     <button id="modal-edit-btn" onclick="handleEditAction()" class="w-full py-3 rounded-xl bg-slate-100 hover:bg-blue-50 hover:text-blue-600 text-slate-700 font-bold text-sm transition-all flex items-center justify-center gap-2 btn-bounce">
+                         <i class="fa-solid fa-pen"></i> Edit Message
+                     </button>
+                     <button onclick="handleUnsendAction()" class="w-full py-3 rounded-xl bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-700 font-bold text-sm transition-all flex items-center justify-center gap-2 btn-bounce">
+                         <i class="fa-solid fa-trash"></i> Unsend Message
+                     </button>
+                     <button onclick="closeMsgOptionsModal()" class="w-full py-3 rounded-xl border border-slate-200 text-slate-500 font-bold text-sm hover:bg-slate-50 transition-all btn-bounce">
+                         Cancel
+                     </button>
+                 </div>
+             </div>
+        </div>
 
         <!-- REPORT POST MODAL -->
         <div id="report-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[95] hidden flex items-center justify-center p-4 transition-all duration-300">
@@ -729,7 +755,9 @@
         let postToDeleteId = null;
         let editModeId = null;
         let currentAttachment = null;
+        window.editingMsgId = null;
         window.taggedUsers = [];
+        let currentActionMsgId = null;
         
         // --- ADMIN MODAL LOGIC ---
         let userToBanId = null;
@@ -1324,7 +1352,7 @@
                     <div class="mt-1"><i class="fa-solid ${icon} ${iconColor}"></i></div>
                     <div>
                         <p class="text-sm text-slate-800"><span class="font-bold">${n.fromName || 'Someone'}</span> ${content}</p>
-                        <p class="text-[10px] text-slate-400 mt-1">${n.createdAt ? new Date(n.createdAt.seconds * 1000).toLocaleDateString() : ''}</p>
+                        <p class="text-xs text-slate-400 mt-1">${n.createdAt ? new Date(n.createdAt.seconds * 1000).toLocaleDateString() : ''}</p>
                     </div>
                 </div>`;
             }).join('');
@@ -1414,14 +1442,40 @@
             unsubscribeMessages = onSnapshot(q, (snap) => {
                 const c = document.getElementById('chat-messages');
                 c.innerHTML = '';
-                snap.forEach(d => {
-                    const m = d.data();
+                const messages = [];
+                snap.forEach(d => messages.push({id: d.id, ...d.data()}));
+                
+                messages.forEach(m => {
                     if(m.type === 'system') {
                         c.innerHTML += `<div class="msg-system animate-fade-in">${m.text}</div>`;
                         return;
                     }
-                    const me = m.senderId === currentUser.uid;
-                    c.innerHTML += `<div class="flex w-full mb-2 ${me?'justify-end':'justify-start'} animate-slide-up"><div class="msg-bubble ${me?'msg-me':'msg-them'} shadow-sm">${m.text}</div></div>`;
+                    const isMe = m.senderId === currentUser.uid;
+                    let triggerHtml = '';
+                    
+                    if (isMe) {
+                         const now = Date.now();
+                         const msgTime = m.createdAt ? m.createdAt.toMillis() : now;
+                         const canEdit = (now - msgTime) < 120000;
+                         
+                         triggerHtml = `
+                         <div class="text-[10px] text-slate-400 hover:text-blue-600 cursor-pointer mt-1 mr-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center gap-1 select-none" onclick="openMsgOptions('${m.id}', ${canEdit})">
+                            <i class="fa-solid fa-ellipsis"></i> Options
+                         </div>
+                         <div class="hidden" id="msg-text-${m.id}">${m.text}</div>
+                         `;
+                    }
+
+                    c.innerHTML += `
+                    <div class="flex w-full mb-4 ${isMe?'justify-end':'justify-start'} animate-slide-up group">
+                        <div class="flex flex-col ${isMe?'items-end':'items-start'} max-w-[85%]">
+                            <div class="msg-bubble ${isMe?'msg-me':'msg-them'} shadow-sm">
+                                ${m.text}
+                                ${m.edited ? '<span class="text-[10px] opacity-70 block text-right italic mt-1">(edited)</span>' : ''}
+                            </div>
+                            ${triggerHtml}
+                        </div>
+                    </div>`;
                 });
                 c.scrollTop = c.scrollHeight;
             });
@@ -1434,11 +1488,68 @@
             }
         };
         
+        window.openMsgOptions = (msgId, canEdit) => {
+            currentActionMsgId = msgId;
+            const editBtn = document.getElementById('modal-edit-btn');
+            
+            if(canEdit) {
+                editBtn.classList.remove('hidden');
+            } else {
+                editBtn.classList.add('hidden');
+            }
+            
+            document.getElementById('msg-options-modal').classList.remove('hidden');
+        };
+        
+        window.closeMsgOptionsModal = () => {
+            document.getElementById('msg-options-modal').classList.add('hidden');
+            currentActionMsgId = null;
+        };
+        
+        window.handleEditAction = () => {
+            if(currentActionMsgId) startEdit(currentActionMsgId);
+            closeMsgOptionsModal();
+        };
+        
+        window.handleUnsendAction = () => {
+            if(currentActionMsgId) unsendMessage(currentActionMsgId);
+            closeMsgOptionsModal();
+        };
+
+        window.startEdit = (msgId) => {
+             const textDiv = document.getElementById(`msg-text-${msgId}`);
+             if(!textDiv) return;
+             
+             window.editingMsgId = msgId;
+             const input = document.getElementById('message-input');
+             input.value = textDiv.innerText;
+             input.focus();
+             
+             document.getElementById('edit-indicator').classList.remove('hidden');
+             document.getElementById('msg-send-icon').classList.remove('fa-paper-plane');
+             document.getElementById('msg-send-icon').classList.add('fa-check');
+        };
+
+        window.cancelEdit = () => {
+             window.editingMsgId = null;
+             document.getElementById('message-input').value = '';
+             document.getElementById('edit-indicator').classList.add('hidden');
+             document.getElementById('msg-send-icon').classList.add('fa-paper-plane');
+             document.getElementById('msg-send-icon').classList.remove('fa-check');
+        };
+
+        window.unsendMessage = async (msgId) => {
+             if(confirm("Unsend this message?")) {
+                 await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'chats', currentChatId, 'messages', msgId));
+             }
+        };
+        
         window.backToChatList = () => {
              document.getElementById('msg-list-col').classList.remove('hidden');
              document.getElementById('msg-chat-col').classList.add('hidden');
              document.getElementById('msg-chat-col').classList.remove('flex');
              currentChatId = null;
+             cancelEdit();
         };
         
         window.deleteChat = async () => {
@@ -1453,17 +1564,38 @@
             document.getElementById('delete-chat-btn').classList.add('hidden');
             document.querySelector('#chat-header span').innerText = "Select a conversation";
             currentChatId = null;
+            cancelEdit();
             
             if(window.innerWidth < 768) backToChatList();
         };
 
         window.sendMessage = async (e) => {
-            e.preventDefault(); const i = document.getElementById('message-input'); if(!i.value.trim()) return;
-            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'chats', currentChatId, 'messages'), { text: i.value, senderId: currentUser.uid, createdAt: serverTimestamp() });
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'chats', currentChatId), {
-                lastUpdated: serverTimestamp(),
-                readBy: [currentUser.uid]
-            }, { merge: true });
+            e.preventDefault(); 
+            const i = document.getElementById('message-input'); 
+            const text = i.value.trim();
+            if(!text) return;
+
+            if (window.editingMsgId) {
+                // UPDATE EXISTING MESSAGE
+                const msgRef = doc(db, 'artifacts', appId, 'public', 'data', 'chats', currentChatId, 'messages', window.editingMsgId);
+                await updateDoc(msgRef, {
+                    text: text,
+                    edited: true,
+                    editedAt: serverTimestamp()
+                });
+                cancelEdit();
+            } else {
+                // SEND NEW MESSAGE
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'chats', currentChatId, 'messages'), { 
+                    text: text, 
+                    senderId: currentUser.uid, 
+                    createdAt: serverTimestamp() 
+                });
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'chats', currentChatId), {
+                    lastUpdated: serverTimestamp(),
+                    readBy: [currentUser.uid]
+                }, { merge: true });
+            }
             i.value = '';
         };
 
