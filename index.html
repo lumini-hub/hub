@@ -171,6 +171,7 @@
 
         /* Story Styles */
         .story-ring { padding: 3px; background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); border-radius: 50%; }
+        .story-ring-cf { padding: 3px; background: #22c55e; border-radius: 50%; }
         .story-ring-seen { padding: 3px; background: #cbd5e1; border-radius: 50%; }
         .story-progress-bar { transition: width 0.1s linear; }
 
@@ -315,6 +316,7 @@
                                 <img id="menu-avatar-small" src="" class="w-10 h-10 rounded-full bg-slate-200 object-cover">
                                 <div><p id="menu-name" class="font-bold text-sm text-slate-800">Guest</p><p class="text-xs text-slate-500">See your profile</p></div>
                             </div>
+                            <a href="#" onclick="openCloseFriendsModal()" class="flex items-center gap-3 px-4 py-3 text-sm text-slate-600 hover:bg-slate-50 hover:text-green-600 transition-colors"><i class="fa-solid fa-star text-slate-400 w-5"></i> Close Friends</a>
                             <a href="#" onclick="openSettingsModal()" class="flex items-center gap-3 px-4 py-3 text-sm text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors"><i class="fa-solid fa-gear text-slate-400 w-5"></i> Settings & Privacy</a>
                             <a href="#" onclick="handleSignOut()" class="flex items-center gap-3 px-4 py-3 text-sm text-red-500 hover:bg-red-50 transition-colors rounded-b-xl"><i class="fa-solid fa-right-from-bracket w-5"></i> Log Out</a>
                         </div>
@@ -635,7 +637,11 @@
                     </div>
                     <input type="file" id="story-file-input" class="hidden" accept="image/*,video/*" onchange="handleStoryFileSelect(this)">
                     <p class="text-xs text-slate-400 mb-4">Content disappears after 24 hours.</p>
-                    <button onclick="uploadStory()" id="btn-upload-story" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-3 rounded-xl hover:shadow-lg hover:shadow-blue-500/30 transition-all btn-bounce disabled:opacity-50" disabled>Share to Story</button>
+                    
+                    <div class="flex gap-3">
+                        <button onclick="uploadStory('public')" id="btn-upload-story-public" class="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-3 rounded-xl hover:shadow-lg hover:shadow-blue-500/30 transition-all btn-bounce disabled:opacity-50 text-sm" disabled>Your Story</button>
+                        <button onclick="uploadStory('close_friends')" id="btn-upload-story-cf" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl hover:shadow-lg hover:shadow-green-500/30 transition-all btn-bounce disabled:opacity-50 flex items-center justify-center gap-1 text-sm" disabled><i class="fa-solid fa-star text-xs"></i> Close Friends</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -651,10 +657,16 @@
                     <img id="viewer-avatar" src="" class="w-10 h-10 rounded-full border-2 border-white/50">
                     <div>
                         <p id="viewer-name" class="text-white font-bold text-sm text-shadow">User</p>
-                        <p id="viewer-time" class="text-white/70 text-xs">2h ago</p>
+                        <div class="flex items-center gap-2">
+                            <p id="viewer-time" class="text-white/70 text-xs">2h ago</p>
+                            <span id="viewer-cf-badge" class="hidden bg-green-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm"><i class="fa-solid fa-star mr-1"></i> Close Friends</span>
+                        </div>
                     </div>
                 </div>
-                <button onclick="closeStoryViewer()" class="text-white/80 hover:text-white text-2xl"><i class="fa-solid fa-xmark"></i></button>
+                <div class="flex items-center gap-4">
+                    <button id="viewer-delete-btn" onclick="deleteStory()" class="hidden text-white/70 hover:text-red-500 transition-colors text-lg" title="Delete Story"><i class="fa-solid fa-trash"></i></button>
+                    <button onclick="closeStoryViewer()" class="text-white/80 hover:text-white text-2xl"><i class="fa-solid fa-xmark"></i></button>
+                </div>
             </div>
 
             <!-- Content -->
@@ -681,6 +693,23 @@
                  <!-- Reaction Container -->
                  <div id="story-reaction-container" class="absolute inset-0 pointer-events-none overflow-hidden z-40"></div>
             </div>
+        </div>
+
+        <!-- CLOSE FRIENDS MODAL -->
+        <div id="close-friends-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[90] hidden flex items-center justify-center p-4 transition-all duration-300">
+             <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-pop-in h-[500px] flex flex-col">
+                 <div class="flex justify-between items-center p-4 border-b border-slate-100">
+                     <h3 class="font-heading font-bold text-lg text-slate-800 flex items-center gap-2"><div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-xs"><i class="fa-solid fa-star"></i></div> Close Friends</h3>
+                     <button onclick="document.getElementById('close-friends-modal').classList.add('hidden')" class="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center transition-colors btn-bounce"><i class="fa-solid fa-xmark"></i></button>
+                 </div>
+                 <div class="p-3 border-b border-slate-50">
+                     <input type="text" placeholder="Search friends..." class="w-full bg-slate-100 rounded-lg px-3 py-2 text-sm outline-none" oninput="renderCloseFriendsList(this.value)">
+                 </div>
+                 <div id="close-friends-list" class="flex-1 overflow-y-auto custom-scrollbar p-2"></div>
+                 <div class="p-4 border-t border-slate-100 bg-slate-50 text-center">
+                     <p class="text-xs text-slate-500">Only Close Friends can see your green-ringed stories.</p>
+                 </div>
+             </div>
         </div>
 
         <!-- MESSAGE OPTIONS MODAL -->
@@ -1295,7 +1324,8 @@
                         bio: "",
                         savedPosts: [],
                         followers: [],
-                        following: []
+                        following: [],
+                        closeFriends: [] // Initialize close friends array
                     });
                 }
                 
@@ -2053,7 +2083,20 @@
                     const data = d.data();
                     const expires = data.expiresAt ? data.expiresAt.toMillis() : 0;
                     if(expires > now) {
-                        allStories.push({id: d.id, ...data});
+                        // FILTER VISIBILITY
+                        // If it's a "Close Friends" story:
+                        // Only show if I am the author OR if I am in the author's close friend list (targetAudience)
+                        if (data.visibility === 'close_friends') {
+                            const amIAuthor = data.uid === currentUser.uid;
+                            const amIInAudience = data.targetAudience && data.targetAudience.includes(currentUser.uid);
+                            
+                            if (amIAuthor || amIInAudience) {
+                                allStories.push({id: d.id, ...data});
+                            }
+                        } else {
+                            // Public stories - show to everyone
+                            allStories.push({id: d.id, ...data});
+                        }
                     }
                 });
                 
@@ -2087,14 +2130,22 @@
             // Convert groups to array, filter out current user (shown separately)
             const groups = Object.values(groupedStories).filter(g => g.uid !== currentUser.uid);
             
-            container.innerHTML = groups.map(g => `
+            container.innerHTML = groups.map(g => {
+                // Determine ring color based on latest story visibility
+                // If ANY unseen story is 'close_friends', show green ring? Or just stick to last one?
+                // Simple logic: if the LAST item is close friends, show green ring.
+                const lastStory = g.items[g.items.length - 1];
+                const ringClass = (lastStory.visibility === 'close_friends') ? 'story-ring-cf' : 'story-ring';
+                
+                return `
                 <div class="flex flex-col items-center gap-2 cursor-pointer min-w-[70px] group" onclick="openStoryViewer('${g.uid}')">
-                    <div class="relative w-16 h-16 story-ring group-hover:scale-105 transition-transform">
+                    <div class="relative w-16 h-16 ${ringClass} group-hover:scale-105 transition-transform">
                          <img src="${g.photoURL}" class="w-full h-full rounded-full border-2 border-white object-cover bg-white">
                     </div>
                     <span class="text-xs font-medium text-slate-600 truncate w-16 text-center">${g.name.split(' ')[0]}</span>
                 </div>
-            `).join('');
+            `;
+            }).join('');
             
             // Check if user has active story
             const myStory = groupedStories[currentUser.uid];
@@ -2102,17 +2153,18 @@
             const myContainer = myAvatar.parentElement;
             
             if(myStory && myStory.items.length > 0) {
-                 myContainer.classList.add('story-ring');
-                 // Change click handler to view instead of upload if they have stories? 
-                 // Usually apps separate "View My Story" and "Add".
-                 // For simplicity, click adds. To view own, we could check context. 
-                 // Let's allow viewing own story by clicking avatar if exists.
+                 const lastMyStory = myStory.items[myStory.items.length - 1];
+                 const myRingClass = (lastMyStory.visibility === 'close_friends') ? 'story-ring-cf' : 'story-ring';
+                 
+                 // Remove both potential classes first to be safe
+                 myContainer.classList.remove('story-ring', 'story-ring-cf');
+                 myContainer.classList.add(myRingClass);
+                 
                  myContainer.parentElement.onclick = () => openStoryViewer(currentUser.uid);
-                 // Add tiny plus button somewhere else? Or change icon.
                  myContainer.querySelector('.fa-plus').className = "fa-solid fa-eye";
                  myContainer.querySelector('div.absolute').classList.replace('bg-blue-600', 'bg-slate-700');
             } else {
-                 myContainer.classList.remove('story-ring');
+                 myContainer.classList.remove('story-ring', 'story-ring-cf');
                  myContainer.parentElement.onclick = openStoryUploadModal;
                  myContainer.querySelector('.fa-solid').className = "fa-solid fa-plus";
                  myContainer.querySelector('div.absolute').classList.replace('bg-slate-700', 'bg-blue-600');
@@ -2125,7 +2177,10 @@
              document.getElementById('story-preview-img').classList.add('hidden');
              document.getElementById('story-preview-video').classList.add('hidden');
              document.getElementById('story-upload-placeholder').classList.remove('hidden');
-             document.getElementById('btn-upload-story').disabled = true;
+             
+             document.getElementById('btn-upload-story-public').disabled = true;
+             document.getElementById('btn-upload-story-cf').disabled = true;
+             
              currentStoryUpload = { file: null, type: null, data: null };
         };
         
@@ -2134,7 +2189,6 @@
                 const file = input.files[0];
                 const isVideo = file.type.startsWith('video/');
                 
-                // Limit size (Firestore doc limit 1MB, let's keep it safe at 800KB)
                 if(file.size > 800 * 1024) {
                     alert("File too large. Max 800KB for stories.");
                     input.value = "";
@@ -2158,20 +2212,32 @@
                         img.classList.remove('hidden');
                         document.getElementById('story-preview-video').classList.add('hidden');
                     }
-                    document.getElementById('btn-upload-story').disabled = false;
+                    document.getElementById('btn-upload-story-public').disabled = false;
+                    document.getElementById('btn-upload-story-cf').disabled = false;
                 };
                 reader.readAsDataURL(file);
             }
         };
         
-        window.uploadStory = async () => {
+        window.uploadStory = async (visibility) => {
             if(!currentStoryUpload.data) return;
-            const btn = document.getElementById('btn-upload-story');
-            btn.innerText = "Uploading...";
-            btn.disabled = true;
+            
+            const btnPublic = document.getElementById('btn-upload-story-public');
+            const btnCf = document.getElementById('btn-upload-story-cf');
+            btnPublic.disabled = true;
+            btnCf.disabled = true;
+            
+            // If Close Friends, we need to snap current close friends list to save permissions
+            // This prevents issues if I remove someone later but they were allowed to see old story
+            // OR simply store "visibility: close_friends" and check current relationship on read.
+            // Storing the list on the story is more robust for historical access control.
+            
+            let targetAudience = [];
+            if (visibility === 'close_friends') {
+                targetAudience = window.userProfileCache?.closeFriends || [];
+            }
             
             try {
-                // Expire in 24 hours
                 const now = new Date();
                 const expires = new Date(now.getTime() + 24 * 60 * 60 * 1000);
                 
@@ -2183,6 +2249,8 @@
                     type: currentStoryUpload.type,
                     likes: 0,
                     likedBy: [],
+                    visibility: visibility, // 'public' or 'close_friends'
+                    targetAudience: targetAudience,
                     createdAt: serverTimestamp(),
                     expiresAt: expires
                 });
@@ -2192,8 +2260,8 @@
                 console.error("Story upload failed", e);
                 alert("Upload failed.");
             } finally {
-                btn.innerText = "Share to Story";
-                btn.disabled = false;
+                // Re-enable in case modal isn't closed (error) or for next time
+                // (Though modal close happens on success)
             }
         };
         
@@ -2222,11 +2290,27 @@
             // Update Header
             document.getElementById('viewer-avatar').src = group.photoURL;
             document.getElementById('viewer-name').innerText = group.name;
-            // Calculate time ago
+            
+            // Time & Badge
             const timeDiff = Date.now() - story.createdAt.toMillis();
             const hours = Math.floor(timeDiff / (1000 * 60 * 60));
             const mins = Math.floor(timeDiff / (1000 * 60));
             document.getElementById('viewer-time').innerText = hours > 0 ? `${hours}h ago` : `${mins}m ago`;
+            
+            const badge = document.getElementById('viewer-cf-badge');
+            if (story.visibility === 'close_friends') {
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+            
+            // Delete Button visibility
+            const deleteBtn = document.getElementById('viewer-delete-btn');
+            if (story.uid === currentUser.uid) {
+                deleteBtn.classList.remove('hidden');
+            } else {
+                deleteBtn.classList.add('hidden');
+            }
             
             // Show Content
             const imgEl = document.getElementById('viewer-img');
@@ -2237,21 +2321,17 @@
                 vidEl.classList.remove('hidden');
                 vidEl.src = story.media;
                 vidEl.currentTime = 0;
-                // Add muted to allow autoplay without interaction issues initially, though modal implies interaction
-                // vidEl.muted = false; 
                 vidEl.onended = nextStory;
             } else {
                 vidEl.classList.add('hidden');
                 imgEl.classList.remove('hidden');
                 imgEl.src = story.media;
-                // Auto advance image
                 storyTimer = setTimeout(nextStory, 5000);
             }
 
-            // --- LIKE BUTTON STATE ---
+            // Like Button State
             const likeBtn = document.getElementById('story-like-btn');
             const hasLiked = story.likedBy && story.likedBy.includes(currentUser.uid);
-            
             if(hasLiked) {
                 likeBtn.innerHTML = '<i class="fa-solid fa-heart text-red-500"></i>';
             } else {
@@ -2288,6 +2368,24 @@
                 barContainer.appendChild(bar);
             }
         };
+        
+        window.deleteStory = async () => {
+            if(!activeStoryUid) return;
+            const group = groupedStories[activeStoryUid];
+            const story = group.items[activeStoryIndex];
+            
+            if(story.uid !== currentUser.uid) return;
+            
+            if(confirm("Delete this story?")) {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'stories', story.id));
+                    closeStoryViewer();
+                } catch(e) {
+                    console.error("Delete story failed", e);
+                    alert("Could not delete.");
+                }
+            }
+        };
 
         window.handleStoryInput = (input) => {
             const btn = document.getElementById('story-send-btn');
@@ -2311,51 +2409,38 @@
             
             if(!hasLiked) {
                 // LIKE LOGIC
-                
-                // 1. Optimistic Update
                 story.likedBy.push(currentUser.uid);
                 story.likes = (story.likes || 0) + 1;
                 likeBtn.innerHTML = '<i class="fa-solid fa-heart text-red-500"></i>';
-
-                // 2. TRIGGER REVAMPED ANIMATION
                 spawnHeartBurst();
 
-                // 3. Database Update
                 try {
                     const storyRef = doc(db, 'artifacts', appId, 'public', 'data', 'stories', story.id);
                     await updateDoc(storyRef, { likes: increment(1), likedBy: arrayUnion(currentUser.uid) });
-                    
                     if(story.uid !== currentUser.uid) {
-                        // Fire and forget notification to reduce perceived latency
                         addDoc(collection(db, 'artifacts', appId, 'users', story.uid, 'notifications'), {
                             type: 'story_like', fromUid: currentUser.uid, fromName: currentUser.displayName, read: false, createdAt: serverTimestamp()
                         }).catch(e => console.log("Notif error", e));
                     }
                 } catch(e) {
                     console.error("Like failed", e);
-                    // Revert
                     const idx = story.likedBy.indexOf(currentUser.uid);
                     if(idx > -1) story.likedBy.splice(idx, 1);
                     story.likes--;
                     likeBtn.innerHTML = '<i class="fa-regular fa-heart"></i>';
                 }
-
             } else {
                 // UNLIKE LOGIC
-                
-                // 1. Optimistic Update
                 const idx = story.likedBy.indexOf(currentUser.uid);
                 if(idx > -1) story.likedBy.splice(idx, 1);
                 story.likes = Math.max(0, (story.likes || 0) - 1);
                 likeBtn.innerHTML = '<i class="fa-regular fa-heart"></i>';
 
-                // 2. Database Update
                 try {
                     const storyRef = doc(db, 'artifacts', appId, 'public', 'data', 'stories', story.id);
                     await updateDoc(storyRef, { likes: increment(-1), likedBy: arrayRemove(currentUser.uid) });
                 } catch(e) {
                     console.error("Unlike failed", e);
-                    // Revert
                     story.likedBy.push(currentUser.uid);
                     story.likes++;
                     likeBtn.innerHTML = '<i class="fa-solid fa-heart text-red-500"></i>';
@@ -2368,30 +2453,21 @@
             const colors = ['#ef4444', '#ec4899', '#a855f7', '#f43f5e'];
             const animations = ['float-wobble-1', 'float-wobble-2', 'float-straight'];
             
-            // Spawn 5 hearts
             for(let i=0; i<5; i++) {
                 const heart = document.createElement('i');
                 heart.className = 'heart-particle fa-solid fa-heart';
-                
-                // Randomize
                 const randomColor = colors[Math.floor(Math.random() * colors.length)];
                 const randomAnim = animations[Math.floor(Math.random() * animations.length)];
-                const randomSize = Math.floor(Math.random() * 20) + 15; // 15px to 35px
-                const randomLeft = (Math.random() * 60) - 30; // +/- 30px from center anchor
-                const duration = (Math.random() * 1 + 1) + 's'; // 1s to 2s
+                const randomSize = Math.floor(Math.random() * 20) + 15; 
+                const duration = (Math.random() * 1 + 1) + 's';
                 const delay = (Math.random() * 0.3) + 's';
                 
                 heart.style.color = randomColor;
                 heart.style.fontSize = randomSize + 'px';
-                heart.style.right = (20 + (Math.random()*40)) + 'px'; // Base right position
+                heart.style.right = (20 + (Math.random()*40)) + 'px';
                 heart.style.animation = `${randomAnim} ${duration} ease-out forwards ${delay}`;
-                
                 container.appendChild(heart);
-                
-                // Cleanup
-                setTimeout(() => {
-                    if(heart.parentNode) heart.parentNode.removeChild(heart);
-                }, 2500);
+                setTimeout(() => { if(heart.parentNode) heart.parentNode.removeChild(heart); }, 2500);
             }
         }
 
@@ -2403,11 +2479,9 @@
              const group = groupedStories[activeStoryUid];
              const story = group.items[activeStoryIndex];
              
-             // Clear Input immediately for UX
              input.value = "";
              document.getElementById('story-send-btn').classList.add('hidden');
              
-             // Send as notification to creator
              if(story.uid !== currentUser.uid) {
                   await addDoc(collection(db, 'artifacts', appId, 'users', story.uid, 'notifications'), {
                       type: 'story_reply', 
@@ -2419,7 +2493,6 @@
                   });
              }
              
-             // Show simple feedback inside the viewer
              const container = document.getElementById('story-reaction-container');
              const feedback = document.createElement('div');
              feedback.innerText = "Sent";
@@ -2436,7 +2509,6 @@
              if(activeStoryIndex > 0) {
                  showStory(activeStoryUid, activeStoryIndex - 1);
              } else {
-                 // Go to previous user? For now just close or restart
                  showStory(activeStoryUid, 0);
              }
         };
@@ -2446,6 +2518,79 @@
              document.getElementById('story-viewer-modal').classList.add('hidden');
              document.getElementById('viewer-video').pause();
              activeStoryUid = null;
+        };
+        
+        // --- CLOSE FRIENDS LOGIC ---
+        
+        window.openCloseFriendsModal = () => {
+            const modal = document.getElementById('close-friends-modal');
+            const list = document.getElementById('close-friends-list');
+            modal.classList.remove('hidden');
+            renderCloseFriendsList();
+        };
+        
+        window.renderCloseFriendsList = (search = '') => {
+            const list = document.getElementById('close-friends-list');
+            if(!list) return;
+            
+            // Filter users excluding self
+            let users = allUsersCache.filter(u => u.id !== currentUser.uid);
+            
+            if(search.trim()) {
+                users = users.filter(u => u.name.toLowerCase().includes(search.toLowerCase()));
+            }
+            
+            const currentCloseFriends = window.userProfileCache?.closeFriends || [];
+            
+            if(users.length === 0) {
+                list.innerHTML = `<p class="text-center text-xs text-slate-400 py-4">No users found.</p>`;
+                return;
+            }
+            
+            list.innerHTML = users.map(u => {
+                const isCF = currentCloseFriends.includes(u.id);
+                return `
+                <div class="flex items-center justify-between p-3 hover:bg-slate-50 rounded-xl transition-colors">
+                    <div class="flex items-center gap-3">
+                        <img src="${u.photoURL}" class="w-10 h-10 rounded-full bg-slate-200 object-cover">
+                        <div>
+                            <p class="font-bold text-sm text-slate-800">${u.name}</p>
+                            <p class="text-xs text-slate-500 truncate w-32">${u.headline || ''}</p>
+                        </div>
+                    </div>
+                    <button onclick="toggleCloseFriend('${u.id}')" class="w-8 h-8 rounded-full flex items-center justify-center transition-all btn-bounce ${isCF ? 'bg-green-500 text-white shadow-md' : 'bg-slate-200 text-slate-400 hover:bg-slate-300'}">
+                        <i class="fa-solid fa-star text-sm"></i>
+                    </button>
+                </div>
+                `;
+            }).join('');
+        };
+        
+        window.toggleCloseFriend = async (uid) => {
+            const userRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'main');
+            const currentList = window.userProfileCache?.closeFriends || [];
+            const isCF = currentList.includes(uid);
+            
+            try {
+                if(isCF) {
+                    await updateDoc(userRef, { closeFriends: arrayRemove(uid) });
+                } else {
+                    await updateDoc(userRef, { closeFriends: arrayUnion(uid) });
+                }
+                // renderCloseFriendsList will trigger automatically due to userProfileCache listener updating UI?
+                // The main listener updates window.userProfileCache, but we need to re-render the modal list if open.
+                // We'll manually re-render for instant feedback, assuming optimistic update via cache listener might be slight delay or generic updateUI.
+                // Actually, the main snapshot listener calls updateUI, but doesn't know about this specific modal.
+                // We rely on the snapshot listener updating the global cache variable.
+                // But for instant visual feedback inside the loop, we might want to manually toggle button class or wait for snapshot.
+                // Let's just wait for snapshot or implement simple toggle logic here for better UX.
+                // But wait, arrayRemove/Union are async. 
+                // Let's rely on the onSnapshot listener to update `window.userProfileCache`. 
+                // However, the `renderCloseFriendsList` needs to be called again.
+                // Since I don't have a specific listener for the modal in the global scope, I'll add a quick re-render logic in the main snapshot listener.
+            } catch(e) {
+                console.error("Error toggling close friend", e);
+            }
         };
 
         // --- Router & UI Helpers ---
@@ -2528,6 +2673,11 @@
                 localStorage.setItem('lumini_theme', 'dark');
                 const toggle = document.getElementById('dark-mode-toggle');
                 if(toggle) toggle.checked = true;
+             }
+             
+             // Refresh Close Friends List if modal is open
+             if(!document.getElementById('close-friends-modal').classList.contains('hidden')) {
+                 renderCloseFriendsList();
              }
         }
 
