@@ -77,6 +77,10 @@
                         float: {
                             '0%, 100%': { transform: 'translateY(0)' },
                             '50%': { transform: 'translateY(-10px)' },
+                        },
+                        floatUp: {
+                            '0%': { transform: 'translateY(0) scale(1)', opacity: '1' },
+                            '100%': { transform: 'translateY(-200px) scale(1.5)', opacity: '0' }
                         }
                     }
                 }
@@ -169,6 +173,36 @@
         .story-ring { padding: 3px; background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); border-radius: 50%; }
         .story-ring-seen { padding: 3px; background: #cbd5e1; border-radius: 50%; }
         .story-progress-bar { transition: width 0.1s linear; }
+
+        /* Story Interactions - Revamped Animation */
+        .heart-particle {
+            position: absolute;
+            bottom: 70px;
+            right: 20px;
+            font-size: 24px;
+            opacity: 0;
+            pointer-events: none;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+            z-index: 60;
+        }
+
+        @keyframes float-wobble-1 {
+            0% { transform: translateY(0) translateX(0) scale(0.5); opacity: 0; }
+            15% { opacity: 1; transform: translateY(-30px) translateX(-5px) scale(1.2); }
+            100% { transform: translateY(-500px) translateX(30px) scale(1); opacity: 0; }
+        }
+
+        @keyframes float-wobble-2 {
+            0% { transform: translateY(0) translateX(0) scale(0.5); opacity: 0; }
+            15% { opacity: 1; transform: translateY(-30px) translateX(5px) scale(1.2); }
+            100% { transform: translateY(-450px) translateX(-30px) scale(0.9); opacity: 0; }
+        }
+        
+        @keyframes float-straight {
+            0% { transform: translateY(0) scale(0.5); opacity: 0; }
+            15% { opacity: 1; transform: translateY(-30px) scale(1.3); }
+            100% { transform: translateY(-600px) scale(1); opacity: 0; }
+        }
 
         /* --- DARK MODE OVERRIDES --- */
         html.dark body { background-color: #020617; background-image: radial-gradient(circle at 10% 20%, rgba(37, 99, 235, 0.15) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(147, 51, 234, 0.15) 0%, transparent 40%); color: #f1f5f9; }
@@ -606,7 +640,7 @@
             </div>
         </div>
 
-        <!-- STORY VIEWER MODAL -->
+        <!-- STORY VIEWER MODAL (UPDATED) -->
         <div id="story-viewer-modal" class="fixed inset-0 bg-black z-[120] hidden flex flex-col items-center justify-center animate-fade-in">
             <!-- Progress Bars -->
             <div id="story-progress-container" class="absolute top-4 left-4 right-4 flex gap-1 z-50"></div>
@@ -631,9 +665,21 @@
                  <!-- Navigation Overlay -->
                  <div class="absolute inset-0 flex">
                      <div class="w-1/3 h-full cursor-pointer z-40" onclick="prevStory()"></div>
-                     <div class="w-1/3 h-full cursor-pointer z-40" onclick="nextStory()"></div> <!-- Middle tap also next -->
+                     <div class="w-1/3 h-full cursor-pointer z-40" onclick="nextStory()"></div>
                      <div class="w-1/3 h-full cursor-pointer z-40" onclick="nextStory()"></div>
                  </div>
+
+                 <!-- Interaction Bar (Bottom) -->
+                 <div class="absolute bottom-0 left-0 right-0 p-4 pb-8 bg-gradient-to-t from-black/80 to-transparent z-50 flex items-center gap-3">
+                     <div class="relative flex-grow">
+                        <input type="text" id="story-reply-input" placeholder="Send a message..." class="w-full bg-white/10 border border-white/30 rounded-full px-5 py-3 text-white placeholder-white/70 outline-none focus:bg-black/40 backdrop-blur-md transition-all text-sm" oninput="handleStoryInput(this)" onkeydown="if(event.key==='Enter') sendStoryReply()">
+                        <button id="story-send-btn" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-white w-8 h-8 rounded-full flex items-center justify-center hidden hover:bg-white/20 transition-colors" onclick="sendStoryReply()"><i class="fa-solid fa-paper-plane"></i></button>
+                     </div>
+                     <button id="story-like-btn" class="text-white text-3xl drop-shadow-md active:scale-90 transition-transform btn-bounce w-10 flex items-center justify-center" onclick="toggleStoryLike()"><i class="fa-regular fa-heart"></i></button>
+                 </div>
+                 
+                 <!-- Reaction Container -->
+                 <div id="story-reaction-container" class="absolute inset-0 pointer-events-none overflow-hidden z-40"></div>
             </div>
         </div>
 
@@ -1725,6 +1771,8 @@
                 else if(n.type === 'mention') { content = `mentioned you in a post.`; icon = 'fa-at'; iconColor = 'text-purple-500'; }
                 else if(n.type === 'tag') { content = `tagged you in a post.`; icon = 'fa-tag'; iconColor = 'text-green-500'; } 
                 else if (n.type === 'admin_delete') { content = `removed your post for violating guidelines.`; icon = 'fa-trash'; iconColor = 'text-red-600'; }
+                else if(n.type === 'story_like') { content = `liked your story.`; icon = 'fa-heart'; iconColor = 'text-red-500'; }
+                else if(n.type === 'story_reply') { content = `replied to your story: "${n.text || ''}"`; icon = 'fa-reply'; iconColor = 'text-purple-500'; }
 
                 return `
                 <div class="flex items-start gap-3 p-3 hover:bg-slate-50 rounded-xl cursor-pointer transition-colors ${n.read ? 'opacity-70' : 'bg-blue-50/50'}" onclick="handleNotificationClick('${n.id}', '${n.type}', '${n.postId || ''}', '${n.fromUid}')">
@@ -1749,7 +1797,7 @@
                          setTimeout(() => { postElement.classList.remove('ring-2', 'ring-blue-400', 'ring-offset-2', 'scale-[1.01]'); }, 2000);
                      }
                  }, 400);
-             } else if (type === 'follow') {
+             } else if (type === 'follow' || type === 'story_like' || type === 'story_reply') {
                  viewProfile(fromUid);
              }
         };
@@ -2133,6 +2181,8 @@
                     photoURL: currentUser.photoURL,
                     media: currentStoryUpload.data,
                     type: currentStoryUpload.type,
+                    likes: 0,
+                    likedBy: [],
                     createdAt: serverTimestamp(),
                     expiresAt: expires
                 });
@@ -2197,6 +2247,20 @@
                 // Auto advance image
                 storyTimer = setTimeout(nextStory, 5000);
             }
+
+            // --- LIKE BUTTON STATE ---
+            const likeBtn = document.getElementById('story-like-btn');
+            const hasLiked = story.likedBy && story.likedBy.includes(currentUser.uid);
+            
+            if(hasLiked) {
+                likeBtn.innerHTML = '<i class="fa-solid fa-heart text-red-500"></i>';
+            } else {
+                likeBtn.innerHTML = '<i class="fa-regular fa-heart"></i>';
+            }
+            
+            // Reset Interaction Input
+            document.getElementById('story-reply-input').value = "";
+            document.getElementById('story-send-btn').classList.add('hidden');
             
             // Render Progress Bars
             const barContainer = document.getElementById('story-progress-container');
@@ -2223,6 +2287,145 @@
                 bar.appendChild(inner);
                 barContainer.appendChild(bar);
             }
+        };
+
+        window.handleStoryInput = (input) => {
+            const btn = document.getElementById('story-send-btn');
+            if(input.value.trim().length > 0) {
+                btn.classList.remove('hidden');
+            } else {
+                btn.classList.add('hidden');
+            }
+        };
+
+        window.toggleStoryLike = async () => {
+            if(!activeStoryUid) return;
+            const group = groupedStories[activeStoryUid];
+            if(!group || !group.items || !group.items[activeStoryIndex]) return;
+            
+            const story = group.items[activeStoryIndex];
+            if(!story.likedBy) story.likedBy = [];
+            
+            const likeBtn = document.getElementById('story-like-btn');
+            const hasLiked = story.likedBy.includes(currentUser.uid);
+            
+            if(!hasLiked) {
+                // LIKE LOGIC
+                
+                // 1. Optimistic Update
+                story.likedBy.push(currentUser.uid);
+                story.likes = (story.likes || 0) + 1;
+                likeBtn.innerHTML = '<i class="fa-solid fa-heart text-red-500"></i>';
+
+                // 2. TRIGGER REVAMPED ANIMATION
+                spawnHeartBurst();
+
+                // 3. Database Update
+                try {
+                    const storyRef = doc(db, 'artifacts', appId, 'public', 'data', 'stories', story.id);
+                    await updateDoc(storyRef, { likes: increment(1), likedBy: arrayUnion(currentUser.uid) });
+                    
+                    if(story.uid !== currentUser.uid) {
+                        // Fire and forget notification to reduce perceived latency
+                        addDoc(collection(db, 'artifacts', appId, 'users', story.uid, 'notifications'), {
+                            type: 'story_like', fromUid: currentUser.uid, fromName: currentUser.displayName, read: false, createdAt: serverTimestamp()
+                        }).catch(e => console.log("Notif error", e));
+                    }
+                } catch(e) {
+                    console.error("Like failed", e);
+                    // Revert
+                    const idx = story.likedBy.indexOf(currentUser.uid);
+                    if(idx > -1) story.likedBy.splice(idx, 1);
+                    story.likes--;
+                    likeBtn.innerHTML = '<i class="fa-regular fa-heart"></i>';
+                }
+
+            } else {
+                // UNLIKE LOGIC
+                
+                // 1. Optimistic Update
+                const idx = story.likedBy.indexOf(currentUser.uid);
+                if(idx > -1) story.likedBy.splice(idx, 1);
+                story.likes = Math.max(0, (story.likes || 0) - 1);
+                likeBtn.innerHTML = '<i class="fa-regular fa-heart"></i>';
+
+                // 2. Database Update
+                try {
+                    const storyRef = doc(db, 'artifacts', appId, 'public', 'data', 'stories', story.id);
+                    await updateDoc(storyRef, { likes: increment(-1), likedBy: arrayRemove(currentUser.uid) });
+                } catch(e) {
+                    console.error("Unlike failed", e);
+                    // Revert
+                    story.likedBy.push(currentUser.uid);
+                    story.likes++;
+                    likeBtn.innerHTML = '<i class="fa-solid fa-heart text-red-500"></i>';
+                }
+            }
+        };
+
+        window.spawnHeartBurst = () => {
+            const container = document.getElementById('story-reaction-container');
+            const colors = ['#ef4444', '#ec4899', '#a855f7', '#f43f5e'];
+            const animations = ['float-wobble-1', 'float-wobble-2', 'float-straight'];
+            
+            // Spawn 5 hearts
+            for(let i=0; i<5; i++) {
+                const heart = document.createElement('i');
+                heart.className = 'heart-particle fa-solid fa-heart';
+                
+                // Randomize
+                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                const randomAnim = animations[Math.floor(Math.random() * animations.length)];
+                const randomSize = Math.floor(Math.random() * 20) + 15; // 15px to 35px
+                const randomLeft = (Math.random() * 60) - 30; // +/- 30px from center anchor
+                const duration = (Math.random() * 1 + 1) + 's'; // 1s to 2s
+                const delay = (Math.random() * 0.3) + 's';
+                
+                heart.style.color = randomColor;
+                heart.style.fontSize = randomSize + 'px';
+                heart.style.right = (20 + (Math.random()*40)) + 'px'; // Base right position
+                heart.style.animation = `${randomAnim} ${duration} ease-out forwards ${delay}`;
+                
+                container.appendChild(heart);
+                
+                // Cleanup
+                setTimeout(() => {
+                    if(heart.parentNode) heart.parentNode.removeChild(heart);
+                }, 2500);
+            }
+        }
+
+        window.sendStoryReply = async () => {
+             const input = document.getElementById('story-reply-input');
+             const text = input.value.trim();
+             if(!text || !activeStoryUid) return;
+
+             const group = groupedStories[activeStoryUid];
+             const story = group.items[activeStoryIndex];
+             
+             // Clear Input immediately for UX
+             input.value = "";
+             document.getElementById('story-send-btn').classList.add('hidden');
+             
+             // Send as notification to creator
+             if(story.uid !== currentUser.uid) {
+                  await addDoc(collection(db, 'artifacts', appId, 'users', story.uid, 'notifications'), {
+                      type: 'story_reply', 
+                      text: text, 
+                      fromUid: currentUser.uid, 
+                      fromName: currentUser.displayName, 
+                      read: false, 
+                      createdAt: serverTimestamp()
+                  });
+             }
+             
+             // Show simple feedback inside the viewer
+             const container = document.getElementById('story-reaction-container');
+             const feedback = document.createElement('div');
+             feedback.innerText = "Sent";
+             feedback.className = "absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-black/50 text-white px-4 py-1 rounded-full text-sm animate-fade-in";
+             container.appendChild(feedback);
+             setTimeout(() => feedback.remove(), 2000);
         };
         
         window.nextStory = () => {
