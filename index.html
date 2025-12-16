@@ -219,9 +219,6 @@
         html.dark input, html.dark textarea { background-color: #0f172a !important; color: #f1f5f9; border-color: #334155 !important; }
         html.dark input::placeholder, html.dark textarea::placeholder { color: #64748b; }
         
-        html.dark .msg-them { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; }
-        html.dark .story-ring-seen { background: #475569; }
-        
         html.dark .shadow-xl, html.dark .shadow-2xl { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5); }
     </style>
 </head>
@@ -549,6 +546,40 @@
                 </aside>
             </div>
         </main>
+
+        <!-- Floating Chat Widget -->
+        <div id="floating-chat-container" class="fixed bottom-6 right-6 z-[999] hidden">
+            <!-- The Widget Window -->
+            <div id="floating-chat-widget" class="absolute bottom-0 right-0 w-80 h-[450px] bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col transition-all duration-500 cubic-bezier(0.19, 1, 0.22, 1) origin-bottom-right opacity-0 scale-0 pointer-events-none">
+                <!-- Header -->
+                <div id="floating-header" class="h-14 bg-gradient-to-r from-blue-600 to-purple-600 p-3 flex items-center justify-between text-white shrink-0 cursor-move">
+                    <div class="flex items-center gap-2">
+                        <button id="floating-back-btn" onclick="backToFloatingList()" class="hidden hover:bg-white/20 rounded-full w-8 h-8 flex items-center justify-center transition-colors"><i class="fa-solid fa-arrow-left text-sm"></i></button>
+                        <span id="floating-header-title" class="font-bold text-sm">Messages</span>
+                    </div>
+                    <button onclick="toggleFloatingWidget()" class="hover:bg-white/20 rounded-full w-8 h-8 flex items-center justify-center transition-colors"><i class="fa-solid fa-xmark text-sm"></i></button>
+                </div>
+
+                <!-- List View -->
+                <div id="floating-chat-list" class="flex-1 overflow-y-auto custom-scrollbar p-2 bg-slate-50/50">
+                    <!-- Injected via JS -->
+                </div>
+
+                <!-- Conversation View -->
+                <div id="floating-conversation" class="hidden flex-1 flex flex-col bg-white h-full">
+                    <div id="floating-messages" class="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar text-xs"></div>
+                    <form onsubmit="sendFloatingMessage(event)" class="p-2 border-t border-slate-100 bg-slate-50 flex gap-2">
+                        <input id="floating-input" type="text" placeholder="Type..." class="flex-1 bg-white border border-slate-200 rounded-full px-3 py-2 text-xs outline-none focus:border-blue-400">
+                        <button type="submit" class="text-blue-600 hover:text-blue-700 px-2"><i class="fa-solid fa-paper-plane"></i></button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- The Launcher Button -->
+            <button onclick="toggleFloatingWidget()" id="floating-launcher" class="absolute bottom-0 right-0 w-14 h-14 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg hover:shadow-blue-500/50 transition-all duration-500 cubic-bezier(0.19, 1, 0.22, 1) flex items-center justify-center btn-bounce z-10 cursor-move">
+                <i class="fa-solid fa-comment-dots text-2xl"></i>
+            </button>
+        </div>
 
         <!-- Modals -->
 
@@ -966,6 +997,12 @@
         let storyTimer = null;
         let currentStoryUpload = { file: null, type: null, data: null };
         
+        // --- FLOATING WIDGET STATE ---
+        window.isFloatingWidgetOpen = false;
+        window.currentFloatingChatId = null;
+        window.unsubscribeFloatingMessages = null;
+        window.hasDraggedWidget = false;
+
         // --- CUSTOM SOUND VARIABLES ---
         let pendingSoundData = null;
         let isResettingSound = false;
@@ -1219,11 +1256,16 @@
                 document.getElementById('auth-overlay').classList.add('opacity-0', 'pointer-events-none');
                 setTimeout(() => document.getElementById('auth-overlay').classList.add('hidden'), 700);
 
+                // Show floating chat
+                document.getElementById('floating-chat-container').classList.remove('hidden');
+
                 loadData();
             } else {
                 currentUser = null;
                 window.currentUser = null;
                 document.getElementById('auth-overlay').classList.remove('hidden', 'opacity-0', 'pointer-events-none');
+                // Hide floating chat
+                document.getElementById('floating-chat-container').classList.add('hidden');
             }
         });
 
@@ -1744,6 +1786,7 @@
                 if(badge) badge.style.display = hasUnread ? 'block' : 'none';
                 window.allChats = chats;
                 renderChatList(chats);
+                if(window.isFloatingWidgetOpen) renderFloatingChatList();
             });
         }
 
@@ -3132,6 +3175,202 @@
 
              closeReportModal();
         };
+
+        // --- FLOATING CHAT WIDGET LOGIC ---
+
+        window.toggleFloatingWidget = () => {
+            // Prevent toggling if user was just dragging
+            if(window.hasDraggedWidget) return;
+            
+            const widget = document.getElementById('floating-chat-widget');
+            const launcher = document.getElementById('floating-launcher');
+            
+            window.isFloatingWidgetOpen = !window.isFloatingWidgetOpen;
+
+            if(window.isFloatingWidgetOpen) {
+                // Open: Show widget, Hide launcher
+                widget.classList.remove('opacity-0', 'scale-0', 'pointer-events-none');
+                widget.classList.add('opacity-100', 'scale-100', 'pointer-events-auto');
+                
+                launcher.classList.add('opacity-0', 'scale-0', 'pointer-events-none');
+                
+                renderFloatingChatList();
+            } else {
+                // Close: Hide widget, Show launcher
+                widget.classList.add('opacity-0', 'scale-0', 'pointer-events-none');
+                widget.classList.remove('opacity-100', 'scale-100', 'pointer-events-auto');
+                
+                launcher.classList.remove('opacity-0', 'scale-0', 'pointer-events-none');
+                
+                // Cleanup specific chat listener if closed
+                if(window.unsubscribeFloatingMessages) window.unsubscribeFloatingMessages();
+                backToFloatingList(); 
+            }
+        };
+
+        window.renderFloatingChatList = () => {
+            const container = document.getElementById('floating-chat-list');
+            if(window.allChats.length === 0) {
+                 container.innerHTML = '<p class="text-center text-xs text-slate-400 py-4">No chats yet.</p>';
+                 return;
+            }
+            container.innerHTML = window.allChats.map(c => {
+                const parts = c.id.split('_');
+                const otherUid = parts[0] === currentUser.uid ? parts[1] : parts[0];
+                const otherUser = allUsersCache.find(u => u.id === otherUid) || { name: "User", photoURL: "https://placehold.co/100x100" };
+                const isUnread = c.readBy && !c.readBy.includes(currentUser.uid);
+                
+                return `
+                <div onclick="openFloatingChat('${c.id}', '${otherUser.name}')" class="flex items-center gap-3 p-2 hover:bg-white rounded-xl cursor-pointer transition-colors mb-1 ${isUnread ? 'bg-blue-50' : ''}">
+                    <div class="relative">
+                        <img src="${otherUser.photoURL}" class="w-8 h-8 rounded-full bg-slate-200 object-cover">
+                        ${isUnread ? '<div class="absolute top-0 right-0 w-2 h-2 bg-blue-500 rounded-full border border-white"></div>' : ''}
+                    </div>
+                    <div class="truncate flex-grow">
+                        <p class="font-bold text-xs text-slate-800">${otherUser.name}</p>
+                        ${isUnread ? '<p class="text-[10px] text-blue-600 font-bold">New message</p>' : ''}
+                    </div>
+                </div>`;
+            }).join('');
+        };
+
+        window.openFloatingChat = async (chatId, name) => {
+            window.currentFloatingChatId = chatId;
+            document.getElementById('floating-chat-list').classList.add('hidden');
+            document.getElementById('floating-conversation').classList.remove('hidden');
+            document.getElementById('floating-back-btn').classList.remove('hidden');
+            document.getElementById('floating-header-title').innerText = name;
+            
+            // Mark read
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'chats', chatId), {
+                readBy: arrayUnion(currentUser.uid)
+            }, { merge: true });
+
+            if(window.unsubscribeFloatingMessages) window.unsubscribeFloatingMessages();
+            
+            const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'chats', chatId, 'messages'), orderBy('createdAt', 'asc'));
+            window.unsubscribeFloatingMessages = onSnapshot(q, (snap) => {
+                const container = document.getElementById('floating-messages');
+                container.innerHTML = '';
+                snap.forEach(d => {
+                    const m = d.data();
+                    if(m.type === 'system') {
+                         container.innerHTML += `<div class="text-[10px] text-center text-slate-400 italic my-2">${m.text}</div>`;
+                         return;
+                    }
+                    const isMe = m.senderId === currentUser.uid;
+                    container.innerHTML += `
+                    <div class="flex w-full mb-2 ${isMe?'justify-end':'justify-start'} animate-fade-in">
+                        <div class="px-3 py-2 rounded-xl max-w-[85%] text-xs ${isMe ? 'bg-blue-600 text-white rounded-br-none' : 'bg-slate-100 text-slate-800 rounded-bl-none'}">
+                            ${m.text}
+                        </div>
+                    </div>`;
+                });
+                container.scrollTop = container.scrollHeight;
+            });
+        };
+
+        window.backToFloatingList = () => {
+            document.getElementById('floating-conversation').classList.add('hidden');
+            document.getElementById('floating-chat-list').classList.remove('hidden');
+            document.getElementById('floating-back-btn').classList.add('hidden');
+            document.getElementById('floating-header-title').innerText = "Messages";
+            window.currentFloatingChatId = null;
+            if(window.unsubscribeFloatingMessages) {
+                window.unsubscribeFloatingMessages();
+                window.unsubscribeFloatingMessages = null;
+            }
+        };
+
+        window.sendFloatingMessage = async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('floating-input');
+            const text = input.value.trim();
+            if(!text || !window.currentFloatingChatId) return;
+
+            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'chats', window.currentFloatingChatId, 'messages'), { 
+                text: text, 
+                senderId: currentUser.uid, 
+                createdAt: serverTimestamp() 
+            });
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'chats', window.currentFloatingChatId), {
+                lastUpdated: serverTimestamp(),
+                readBy: [currentUser.uid]
+            }, { merge: true });
+            
+            input.value = '';
+        };
+
+        // --- DRAG AND DROP LOGIC FOR CHAT WIDGET ---
+        function makeDraggable(elmnt) {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            const header = document.getElementById("floating-header");
+            const launcher = document.getElementById("floating-launcher");
+
+            // Allow dragging from header (open state)
+            if (header) {
+                header.onmousedown = dragMouseDown;
+            }
+            // Allow dragging from launcher (closed state)
+            if (launcher) {
+                launcher.onmousedown = dragMouseDown;
+            }
+
+            function dragMouseDown(e) {
+                e = e || window.event;
+                // Allow buttons inside header/launcher to work without starting drag immediately
+                // Specifically: Back button, Close button.
+                // We check if target is a button, but exclude the launcher itself which IS a button.
+                if(e.target.closest('button') && e.target.id !== 'floating-launcher') return;
+
+                e.preventDefault();
+                // Get the mouse cursor position at startup:
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                // Call a function whenever the cursor moves:
+                document.onmousemove = elementDrag;
+            }
+
+            function elementDrag(e) {
+                e = e || window.event;
+                e.preventDefault();
+                // Calculate the new cursor position:
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+
+                // If movement occurred, flag it so click handler doesn't fire toggle
+                if (Math.abs(pos1) > 0 || Math.abs(pos2) > 0) {
+                     window.hasDraggedWidget = true;
+                }
+
+                // Initial position reset from 'bottom/right' to 'top/left' for smooth dragging
+                if (elmnt.style.bottom !== "auto") {
+                    const rect = elmnt.getBoundingClientRect();
+                    elmnt.style.top = rect.top + "px";
+                    elmnt.style.left = rect.left + "px";
+                    elmnt.style.bottom = "auto";
+                    elmnt.style.right = "auto";
+                }
+
+                // set the element's new position:
+                elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+                elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+            }
+
+            function closeDragElement() {
+                // stop moving when mouse button is released:
+                document.onmouseup = null;
+                document.onmousemove = null;
+                // Reset the drag flag after a short delay so the click event can check it
+                setTimeout(() => { window.hasDraggedWidget = false; }, 200);
+            }
+        }
+        
+        // Initialize dragging
+        makeDraggable(document.getElementById("floating-chat-container"));
 
     </script>
 </body>
