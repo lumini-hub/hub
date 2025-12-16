@@ -16,7 +16,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
 
     <script>
+        // Immediate Dark Mode Check
+        if (localStorage.getItem('lumini_theme') === 'dark' || (!('lumini_theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
@@ -90,7 +98,7 @@
         
         body { background-color: #f0f2f5; background-image: radial-gradient(circle at 10% 20%, rgba(37, 99, 235, 0.08) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(147, 51, 234, 0.08) 0%, transparent 40%); background-attachment: fixed; }
         
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; border: 2px solid transparent; background-clip: content-box; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
@@ -156,6 +164,65 @@
         /* Message Actions */
         .msg-actions { opacity: 0; transition: opacity 0.2s ease; }
         .msg-group:hover .msg-actions { opacity: 1; }
+
+        /* Story Styles */
+        .story-ring { padding: 3px; background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); border-radius: 50%; }
+        .story-ring-seen { padding: 3px; background: #cbd5e1; border-radius: 50%; }
+        .story-progress-bar { transition: width 0.1s linear; }
+
+        /* --- DARK MODE OVERRIDES --- */
+        html.dark body { background-color: #020617; background-image: radial-gradient(circle at 10% 20%, rgba(37, 99, 235, 0.15) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(147, 51, 234, 0.15) 0%, transparent 40%); color: #f1f5f9; }
+        
+        html.dark .glass { background: rgba(15, 23, 42, 0.85); border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+        html.dark .glass-card { background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3); }
+        html.dark .glass-card:hover { background: rgba(30, 41, 59, 0.8); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4); }
+        
+        html.dark .sidebar-link { color: #94a3b8; }
+        html.dark .sidebar-link:hover { background-color: rgba(255, 255, 255, 0.05); color: #f8fafc; }
+        html.dark .sidebar-link.active { background-color: #1e293b; color: #60a5fa; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        
+        /* Utility overrides to prevent rewriting full HTML */
+        html.dark .bg-white { background-color: #1e293b !important; }
+        html.dark .bg-white\/95 { background-color: rgba(30, 41, 59, 0.95) !important; }
+        html.dark .bg-white\/90 { background-color: rgba(30, 41, 59, 0.9) !important; }
+        html.dark .bg-white\/80 { background-color: rgba(30, 41, 59, 0.8) !important; }
+        html.dark .bg-white\/60 { background-color: rgba(30, 41, 59, 0.6) !important; }
+        html.dark .bg-white\/20 { background-color: rgba(255, 255, 255, 0.1) !important; }
+        html.dark .bg-white\/10 { background-color: rgba(255, 255, 255, 0.05) !important; }
+        
+        html.dark .bg-slate-50 { background-color: #0f172a !important; }
+        html.dark .bg-slate-50\/50 { background-color: rgba(15, 23, 42, 0.5) !important; }
+        html.dark .bg-slate-50\/30 { background-color: rgba(15, 23, 42, 0.3) !important; }
+        html.dark .bg-slate-100 { background-color: #334155 !important; }
+        html.dark .bg-slate-200 { background-color: #475569 !important; }
+        html.dark .bg-slate-300 { background-color: #64748b !important; }
+        html.dark .bg-slate-800 { background-color: #020617 !important; }
+        
+        html.dark .hover\:bg-slate-50:hover { background-color: #1e293b !important; }
+        html.dark .hover\:bg-slate-100:hover { background-color: #334155 !important; }
+        html.dark .hover\:bg-slate-200:hover { background-color: #475569 !important; }
+        html.dark .hover\:bg-blue-50:hover { background-color: rgba(37, 99, 235, 0.2) !important; }
+        html.dark .hover\:bg-green-50:hover { background-color: rgba(34, 197, 94, 0.2) !important; }
+        html.dark .hover\:bg-red-50:hover { background-color: rgba(239, 68, 68, 0.2) !important; }
+        
+        html.dark .text-slate-900 { color: #f8fafc !important; }
+        html.dark .text-slate-800 { color: #f1f5f9 !important; }
+        html.dark .text-slate-700 { color: #e2e8f0 !important; }
+        html.dark .text-slate-600 { color: #cbd5e1 !important; }
+        html.dark .text-slate-500 { color: #94a3b8 !important; }
+        html.dark .text-slate-400 { color: #64748b !important; }
+        
+        html.dark .border-slate-100 { border-color: #1e293b !important; }
+        html.dark .border-slate-200 { border-color: #334155 !important; }
+        html.dark .border-slate-300 { border-color: #475569 !important; }
+        
+        html.dark input, html.dark textarea { background-color: #0f172a !important; color: #f1f5f9; border-color: #334155 !important; }
+        html.dark input::placeholder, html.dark textarea::placeholder { color: #64748b; }
+        
+        html.dark .msg-them { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; }
+        html.dark .story-ring-seen { background: #475569; }
+        
+        html.dark .shadow-xl, html.dark .shadow-2xl { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5); }
     </style>
 </head>
 <body class="text-slate-800 font-sans antialiased overflow-x-hidden selection:bg-blue-100 selection:text-blue-900">
@@ -268,6 +335,7 @@
                     <div onclick="router('feed')" class="sidebar-link active" id="nav-link-feed"><i class="fa-solid fa-house text-blue-500"></i> <span>Home</span></div>
                     <div onclick="viewMyProfile()" class="sidebar-link" id="nav-link-profile"><i class="fa-solid fa-user text-blue-500"></i> <span>Profile</span></div>
                     <div onclick="router('network')" class="sidebar-link" id="nav-link-network"><i class="fa-solid fa-user-group text-blue-500"></i> <span>Network</span></div>
+                    <div onclick="router('collaborate')" class="sidebar-link" id="nav-link-collaborate"><i class="fa-solid fa-rocket text-purple-600"></i> <span>Collaborate</span></div>
                     <div onclick="router('messaging')" class="sidebar-link" id="nav-link-messaging"><i class="fa-solid fa-comment-dots text-blue-500"></i> <span>Messages</span></div>
                     <div onclick="router('saved')" class="sidebar-link" id="nav-link-saved"><i class="fa-solid fa-bookmark text-purple-600"></i> <span>Saved</span></div>
                     <div class="border-t border-slate-300 my-2 mx-2"></div>
@@ -281,6 +349,20 @@
                     
                     <!-- View: Feed -->
                     <div id="view-feed" class="view-section space-y-6">
+                        <!-- Stories Bar -->
+                        <div class="glass-card rounded-2xl p-4 mb-4 bg-white/90 overflow-x-auto custom-scrollbar flex gap-4" id="stories-bar">
+                            <!-- Add Story -->
+                            <div class="flex flex-col items-center gap-2 cursor-pointer min-w-[70px]" onclick="openStoryUploadModal()">
+                                <div class="relative w-16 h-16 group">
+                                     <img id="story-my-avatar" src="" class="w-full h-full rounded-full border-2 border-white object-cover group-hover:opacity-80 transition-opacity">
+                                     <div class="absolute bottom-0 right-0 bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs border-2 border-white"><i class="fa-solid fa-plus"></i></div>
+                                </div>
+                                <span class="text-xs font-medium text-slate-600 truncate w-16 text-center">Add Story</span>
+                            </div>
+                            <!-- Stories Stream injected via JS -->
+                            <div id="stories-list" class="flex gap-4"></div>
+                        </div>
+
                         <div class="glass-card rounded-2xl p-4 bg-white/90">
                             <div class="flex gap-4 mb-4">
                                 <img id="composer-avatar" src="https://placehold.co/100x100?text=User" class="w-12 h-12 rounded-full bg-slate-100 object-cover ring-2 ring-white">
@@ -312,6 +394,29 @@
                             <p class="text-slate-500 text-sm mt-1">Find collaborators. <span class="text-xs text-slate-400">(Real users appear here)</span></p>
                         </div>
                         <div id="network-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+                    </div>
+
+                    <!-- View: Collaborate -->
+                    <div id="view-collaborate" class="view-section hidden space-y-6">
+                        <div class="glass-card rounded-2xl p-6 bg-white/90">
+                             <div class="flex justify-between items-center mb-4 flex-wrap gap-4">
+                                <div>
+                                    <h2 class="font-heading font-bold text-2xl text-slate-800 flex items-center gap-3"><i class="fa-solid fa-rocket text-purple-600"></i> Project Board</h2>
+                                    <p class="text-slate-500 text-sm mt-1">Find collaborators or showcase your work.</p>
+                                </div>
+                                <button onclick="openPostModal('project')" class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all btn-bounce flex items-center gap-2">
+                                    <i class="fa-solid fa-plus"></i> Post Project
+                                </button>
+                            </div>
+                            <div class="flex gap-2 overflow-x-auto custom-scrollbar pb-1" id="collab-filters">
+                                <button onclick="filterCollaborate('all')" id="filter-all" class="px-4 py-1.5 rounded-full text-sm font-bold border border-slate-200 bg-slate-800 text-white transition-all whitespace-nowrap hover:shadow-md btn-bounce">All</button>
+                                <button onclick="filterCollaborate('designer')" id="filter-designer" class="px-4 py-1.5 rounded-full text-sm font-bold border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all whitespace-nowrap hover:shadow-md btn-bounce">Designers</button>
+                                <button onclick="filterCollaborate('developer')" id="filter-developer" class="px-4 py-1.5 rounded-full text-sm font-bold border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all whitespace-nowrap hover:shadow-md btn-bounce">Developers</button>
+                                <button onclick="filterCollaborate('manager')" id="filter-manager" class="px-4 py-1.5 rounded-full text-sm font-bold border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all whitespace-nowrap hover:shadow-md btn-bounce">Managers</button>
+                                 <button onclick="filterCollaborate('marketing')" id="filter-marketing" class="px-4 py-1.5 rounded-full text-sm font-bold border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all whitespace-nowrap hover:shadow-md btn-bounce">Marketing</button>
+                            </div>
+                        </div>
+                        <div id="collaborate-stream" class="space-y-5 pb-20"></div>
                     </div>
 
                     <!-- View: Profile -->
@@ -447,6 +552,60 @@
 
         <!-- Modals -->
 
+        <!-- STORY UPLOAD MODAL -->
+        <div id="story-upload-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] hidden flex items-center justify-center p-4 transition-all duration-300">
+            <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-pop-in">
+                <div class="flex justify-between items-center p-5 border-b border-slate-100">
+                    <h3 class="font-heading font-bold text-lg text-slate-800">Add to Story</h3>
+                    <button onclick="document.getElementById('story-upload-modal').classList.add('hidden')" class="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center transition-colors btn-bounce"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="p-6 text-center">
+                    <div class="w-full h-64 bg-slate-100 rounded-xl mb-4 flex items-center justify-center overflow-hidden border-2 border-dashed border-slate-300 relative cursor-pointer hover:bg-slate-50 transition-colors" onclick="document.getElementById('story-file-input').click()">
+                        <div id="story-upload-placeholder" class="text-slate-400">
+                            <i class="fa-solid fa-cloud-arrow-up text-3xl mb-2"></i>
+                            <p class="text-sm">Click to upload photo/video</p>
+                        </div>
+                        <img id="story-preview-img" class="hidden w-full h-full object-contain">
+                        <video id="story-preview-video" class="hidden w-full h-full object-contain" controls></video>
+                    </div>
+                    <input type="file" id="story-file-input" class="hidden" accept="image/*,video/*" onchange="handleStoryFileSelect(this)">
+                    <p class="text-xs text-slate-400 mb-4">Content disappears after 24 hours.</p>
+                    <button onclick="uploadStory()" id="btn-upload-story" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-3 rounded-xl hover:shadow-lg hover:shadow-blue-500/30 transition-all btn-bounce disabled:opacity-50" disabled>Share to Story</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- STORY VIEWER MODAL -->
+        <div id="story-viewer-modal" class="fixed inset-0 bg-black z-[120] hidden flex flex-col items-center justify-center animate-fade-in">
+            <!-- Progress Bars -->
+            <div id="story-progress-container" class="absolute top-4 left-4 right-4 flex gap-1 z-50"></div>
+            
+            <!-- Header -->
+            <div class="absolute top-8 left-4 right-4 flex justify-between items-center z-50">
+                <div class="flex items-center gap-3">
+                    <img id="viewer-avatar" src="" class="w-10 h-10 rounded-full border-2 border-white/50">
+                    <div>
+                        <p id="viewer-name" class="text-white font-bold text-sm text-shadow">User</p>
+                        <p id="viewer-time" class="text-white/70 text-xs">2h ago</p>
+                    </div>
+                </div>
+                <button onclick="closeStoryViewer()" class="text-white/80 hover:text-white text-2xl"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- Content -->
+            <div class="relative w-full h-full md:max-w-lg md:h-[90vh] md:rounded-xl overflow-hidden bg-slate-900 flex items-center justify-center">
+                 <img id="viewer-img" class="hidden w-full h-full object-cover">
+                 <video id="viewer-video" class="hidden w-full h-full object-contain" autoplay playsinline></video>
+                 
+                 <!-- Navigation Overlay -->
+                 <div class="absolute inset-0 flex">
+                     <div class="w-1/3 h-full cursor-pointer z-40" onclick="prevStory()"></div>
+                     <div class="w-1/3 h-full cursor-pointer z-40" onclick="nextStory()"></div> <!-- Middle tap also next -->
+                     <div class="w-1/3 h-full cursor-pointer z-40" onclick="nextStory()"></div>
+                 </div>
+            </div>
+        </div>
+
         <!-- MESSAGE OPTIONS MODAL -->
         <div id="msg-options-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] hidden flex items-center justify-center p-4 transition-all duration-300">
              <div class="bg-white p-6 rounded-2xl shadow-xl max-w-xs w-full animate-pop-in transform scale-100">
@@ -539,6 +698,18 @@
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Display Name (Username)</label>
                         <input id="settings-username" type="text" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all">
+                    </div>
+
+                    <!-- DARK MODE TOGGLE -->
+                    <div class="border-t border-slate-100 pt-4 flex justify-between items-center">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Appearance</label>
+                            <p class="text-sm font-bold text-slate-700 dark:text-slate-200">Dark Mode</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="dark-mode-toggle" class="sr-only peer" onchange="toggleTheme()">
+                            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                        </label>
                     </div>
                     
                     <!-- NEW: Sound Settings -->
@@ -768,6 +939,7 @@
         let unsubscribeMessages = null;
         let unsubscribeNotifications = null;
         let unsubscribeUsers = null;
+        let unsubscribeStories = null; // New listener for stories
         let currentChatId = null;
         let mySavedPosts = [];
         let allPostsCache = []; 
@@ -783,26 +955,55 @@
         let isFirstChatLoad = true;
         let audioContextUnlocked = false;
         
+        // --- NEW: Collaborate State ---
+        window.currentCollabFilter = 'all';
+
+        // --- STORIES STATE ---
+        let allStories = [];
+        let groupedStories = {};
+        let activeStoryUid = null;
+        let activeStoryIndex = 0;
+        let storyTimer = null;
+        let currentStoryUpload = { file: null, type: null, data: null };
+        
         // --- CUSTOM SOUND VARIABLES ---
         let pendingSoundData = null;
         let isResettingSound = false;
+
+        // --- THEME LOGIC ---
+        window.toggleTheme = () => {
+            const isDark = document.getElementById('dark-mode-toggle').checked;
+            if(isDark) {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('lumini_theme', 'dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('lumini_theme', 'light');
+            }
+        };
 
         // --- AUDIO UNLOCK LOGIC ---
         function unlockAudio() {
             if (audioContextUnlocked) return;
             const audio = document.getElementById('notification-sound');
             if (audio) {
-                // Ensure default source is set if empty
+                // Ensure default source is set if empty but check if it's playable
                 if(!audio.src) audio.src = "sound.mp3";
                 
-                audio.play().then(() => {
-                    audio.pause();
-                    audio.currentTime = 0;
-                    audioContextUnlocked = true;
-                    document.removeEventListener('click', unlockAudio);
-                    document.removeEventListener('touchstart', unlockAudio);
-                    document.removeEventListener('keydown', unlockAudio);
-                }).catch(e => console.log("Audio unlock waiting...", e));
+                // Only try to play if src is valid enough to not throw immediately
+                const p = audio.play();
+                if (p !== undefined) {
+                    p.then(() => {
+                        audio.pause();
+                        audio.currentTime = 0;
+                        audioContextUnlocked = true;
+                        document.removeEventListener('click', unlockAudio);
+                        document.removeEventListener('touchstart', unlockAudio);
+                        document.removeEventListener('keydown', unlockAudio);
+                    }).catch(e => {
+                        // Silent catch to prevent console spam
+                    });
+                }
             }
         }
 
@@ -819,18 +1020,11 @@
             const customSound = window.userProfileCache?.notificationSound;
             const targetSrc = customSound || "sound.mp3";
             
-            // Note: If using base64, assigning it to src works fine in modern browsers
-            // We verify if src needs updating to avoid reloading if it's the same URL
-            // Simple check: if targetSrc is short (filename), verify endsWith
-            // If targetSrc is long (base64), verify exact match or length
-            
             let shouldUpdate = false;
             
             if (targetSrc.length < 100) {
-                 // Likely a filename like 'sound.mp3'
                  if (!audio.src.endsWith(targetSrc)) shouldUpdate = true;
             } else {
-                 // Likely Base64
                  if (audio.src !== targetSrc) shouldUpdate = true;
             }
             
@@ -839,7 +1033,7 @@
             }
             
             audio.currentTime = 0;
-            audio.play().catch(e => console.error("Sound play error", e));
+            audio.play().catch(e => {}); // Silenced error
         };
         
         // --- SOUND SETTINGS HANDLERS ---
@@ -1410,6 +1604,7 @@
                 posts.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
                 allPostsCache = posts;
                 if(!document.getElementById('view-feed').classList.contains('hidden')) renderFeed(posts);
+                if(!document.getElementById('view-collaborate').classList.contains('hidden')) renderCollaborate();
             });
 
             if(unsubscribeUsers) unsubscribeUsers();
@@ -1445,7 +1640,8 @@
 
             monitorNotifications();
             monitorChats();
-            monitorIncomingCalls(); 
+            monitorIncomingCalls();
+            monitorStories(); // Start story listener 
         }
 
         function monitorNotifications() {
@@ -1754,6 +1950,258 @@
             i.value = '';
         };
 
+        // --- STORIES LOGIC ---
+        function monitorStories() {
+            if (unsubscribeStories) unsubscribeStories();
+            // Fetch all stories. In production, use "where" clause for expiresAt.
+            const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'stories'), orderBy('createdAt', 'desc'));
+            unsubscribeStories = onSnapshot(q, (snap) => {
+                const now = Date.now();
+                allStories = [];
+                snap.forEach(d => {
+                    const data = d.data();
+                    const expires = data.expiresAt ? data.expiresAt.toMillis() : 0;
+                    if(expires > now) {
+                        allStories.push({id: d.id, ...data});
+                    }
+                });
+                
+                // Group by User
+                groupedStories = {};
+                allStories.forEach(s => {
+                    if(!groupedStories[s.uid]) {
+                        groupedStories[s.uid] = {
+                            uid: s.uid,
+                            name: s.name,
+                            photoURL: s.photoURL,
+                            items: []
+                        };
+                    }
+                    groupedStories[s.uid].items.push(s);
+                });
+                
+                // Sort items within user by time ascending for viewing
+                Object.values(groupedStories).forEach(group => {
+                    group.items.sort((a,b) => (a.createdAt.toMillis()) - (b.createdAt.toMillis()));
+                });
+                
+                renderStoriesBar();
+            });
+        }
+        
+        function renderStoriesBar() {
+            const container = document.getElementById('stories-list');
+            if(!container) return;
+            
+            // Convert groups to array, filter out current user (shown separately)
+            const groups = Object.values(groupedStories).filter(g => g.uid !== currentUser.uid);
+            
+            container.innerHTML = groups.map(g => `
+                <div class="flex flex-col items-center gap-2 cursor-pointer min-w-[70px] group" onclick="openStoryViewer('${g.uid}')">
+                    <div class="relative w-16 h-16 story-ring group-hover:scale-105 transition-transform">
+                         <img src="${g.photoURL}" class="w-full h-full rounded-full border-2 border-white object-cover bg-white">
+                    </div>
+                    <span class="text-xs font-medium text-slate-600 truncate w-16 text-center">${g.name.split(' ')[0]}</span>
+                </div>
+            `).join('');
+            
+            // Check if user has active story
+            const myStory = groupedStories[currentUser.uid];
+            const myAvatar = document.getElementById('story-my-avatar');
+            const myContainer = myAvatar.parentElement;
+            
+            if(myStory && myStory.items.length > 0) {
+                 myContainer.classList.add('story-ring');
+                 // Change click handler to view instead of upload if they have stories? 
+                 // Usually apps separate "View My Story" and "Add".
+                 // For simplicity, click adds. To view own, we could check context. 
+                 // Let's allow viewing own story by clicking avatar if exists.
+                 myContainer.parentElement.onclick = () => openStoryViewer(currentUser.uid);
+                 // Add tiny plus button somewhere else? Or change icon.
+                 myContainer.querySelector('.fa-plus').className = "fa-solid fa-eye";
+                 myContainer.querySelector('div.absolute').classList.replace('bg-blue-600', 'bg-slate-700');
+            } else {
+                 myContainer.classList.remove('story-ring');
+                 myContainer.parentElement.onclick = openStoryUploadModal;
+                 myContainer.querySelector('.fa-solid').className = "fa-solid fa-plus";
+                 myContainer.querySelector('div.absolute').classList.replace('bg-slate-700', 'bg-blue-600');
+            }
+        }
+        
+        window.openStoryUploadModal = () => {
+             document.getElementById('story-upload-modal').classList.remove('hidden');
+             // Reset UI
+             document.getElementById('story-preview-img').classList.add('hidden');
+             document.getElementById('story-preview-video').classList.add('hidden');
+             document.getElementById('story-upload-placeholder').classList.remove('hidden');
+             document.getElementById('btn-upload-story').disabled = true;
+             currentStoryUpload = { file: null, type: null, data: null };
+        };
+        
+        window.handleStoryFileSelect = (input) => {
+            if(input.files && input.files[0]) {
+                const file = input.files[0];
+                const isVideo = file.type.startsWith('video/');
+                
+                // Limit size (Firestore doc limit 1MB, let's keep it safe at 800KB)
+                if(file.size > 800 * 1024) {
+                    alert("File too large. Max 800KB for stories.");
+                    input.value = "";
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const res = e.target.result;
+                    currentStoryUpload = { file: file, type: isVideo ? 'video' : 'image', data: res };
+                    
+                    document.getElementById('story-upload-placeholder').classList.add('hidden');
+                    if(isVideo) {
+                        const vid = document.getElementById('story-preview-video');
+                        vid.src = res;
+                        vid.classList.remove('hidden');
+                        document.getElementById('story-preview-img').classList.add('hidden');
+                    } else {
+                        const img = document.getElementById('story-preview-img');
+                        img.src = res;
+                        img.classList.remove('hidden');
+                        document.getElementById('story-preview-video').classList.add('hidden');
+                    }
+                    document.getElementById('btn-upload-story').disabled = false;
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+        
+        window.uploadStory = async () => {
+            if(!currentStoryUpload.data) return;
+            const btn = document.getElementById('btn-upload-story');
+            btn.innerText = "Uploading...";
+            btn.disabled = true;
+            
+            try {
+                // Expire in 24 hours
+                const now = new Date();
+                const expires = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+                
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'stories'), {
+                    uid: currentUser.uid,
+                    name: currentUser.displayName,
+                    photoURL: currentUser.photoURL,
+                    media: currentStoryUpload.data,
+                    type: currentStoryUpload.type,
+                    createdAt: serverTimestamp(),
+                    expiresAt: expires
+                });
+                
+                document.getElementById('story-upload-modal').classList.add('hidden');
+            } catch(e) {
+                console.error("Story upload failed", e);
+                alert("Upload failed.");
+            } finally {
+                btn.innerText = "Share to Story";
+                btn.disabled = false;
+            }
+        };
+        
+        window.openStoryViewer = (uid) => {
+             const group = groupedStories[uid];
+             if(!group || !group.items.length) return;
+             
+             activeStoryUid = uid;
+             activeStoryIndex = 0;
+             
+             document.getElementById('story-viewer-modal').classList.remove('hidden');
+             showStory(uid, 0);
+        };
+        
+        window.showStory = (uid, index) => {
+            clearTimeout(storyTimer);
+            const group = groupedStories[uid];
+            if(!group || index >= group.items.length) {
+                closeStoryViewer();
+                return;
+            }
+            
+            activeStoryIndex = index;
+            const story = group.items[index];
+            
+            // Update Header
+            document.getElementById('viewer-avatar').src = group.photoURL;
+            document.getElementById('viewer-name').innerText = group.name;
+            // Calculate time ago
+            const timeDiff = Date.now() - story.createdAt.toMillis();
+            const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+            const mins = Math.floor(timeDiff / (1000 * 60));
+            document.getElementById('viewer-time').innerText = hours > 0 ? `${hours}h ago` : `${mins}m ago`;
+            
+            // Show Content
+            const imgEl = document.getElementById('viewer-img');
+            const vidEl = document.getElementById('viewer-video');
+            
+            if(story.type === 'video') {
+                imgEl.classList.add('hidden');
+                vidEl.classList.remove('hidden');
+                vidEl.src = story.media;
+                vidEl.currentTime = 0;
+                // Add muted to allow autoplay without interaction issues initially, though modal implies interaction
+                // vidEl.muted = false; 
+                vidEl.onended = nextStory;
+            } else {
+                vidEl.classList.add('hidden');
+                imgEl.classList.remove('hidden');
+                imgEl.src = story.media;
+                // Auto advance image
+                storyTimer = setTimeout(nextStory, 5000);
+            }
+            
+            // Render Progress Bars
+            const barContainer = document.getElementById('story-progress-container');
+            const count = group.items.length;
+            barContainer.innerHTML = '';
+            
+            for(let i=0; i<count; i++) {
+                const bar = document.createElement('div');
+                bar.className = "h-1 rounded-full bg-white/30 flex-grow overflow-hidden";
+                const inner = document.createElement('div');
+                inner.className = "h-full bg-white story-progress-bar";
+                
+                if(i < index) inner.style.width = "100%";
+                else if(i > index) inner.style.width = "0%";
+                else {
+                    // Active bar animation
+                    inner.style.width = "0%";
+                    setTimeout(() => {
+                        inner.style.transition = story.type === 'video' ? `width ${vidEl.duration || 5}s linear` : "width 5s linear";
+                        inner.style.width = "100%";
+                    }, 10);
+                }
+                
+                bar.appendChild(inner);
+                barContainer.appendChild(bar);
+            }
+        };
+        
+        window.nextStory = () => {
+             showStory(activeStoryUid, activeStoryIndex + 1);
+        };
+        
+        window.prevStory = () => {
+             if(activeStoryIndex > 0) {
+                 showStory(activeStoryUid, activeStoryIndex - 1);
+             } else {
+                 // Go to previous user? For now just close or restart
+                 showStory(activeStoryUid, 0);
+             }
+        };
+        
+        window.closeStoryViewer = () => {
+             clearTimeout(storyTimer);
+             document.getElementById('story-viewer-modal').classList.add('hidden');
+             document.getElementById('viewer-video').pause();
+             activeStoryUid = null;
+        };
+
         // --- Router & UI Helpers ---
 
         window.router = (view) => {
@@ -1775,6 +2223,7 @@
             if(navLink) navLink.classList.add('active');
             
             if(view === 'saved') renderSavedPosts();
+            if(view === 'collaborate') renderCollaborate();
             
             if(view === 'messaging' && window.innerWidth < 768 && !currentChatId) {
                  backToChatList();
@@ -1816,6 +2265,7 @@
              document.getElementById('menu-avatar-small').src = pic;
              document.getElementById('composer-avatar').src = pic;
              document.getElementById('modal-avatar').src = pic;
+             document.getElementById('story-my-avatar').src = pic; // Set story avatar
              
              document.getElementById('sidebar-mini-name').innerText = name;
              document.getElementById('menu-name').innerText = name;
@@ -1825,6 +2275,14 @@
              document.getElementById('edit-headline').value = headline;
              document.getElementById('edit-bio').value = data.bio || "";
              document.getElementById('edit-modal-avatar').src = pic;
+
+             // SYNC THEME PREFERENCE
+             if(data.theme === 'dark') {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('lumini_theme', 'dark');
+                const toggle = document.getElementById('dark-mode-toggle');
+                if(toggle) toggle.checked = true;
+             }
         }
 
         // --- Post Rendering ---
@@ -1839,7 +2297,7 @@
                  mySavedPosts.push(postId);
              }
              
-             const btnIcons = document.querySelectorAll(`#post-${postId}-feed .fa-bookmark, #post-${postId}-saved .fa-bookmark, #post-${postId}-profile .fa-bookmark`);
+             const btnIcons = document.querySelectorAll(`#post-${postId}-feed .fa-bookmark, #post-${postId}-saved .fa-bookmark, #post-${postId}-profile .fa-bookmark, #post-${postId}-collaborate .fa-bookmark`);
              btnIcons.forEach(btnIcon => {
                  if(isSaved) { 
                      btnIcon.classList.remove('fa-solid', 'text-purple-600');
@@ -1965,6 +2423,47 @@
              container.innerHTML = saved.map(p => createPostHTML(p, 'saved')).join('');
         };
 
+        // --- NEW: Render Collaborate Stream ---
+        window.renderCollaborate = () => {
+            const container = document.getElementById('collaborate-stream');
+            if(!container) return;
+
+            let projects = allPostsCache.filter(p => p.type === 'project');
+
+            if(window.currentCollabFilter !== 'all') {
+                projects = projects.filter(p => {
+                    // Fuzzy search text and tags
+                    const text = (p.text + ' ' + (p.tags||[]).join(' ')).toLowerCase();
+                    return text.includes(window.currentCollabFilter.toLowerCase());
+                });
+            }
+
+            if(!projects.length) {
+                container.innerHTML = `<div class="text-center py-12 text-slate-400 animate-fade-in">No active projects found for this category.</div>`;
+                return;
+            }
+
+            container.innerHTML = projects.map(p => createPostHTML(p, 'collaborate')).join('');
+        };
+
+        window.filterCollaborate = (filter) => {
+            window.currentCollabFilter = filter;
+            
+            // Update UI
+            document.querySelectorAll('.collab-filter').forEach(btn => {
+                // Reset styles
+                btn.className = "collab-filter px-4 py-1.5 rounded-full text-sm font-medium border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all whitespace-nowrap";
+            });
+            
+            // Activate selected
+            const activeBtn = document.getElementById(`filter-${filter}`);
+            if(activeBtn) {
+                 activeBtn.className = "collab-filter active px-4 py-1.5 rounded-full text-sm font-medium border border-slate-200 bg-slate-800 text-white transition-all whitespace-nowrap shadow-md";
+            }
+            
+            renderCollaborate();
+        };
+
         function renderNetwork(users) {
             const g = document.getElementById('network-grid');
             if(!users.length) { 
@@ -2016,7 +2515,7 @@
              if(!p) return;
              const hasLiked = p.likedBy && p.likedBy.includes(currentUser.uid);
              
-             // UPDATE ALL INSTANCES OF THIS POST (Feed, Profile, Saved)
+             // UPDATE ALL INSTANCES OF THIS POST (Feed, Profile, Saved, Collaborate)
              // This fixes the issue where profile view likes didn't update visually
              const btns = document.querySelectorAll(`[id^="post-${postId}-"] .fa-heart`);
              btns.forEach(btn => {
@@ -2410,6 +2909,10 @@
                  });
                  pendingSoundData = null;
              }
+
+             // Theme Update
+             const isDark = document.getElementById('dark-mode-toggle').checked;
+             updates.theme = isDark ? 'dark' : 'light';
 
              if (Object.keys(updates).length > 0) {
                  await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users_directory', currentUser.uid), updates, { merge: true });
