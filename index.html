@@ -166,6 +166,8 @@
             <source src="https://assets.mixkit.co/active_storage/sfx/2330/2330-preview.m4a" type="audio/mp4">
             <source src="https://www.soundjay.com/phone/telephone-ring-03a.mp3" type="audio/mpeg">
         </audio>
+        <!-- NOTIFICATION SOUND (Dynamic source managed by JS) -->
+        <audio id="notification-sound" preload="auto"></audio>
 
         <!-- Navbar -->
         <nav class="glass fixed top-0 w-full z-50 h-16 transition-all duration-300 shadow-sm backdrop-blur-md">
@@ -538,6 +540,24 @@
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Display Name (Username)</label>
                         <input id="settings-username" type="text" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all">
                     </div>
+                    
+                    <!-- NEW: Sound Settings -->
+                    <div class="border-t border-slate-100 pt-4">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Notification Sound</label>
+                        <div class="flex items-center gap-3 bg-slate-50 p-2 rounded-xl border border-slate-200">
+                            <button onclick="previewNotificationSound()" class="w-10 h-10 rounded-full bg-white text-blue-600 flex items-center justify-center transition-colors btn-bounce shadow-sm hover:shadow-md border border-slate-100">
+                                <i class="fa-solid fa-play ml-1"></i>
+                            </button>
+                            <div class="flex-grow">
+                                <p id="current-sound-name" class="text-sm font-bold text-slate-700">Default (Ping)</p>
+                                <p class="text-[10px] text-slate-400">MP3/WAV • Max 500KB</p>
+                            </div>
+                            <button onclick="document.getElementById('sound-upload-input').click()" class="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline px-2">Change</button>
+                            <button onclick="resetNotificationSound()" class="text-xs font-bold text-red-500 hover:text-red-600 hover:underline hidden px-2" id="reset-sound-btn">Reset</button>
+                        </div>
+                        <input type="file" id="sound-upload-input" class="hidden" accept="audio/mp3,audio/wav,audio/ogg" onchange="handleSoundUpload(this)">
+                    </div>
+
                     <div class="border-t border-slate-100 pt-4">
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Account Security</label>
                         <button onclick="resetPassword()" class="w-full flex items-center justify-center gap-2 p-3 border border-red-200 text-red-600 rounded-xl hover:bg-red-50 transition-colors font-semibold btn-bounce">
@@ -740,6 +760,7 @@
 
         // State
         window.currentUser = null;
+        window.userProfileCache = null; // New global to store profile data
         window.allChats = []; 
         window.currentViewedUid = null;
         let unsubscribePosts = null;
@@ -758,6 +779,111 @@
         window.editingMsgId = null;
         window.taggedUsers = [];
         let currentActionMsgId = null;
+        let isFirstNotificationLoad = true;
+        let isFirstChatLoad = true;
+        let audioContextUnlocked = false;
+        
+        // --- CUSTOM SOUND VARIABLES ---
+        let pendingSoundData = null;
+        let isResettingSound = false;
+
+        // --- AUDIO UNLOCK LOGIC ---
+        function unlockAudio() {
+            if (audioContextUnlocked) return;
+            const audio = document.getElementById('notification-sound');
+            if (audio) {
+                // Ensure default source is set if empty
+                if(!audio.src) audio.src = "sound.mp3";
+                
+                audio.play().then(() => {
+                    audio.pause();
+                    audio.currentTime = 0;
+                    audioContextUnlocked = true;
+                    document.removeEventListener('click', unlockAudio);
+                    document.removeEventListener('touchstart', unlockAudio);
+                    document.removeEventListener('keydown', unlockAudio);
+                }).catch(e => console.log("Audio unlock waiting...", e));
+            }
+        }
+
+        document.addEventListener('click', unlockAudio);
+        document.addEventListener('touchstart', unlockAudio);
+        document.addEventListener('keydown', unlockAudio);
+
+        // --- PLAY SOUND LOGIC ---
+        window.playNotificationSound = () => {
+            const audio = document.getElementById('notification-sound');
+            if(!audio) return;
+            
+            // Check user profile for custom sound
+            const customSound = window.userProfileCache?.notificationSound;
+            const targetSrc = customSound || "sound.mp3";
+            
+            // Note: If using base64, assigning it to src works fine in modern browsers
+            // We verify if src needs updating to avoid reloading if it's the same URL
+            // Simple check: if targetSrc is short (filename), verify endsWith
+            // If targetSrc is long (base64), verify exact match or length
+            
+            let shouldUpdate = false;
+            
+            if (targetSrc.length < 100) {
+                 // Likely a filename like 'sound.mp3'
+                 if (!audio.src.endsWith(targetSrc)) shouldUpdate = true;
+            } else {
+                 // Likely Base64
+                 if (audio.src !== targetSrc) shouldUpdate = true;
+            }
+            
+            if (shouldUpdate) {
+                audio.src = targetSrc;
+            }
+            
+            audio.currentTime = 0;
+            audio.play().catch(e => console.error("Sound play error", e));
+        };
+        
+        // --- SOUND SETTINGS HANDLERS ---
+        window.handleSoundUpload = (input) => {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                if (file.size > 500 * 1024) { // 500KB limit
+                    alert("File is too large. Please select an audio file under 500KB.");
+                    input.value = "";
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    pendingSoundData = e.target.result;
+                    isResettingSound = false;
+                    document.getElementById('current-sound-name').innerText = "Custom Sound Selected";
+                    document.getElementById('reset-sound-btn').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+        
+        window.resetNotificationSound = () => {
+            pendingSoundData = null;
+            isResettingSound = true;
+            document.getElementById('sound-upload-input').value = "";
+            document.getElementById('current-sound-name').innerText = "Default (Ping) - Will be reset";
+            document.getElementById('reset-sound-btn').classList.add('hidden');
+        };
+        
+        window.previewNotificationSound = () => {
+            // Priority: Pending Upload -> Existing Custom -> Default
+            let srcToPlay = "sound.mp3";
+            
+            if (pendingSoundData) {
+                srcToPlay = pendingSoundData;
+            } else if (!isResettingSound && window.userProfileCache?.notificationSound) {
+                srcToPlay = window.userProfileCache.notificationSound;
+            }
+            
+            const tempAudio = new Audio(srcToPlay);
+            tempAudio.play().catch(e => alert("Could not play sound preview."));
+        };
         
         // --- ADMIN MODAL LOGIC ---
         let userToBanId = null;
@@ -1299,8 +1425,17 @@
             onSnapshot(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'main'), (doc) => {
                 if(doc.exists()) {
                     const d = doc.data();
+                    window.userProfileCache = d; // Store full profile data
                     mySavedPosts = d.savedPosts || [];
                     updateUI(d);
+                    
+                    // Update sound setting UI if settings modal is open
+                    const soundNameEl = document.getElementById('current-sound-name');
+                    if (d.notificationSound) {
+                        if (soundNameEl) soundNameEl.innerText = "Custom Sound Active";
+                        document.getElementById('reset-sound-btn').classList.remove('hidden');
+                    }
+                    
                     if(allPostsCache.length) renderFeed(allPostsCache);
                     renderSavedPosts();
                 } else {
@@ -1316,7 +1451,13 @@
         function monitorNotifications() {
             if(unsubscribeNotifications) unsubscribeNotifications();
             const q = query(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'notifications'), orderBy('createdAt', 'desc'));
+            
             unsubscribeNotifications = onSnapshot(q, (snap) => {
+                // REMOVED SOUND LOGIC FOR GENERAL NOTIFICATIONS AS REQUESTED
+                if (isFirstNotificationLoad) {
+                    isFirstNotificationLoad = false;
+                } 
+
                 allNotifications = [];
                 let unreadCount = 0;
                 snap.forEach(d => {
@@ -1389,6 +1530,20 @@
                         if(data.readBy && !data.readBy.includes(currentUser.uid)) hasUnread = true;
                     }
                 });
+
+                // CHAT SOUND LOGIC
+                if (!isFirstChatLoad) {
+                    snap.docChanges().forEach(change => {
+                        const data = change.doc.data();
+                        if ((change.type === 'added' || change.type === 'modified') &&
+                            data.participants && data.participants.includes(currentUser.uid) &&
+                            data.readBy && !data.readBy.includes(currentUser.uid)) {
+                             window.playNotificationSound(); // Use updated function
+                        }
+                    });
+                }
+                isFirstChatLoad = false;
+
                 const badge = document.getElementById('chat-badge');
                 if(badge) badge.style.display = hasUnread ? 'block' : 'none';
                 window.allChats = chats;
@@ -1861,9 +2016,10 @@
              if(!p) return;
              const hasLiked = p.likedBy && p.likedBy.includes(currentUser.uid);
              
-             // Immediate UI Update for smoothness
-             const btn = document.querySelector(`#post-${postId}-feed .fa-heart`);
-             if(btn) {
+             // UPDATE ALL INSTANCES OF THIS POST (Feed, Profile, Saved)
+             // This fixes the issue where profile view likes didn't update visually
+             const btns = document.querySelectorAll(`[id^="post-${postId}-"] .fa-heart`);
+             btns.forEach(btn => {
                  if(hasLiked) {
                      btn.classList.remove('fa-solid', 'text-blue-600');
                      btn.classList.add('fa-regular');
@@ -1872,7 +2028,15 @@
                      btn.classList.add('fa-solid', 'text-blue-600', 'scale-125');
                      setTimeout(() => btn.classList.remove('scale-125'), 200);
                  }
-             }
+                 // Update count text
+                 const countSpan = btn.nextElementSibling;
+                 if(countSpan) {
+                     let count = parseInt(countSpan.innerText) || 0;
+                     countSpan.innerText = hasLiked ? Math.max(0, count - 1) : count + 1;
+                     if (hasLiked) countSpan.classList.remove('text-blue-600');
+                     else countSpan.classList.add('text-blue-600');
+                 }
+             });
              
              if(hasLiked) {
                  await updateDoc(postRef, { likes: increment(-1), likedBy: arrayRemove(currentUser.uid) });
@@ -2223,15 +2387,38 @@
         window.closeSettingsModal = () => document.getElementById('settings-modal').classList.add('hidden');
         
         window.saveSettings = async () => {
+             const updates = {};
+             
+             // Name Update
              const newName = document.getElementById('settings-username').value;
-             if(newName) {
+             if(newName && newName !== currentUser.displayName) {
                  await updateProfile(currentUser, { displayName: newName });
-                 await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users_directory', currentUser.uid), {
-                     name: newName,
-                     photoURL: currentUser.photoURL,
-                     headline: document.getElementById('edit-headline').value
-                 }, { merge: true });
-                 location.reload();
+                 updates.name = newName;
+             }
+             
+             // Sound Update
+             if (isResettingSound) {
+                 // Set to null/empty string to remove custom sound
+                 await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'main'), {
+                     notificationSound: ""
+                 });
+                 // Reset local state
+                 isResettingSound = false;
+             } else if (pendingSoundData) {
+                 await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'main'), {
+                     notificationSound: pendingSoundData
+                 });
+                 pendingSoundData = null;
+             }
+
+             if (Object.keys(updates).length > 0) {
+                 await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users_directory', currentUser.uid), updates, { merge: true });
+             }
+             
+             if (newName && newName !== currentUser.displayName) location.reload();
+             else {
+                 closeSettingsModal();
+                 alert("Settings Saved!");
              }
         };
 
@@ -2393,6 +2580,7 @@
              const postLink = window.location.origin + window.location.pathname + "#post-" + reportTargetPostId;
 
              try {
+                 // 1. Save to Firebase (Existing Log)
                  await addDoc(collection(db, 'artifacts', appId, 'reports'), {
                      reporterUid: currentUser.uid,
                      reporterName: currentUser.displayName,
@@ -2405,6 +2593,34 @@
                      createdAt: serverTimestamp(),
                      status: 'pending' 
                  });
+
+                 // 2. Send Email via Web3Forms
+                 const formData = {
+                     access_key: "c26a3fd9-3218-48b0-9bb6-217299229a3f",
+                     subject: "LUMINI REPORT: Violation Flagged",
+                     from_name: "Lumini Security",
+                     message: `
+                        REPORT DETAILS:
+                        ----------------
+                        REPORTER: ${currentUser.displayName} (${currentUser.email})
+                        TARGET USER: ${targetName}
+                        REASON: ${reason}
+                        
+                        POST LINK: ${postLink}
+                        
+                        Please investigate immediately.
+                     `
+                 };
+
+                 await fetch("https://api.web3forms.com/submit", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json"
+                    },
+                    body: JSON.stringify(formData)
+                 });
+
                  alert("Report submitted to admins.");
              } catch (e) {
                  console.error("Error submitting report:", e);
