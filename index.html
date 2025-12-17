@@ -575,9 +575,16 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- COMMUNITY HIGHLIGHTS SECTION -->
                     <div class="glass-card rounded-2xl p-5 bg-white/90">
-                        <h3 class="font-heading font-bold text-slate-500 text-xs tracking-wider mb-4 uppercase">Community Highlights</h3>
-                        <div id="lumini-news-content"><p class="text-xs text-gray-400">Trending discussions will appear here.</p></div>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-heading font-bold text-slate-500 text-xs tracking-wider uppercase">Community Highlights</h3>
+                            <button id="admin-add-highlight-btn" onclick="openHighlightModal()" class="hidden text-blue-600 hover:bg-blue-50 w-6 h-6 rounded-full flex items-center justify-center transition-colors btn-bounce"><i class="fa-solid fa-plus text-xs"></i></button>
+                        </div>
+                        <div id="lumini-highlights-content" class="space-y-3">
+                            <p class="text-xs text-gray-400">Loading...</p>
+                        </div>
                     </div>
                 </aside>
             </div>
@@ -618,6 +625,47 @@
         </div>
 
         <!-- Modals -->
+
+        <!-- ADD HIGHLIGHT MODAL (ADMIN) -->
+        <div id="highlight-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] hidden flex items-center justify-center p-4 transition-all duration-300">
+            <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-pop-in">
+                <div class="flex justify-between items-center p-5 border-b border-slate-100">
+                    <h3 class="font-heading font-bold text-lg text-slate-800">Add Highlight</h3>
+                    <button onclick="document.getElementById('highlight-modal').classList.add('hidden')" class="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center transition-colors btn-bounce"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Project Name</label>
+                        <input id="highlight-title" type="text" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-blue-500 text-sm">
+                    </div>
+                    <div>
+                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Image Source</label>
+                         <div class="flex gap-2 mb-2">
+                             <button onclick="setHighlightImageType('upload')" id="btn-hl-upload" class="flex-1 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition-all">Upload</button>
+                             <button onclick="setHighlightImageType('url')" id="btn-hl-url" class="flex-1 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-500 transition-all">URL</button>
+                         </div>
+                         
+                         <!-- Upload Input -->
+                         <div id="hl-input-upload" class="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center cursor-pointer hover:bg-slate-50" onclick="document.getElementById('hl-file-input').click()">
+                             <i class="fa-solid fa-cloud-arrow-up text-slate-400 text-xl mb-1"></i>
+                             <p class="text-[10px] text-slate-500">Click to upload image</p>
+                             <input type="file" id="hl-file-input" class="hidden" accept="image/*" onchange="handleHighlightImageSelect(this)">
+                         </div>
+                         
+                         <!-- URL Input -->
+                         <input id="hl-input-url" type="text" placeholder="https://example.com/image.png" class="hidden w-full p-2 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-blue-500 text-sm">
+                         
+                         <!-- Preview -->
+                         <img id="hl-preview" src="" class="hidden w-full h-32 object-cover rounded-lg mt-2 border border-slate-200">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Link (Optional)</label>
+                        <input id="highlight-link" type="text" placeholder="https://..." class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-blue-500 text-sm">
+                    </div>
+                    <button onclick="saveHighlight()" class="w-full bg-blue-600 text-white font-bold py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200 btn-bounce mt-2">Add Highlight</button>
+                </div>
+            </div>
+        </div>
 
         <!-- STORY UPLOAD MODAL -->
         <div id="story-upload-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] hidden flex items-center justify-center p-4 transition-all duration-300">
@@ -1045,7 +1093,7 @@
         let unsubscribeMessages = null;
         let unsubscribeNotifications = null;
         let unsubscribeUsers = null;
-        let unsubscribeStories = null; // New listener for stories
+        let unsubscribeStories = null; 
         let currentChatId = null;
         let mySavedPosts = [];
         let allPostsCache = []; 
@@ -1082,8 +1130,12 @@
         let pendingSoundData = null;
         let isResettingSound = false;
 
-        // --- THEME LOGIC ---
-        window.toggleTheme = () => {
+        // --- HIGHLIGHTS STATE ---
+        let currentHighlightImage = null;
+        let highlightImageType = 'upload'; // 'upload' or 'url'
+
+        // --- THEME LOGIC (SYNCED) ---
+        window.toggleTheme = async () => {
             const isDark = document.getElementById('dark-mode-toggle').checked;
             if(isDark) {
                 document.documentElement.classList.add('dark');
@@ -1091,6 +1143,17 @@
             } else {
                 document.documentElement.classList.remove('dark');
                 localStorage.setItem('lumini_theme', 'light');
+            }
+
+            // Sync with Firebase if logged in
+            if(currentUser) {
+                try {
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users_directory', currentUser.uid), {
+                        theme: isDark ? 'dark' : 'light'
+                    });
+                } catch(e) {
+                    console.log("Theme sync error (ignorable):", e);
+                }
             }
         };
 
@@ -1291,6 +1354,12 @@
                      if (userDirSnap.exists()) {
                          await updateDoc(userDirRef, { isAdmin: true });
                      }
+                     // Show admin add highlight button
+                     const adminBtn = document.getElementById('admin-add-highlight-btn');
+                     if(adminBtn) adminBtn.classList.remove('hidden');
+                } else {
+                     const adminBtn = document.getElementById('admin-add-highlight-btn');
+                     if(adminBtn) adminBtn.classList.add('hidden');
                 }
 
                 currentUser = user;
@@ -1312,8 +1381,23 @@
                         photoURL: user.photoURL || defaultAvatar,
                         headline: "",
                         id: user.uid,
+                        theme: 'light', // Default theme
                         createdAt: serverTimestamp()
                     });
+                } else {
+                    // Load Theme from DB if exists
+                    const userData = userDirSnap.data();
+                    if(userData.theme) {
+                        if(userData.theme === 'dark') {
+                            document.documentElement.classList.add('dark');
+                            localStorage.setItem('lumini_theme', 'dark');
+                            document.getElementById('dark-mode-toggle').checked = true;
+                        } else {
+                            document.documentElement.classList.remove('dark');
+                            localStorage.setItem('lumini_theme', 'light');
+                            document.getElementById('dark-mode-toggle').checked = false;
+                        }
+                    }
                 }
                 
                 const userProfileRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'main');
@@ -1760,7 +1844,109 @@
             monitorChats();
             monitorIncomingCalls();
             monitorStories(); // Start story listener 
+            monitorHighlights(); // NEW: Highlights
         }
+
+        // --- HIGHLIGHTS LOGIC ---
+        function monitorHighlights() {
+             const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'highlights'), orderBy('createdAt', 'desc'));
+             onSnapshot(q, (snap) => {
+                 const items = [];
+                 snap.forEach(d => items.push({id: d.id, ...d.data()}));
+                 renderHighlights(items);
+             });
+        }
+
+        function renderHighlights(items) {
+             const container = document.getElementById('lumini-highlights-content');
+             if(!items.length) {
+                 container.innerHTML = '<p class="text-xs text-gray-400">Trending discussions will appear here.</p>';
+                 return;
+             }
+             
+             const isAdmin = checkIsAdmin(currentUser.email);
+             
+             container.innerHTML = items.map(item => `
+                 <div class="flex items-center gap-3 group relative hover:bg-slate-50 p-2 rounded-xl transition-colors cursor-pointer" onclick="${item.link ? `window.open('${item.link}', '_blank')` : ''}">
+                     <img src="${item.imageUrl}" class="w-12 h-12 rounded-lg object-cover bg-slate-200">
+                     <div class="flex-grow">
+                         <h4 class="font-bold text-sm text-slate-800">${item.title}</h4>
+                     </div>
+                     ${isAdmin ? `<button onclick="event.stopPropagation(); deleteHighlight('${item.id}')" class="hidden group-hover:block absolute right-2 top-2 text-red-400 hover:text-red-600"><i class="fa-solid fa-trash text-xs"></i></button>` : ''}
+                 </div>
+             `).join('');
+        }
+
+        window.openHighlightModal = () => {
+             document.getElementById('highlight-modal').classList.remove('hidden');
+             // Reset UI
+             document.getElementById('highlight-title').value = '';
+             document.getElementById('highlight-link').value = '';
+             document.getElementById('hl-input-url').value = '';
+             document.getElementById('hl-file-input').value = '';
+             document.getElementById('hl-preview').classList.add('hidden');
+             currentHighlightImage = null;
+             setHighlightImageType('upload');
+        };
+
+        window.setHighlightImageType = (type) => {
+            highlightImageType = type;
+            if(type === 'upload') {
+                document.getElementById('btn-hl-upload').className = "flex-1 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition-all";
+                document.getElementById('btn-hl-url').className = "flex-1 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-500 transition-all";
+                document.getElementById('hl-input-upload').classList.remove('hidden');
+                document.getElementById('hl-input-url').classList.add('hidden');
+            } else {
+                document.getElementById('btn-hl-upload').className = "flex-1 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-500 transition-all";
+                document.getElementById('btn-hl-url').className = "flex-1 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition-all";
+                document.getElementById('hl-input-upload').classList.add('hidden');
+                document.getElementById('hl-input-url').classList.remove('hidden');
+            }
+        };
+
+        window.handleHighlightImageSelect = (input) => {
+             if(input.files && input.files[0]) {
+                 const reader = new FileReader();
+                 reader.onload = (e) => {
+                     currentHighlightImage = e.target.result;
+                     document.getElementById('hl-preview').src = currentHighlightImage;
+                     document.getElementById('hl-preview').classList.remove('hidden');
+                 };
+                 reader.readAsDataURL(input.files[0]);
+             }
+        };
+
+        window.saveHighlight = async () => {
+             const title = document.getElementById('highlight-title').value;
+             const link = document.getElementById('highlight-link').value;
+             
+             let imageUrl = currentHighlightImage;
+             if(highlightImageType === 'url') {
+                 imageUrl = document.getElementById('hl-input-url').value;
+             }
+             
+             if(!title || !imageUrl) return alert("Title and Image are required.");
+             
+             try {
+                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'highlights'), {
+                     title, 
+                     imageUrl, 
+                     link, 
+                     createdAt: serverTimestamp(),
+                     createdBy: currentUser.uid
+                 });
+                 document.getElementById('highlight-modal').classList.add('hidden');
+             } catch(e) {
+                 console.error("Highlight save failed", e);
+                 alert("Failed to save.");
+             }
+        };
+        
+        window.deleteHighlight = async (id) => {
+             if(confirm("Delete highlight?")) {
+                 await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'highlights', id));
+             }
+        };
 
         function monitorNotifications() {
             if(unsubscribeNotifications) unsubscribeNotifications();
@@ -2577,17 +2763,6 @@
                 } else {
                     await updateDoc(userRef, { closeFriends: arrayUnion(uid) });
                 }
-                // renderCloseFriendsList will trigger automatically due to userProfileCache listener updating UI?
-                // The main listener updates window.userProfileCache, but we need to re-render the modal list if open.
-                // We'll manually re-render for instant feedback, assuming optimistic update via cache listener might be slight delay or generic updateUI.
-                // Actually, the main snapshot listener calls updateUI, but doesn't know about this specific modal.
-                // We rely on the snapshot listener updating the global cache variable.
-                // But for instant visual feedback inside the loop, we might want to manually toggle button class or wait for snapshot.
-                // Let's just wait for snapshot or implement simple toggle logic here for better UX.
-                // But wait, arrayRemove/Union are async. 
-                // Let's rely on the onSnapshot listener to update `window.userProfileCache`. 
-                // However, the `renderCloseFriendsList` needs to be called again.
-                // Since I don't have a specific listener for the modal in the global scope, I'll add a quick re-render logic in the main snapshot listener.
             } catch(e) {
                 console.error("Error toggling close friend", e);
             }
@@ -2667,12 +2842,19 @@
              document.getElementById('edit-bio').value = data.bio || "";
              document.getElementById('edit-modal-avatar').src = pic;
 
-             // SYNC THEME PREFERENCE
-             if(data.theme === 'dark') {
-                document.documentElement.classList.add('dark');
-                localStorage.setItem('lumini_theme', 'dark');
-                const toggle = document.getElementById('dark-mode-toggle');
-                if(toggle) toggle.checked = true;
+             // SYNC THEME PREFERENCE (Already handled in onAuthStateChanged, but good for profile updates)
+             if(data.theme) {
+                if(data.theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('lumini_theme', 'dark');
+                    const toggle = document.getElementById('dark-mode-toggle');
+                    if(toggle) toggle.checked = true;
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('lumini_theme', 'light');
+                    const toggle = document.getElementById('dark-mode-toggle');
+                    if(toggle) toggle.checked = false;
+                }
              }
              
              // Refresh Close Friends List if modal is open
