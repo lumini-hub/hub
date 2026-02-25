@@ -373,6 +373,90 @@
             animation: float 3s ease-in-out infinite;
         }
 
+        /* Collection Tabs */
+        .collection-tab {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+            border: 1.5px solid transparent;
+            background: rgba(255,255,255,0.8);
+            color: #64748b;
+        }
+        .collection-tab:hover { background: #f1f5f9; color: #334155; }
+        .collection-tab.active-collection {
+            background: #1e293b;
+            color: #f8fafc;
+            border-color: #1e293b;
+            box-shadow: 0 2px 8px rgba(30,41,59,0.2);
+        }
+        html.dark .collection-tab { background: rgba(255,255,255,0.05); color: #8b9dc3; border-color: rgba(255,255,255,0.06); }
+        html.dark .collection-tab:hover { background: rgba(255,255,255,0.1); color: #c7d2fe; }
+        html.dark .collection-tab.active-collection { background: #6366f1; color: white; border-color: #6366f1; }
+
+        /* Save Collection Modal */
+        #save-collection-modal {
+            z-index: 150;
+        }
+        .collection-pick-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 16px; border-radius: 12px;
+            cursor: pointer; transition: all 0.2s ease;
+            border: 1.5px solid transparent;
+        }
+        .collection-pick-item:hover { background: #f8fafc; border-color: #e2e8f0; }
+        .collection-pick-item.selected { background: #eff6ff; border-color: #3b82f6; }
+        html.dark .collection-pick-item:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
+        html.dark .collection-pick-item.selected { background: rgba(99,102,241,0.15); border-color: #6366f1; }
+
+        /* Comment count bubble revamp */
+        .comment-count-bubble {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 20px; height: 20px; padding: 0 6px;
+            border-radius: 10px;
+            font-size: 0.7rem; font-weight: 700;
+            background: #f1f5f9; color: #64748b;
+            transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        .comment-count-bubble.has-comments { background: #eff6ff; color: #2563eb; }
+        html.dark .comment-count-bubble { background: rgba(255,255,255,0.08); color: #8b9dc3; }
+        html.dark .comment-count-bubble.has-comments { background: rgba(99,102,241,0.15); color: #a5b4fc; }
+
+        /* Long press spotlight revamp - pulse ring */
+        .long-press-ring {
+            position: absolute; inset: 0; border-radius: inherit;
+            border: 3px solid rgba(99,102,241,0.6);
+            opacity: 0; transform: scale(1);
+            pointer-events: none; z-index: 20;
+        }
+        .long-press-ring.active {
+            animation: lpRingPulse 0.6s cubic-bezier(0.4,0,0.2,1) forwards;
+        }
+        @keyframes lpRingPulse {
+            0% { opacity: 0; transform: scale(0.95); border-color: rgba(99,102,241,0.6); }
+            50% { opacity: 1; transform: scale(1.02); border-color: rgba(99,102,241,0.8); }
+            100% { opacity: 0.5; transform: scale(1); border-color: rgba(99,102,241,0.4); }
+        }
+        .long-press-glow {
+            position: absolute; inset: -4px; border-radius: inherit;
+            background: radial-gradient(circle, rgba(99,102,241,0.15), transparent 70%);
+            opacity: 0; pointer-events: none; z-index: 19;
+            transition: opacity 0.3s ease;
+        }
+        .long-press-glow.active { opacity: 1; }
+
+        /* Progress bar for long press */
+        .lp-progress-bar {
+            position: absolute; bottom: 0; left: 0; height: 3px;
+            background: linear-gradient(90deg, #6366f1, #3b82f6);
+            border-radius: 0 0 inherit inherit;
+            width: 0%; z-index: 25;
+            transition: width 0.05s linear;
+        }
+
         /* Interactive stat counters */
         .stat-hover {
             transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -470,11 +554,14 @@
         .msg-them .voice-msg-player button { background: rgba(0,0,0,0.08); color: #1e293b; }
         .msg-them .voice-msg-player button:hover { background: rgba(0,0,0,0.15); }
         html.dark .msg-them .voice-msg-player button { background: rgba(255,255,255,0.1); color: #e2e8f0; }
-        .voice-waveform { flex: 1; height: 28px; display: flex; align-items: center; gap: 1.5px; }
-        .voice-waveform-bar { width: 3px; border-radius: 2px; transition: height 0.15s ease; }
-        .msg-me .voice-waveform-bar { background: rgba(255,255,255,0.45); }
-        .msg-them .voice-waveform-bar { background: rgba(0,0,0,0.2); }
-        html.dark .msg-them .voice-waveform-bar { background: rgba(255,255,255,0.2); }
+        .voice-waveform { flex: 1; height: 28px; display: flex; align-items: center; gap: 1.5px; cursor: pointer; position: relative; }
+        .voice-waveform-bar { width: 3px; border-radius: 2px; transition: background 0.15s ease, height 0.15s ease; }
+        .msg-me .voice-waveform-bar { background: rgba(255,255,255,0.3); }
+        .msg-me .voice-waveform-bar.played { background: rgba(255,255,255,0.9); }
+        .msg-them .voice-waveform-bar { background: rgba(0,0,0,0.15); }
+        .msg-them .voice-waveform-bar.played { background: rgba(59,130,246,0.8); }
+        html.dark .msg-them .voice-waveform-bar { background: rgba(255,255,255,0.15); }
+        html.dark .msg-them .voice-waveform-bar.played { background: rgba(96,165,250,0.85); }
         .voice-duration { font-size: 0.65rem; min-width: 32px; text-align: center; opacity: 0.7; }
         .chat-attachment-toolbar { display: flex; align-items: center; gap: 2px; }
         .chat-attachment-toolbar button { width: 34px; height: 34px; border-radius: 50%; border: none; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748b; transition: all 0.2s; font-size: 0.95rem; }
@@ -1149,6 +1236,17 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- Collection Tabs -->
+                        <div class="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1">
+                            <div id="collection-tabs-container" class="flex items-center gap-2">
+                                <button onclick="switchCollection('all')" class="collection-tab active-collection" data-collection="all">
+                                    <i class="fa-solid fa-layer-group mr-1.5 text-xs"></i> All
+                                </button>
+                            </div>
+                            <button onclick="openCreateCollectionModal()" class="collection-tab flex items-center gap-1.5" style="border-style: dashed; border-color: #cbd5e1;">
+                                <i class="fa-solid fa-plus text-xs"></i> New
+                            </button>
+                        </div>
                         <div id="saved-posts-stream" class="space-y-5 pb-20"></div>
                     </div>
 
@@ -1193,7 +1291,7 @@
                             </div>
                             <div class="flex gap-2.5 overflow-x-auto custom-scrollbar pb-1" id="collab-filters">
                                 <button onclick="filterCollaborate('all')" id="filter-all" class="collab-filter-pill active-filter px-5 py-2 rounded-full text-sm font-bold border border-slate-200 bg-slate-900 text-white transition-all duration-200 whitespace-nowrap hover:shadow-md btn-bounce">All</button>
-                                <button onclick="filterCollaborate('designer')" id="filter-designer" class="collab-filter-pill px-5 py-2 rounded-full text-sm font-bold border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all whitespace-nowrap hover:shadow-md btn-bounce">🎨 Designers</button>
+                                <button onclick="filterCollaborate('designer')" id="filter-designer" class="collab-filter-pill px-5 py-2 rounded-full text-sm font-bold border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all whitespace-nowrap hover:shadow-md btn-bounce">������ Designers</button>
                                 <button onclick="filterCollaborate('developer')" id="filter-developer" class="collab-filter-pill px-5 py-2 rounded-full text-sm font-bold border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all whitespace-nowrap hover:shadow-md btn-bounce">💻 Developers</button>
                                 <button onclick="filterCollaborate('manager')" id="filter-manager" class="collab-filter-pill px-5 py-2 rounded-full text-sm font-bold border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all whitespace-nowrap hover:shadow-md btn-bounce">📊 Managers</button>
                                 <button onclick="filterCollaborate('marketing')" id="filter-marketing" class="collab-filter-pill px-5 py-2 rounded-full text-sm font-bold border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all whitespace-nowrap hover:shadow-md btn-bounce">📣 Marketing</button>
@@ -1575,6 +1673,53 @@
                         <button id="custom-dialog-cancel" onclick="closeCustomDialog(false)" class="hidden px-4 py-2 rounded-xl font-bold text-sm bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all btn-bounce">Cancel</button>
                         <button id="custom-dialog-confirm" onclick="closeCustomDialog(true)" class="px-4 py-2 rounded-xl font-bold text-sm bg-slate-900 text-white hover:bg-slate-800 transition-all btn-bounce">OK</button>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SAVE TO COLLECTION MODAL -->
+        <div id="save-collection-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+            <div class="bg-white w-full sm:max-w-sm sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden animate-slide-up border-t sm:border border-slate-100 max-h-[80vh] flex flex-col">
+                <div class="p-5 border-b border-slate-100 flex items-center justify-between shrink-0">
+                    <div>
+                        <h3 class="font-heading font-bold text-lg text-slate-800">Save to Collection</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Choose where to save this post</p>
+                    </div>
+                    <button onclick="closeSaveCollectionModal()" class="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center transition-colors btn-bounce">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <div class="p-4 overflow-y-auto custom-scrollbar flex-1">
+                    <div id="collection-pick-list" class="space-y-2"></div>
+                    <!-- Create new collection inline -->
+                    <div id="new-collection-inline" class="mt-3 hidden">
+                        <div class="flex gap-2">
+                            <input id="new-collection-name-input" type="text" placeholder="Collection name..." class="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all text-sm">
+                            <button onclick="confirmCreateCollectionInline()" class="px-4 py-2 rounded-xl font-bold text-sm bg-slate-900 text-white hover:bg-slate-800 transition-all btn-bounce">Add</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 border-t border-slate-100 flex gap-2 shrink-0">
+                    <button onclick="toggleNewCollectionInline()" class="flex-1 py-2.5 rounded-xl font-bold text-sm bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all btn-bounce flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-folder-plus text-xs"></i> New Collection
+                    </button>
+                    <button onclick="confirmSaveToCollection()" class="flex-1 py-2.5 rounded-xl font-bold text-sm bg-slate-900 text-white hover:bg-slate-800 transition-all btn-bounce shadow-md">
+                        Save Here
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CREATE COLLECTION MODAL (standalone) -->
+        <div id="create-collection-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[155] hidden flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-xs rounded-2xl shadow-2xl overflow-hidden animate-pop-in border border-slate-100">
+                <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+                    <h3 class="font-heading font-bold text-lg text-slate-800">New Collection</h3>
+                    <button onclick="document.getElementById('create-collection-modal').classList.add('hidden')" class="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center transition-colors btn-bounce"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="p-5 space-y-4">
+                    <input id="standalone-collection-name" type="text" placeholder="e.g. Design Inspiration" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all text-sm">
+                    <button onclick="createStandaloneCollection()" class="w-full py-2.5 rounded-xl font-bold text-sm bg-slate-900 text-white hover:bg-slate-800 transition-all btn-bounce shadow-md">Create Collection</button>
                 </div>
             </div>
         </div>
@@ -2470,6 +2615,7 @@
                         headline: "",
                         bio: "",
                         savedPosts: [],
+                        savedCollections: {},
                         followers: [],
                         following: [],
                         closeFriends: []
@@ -2869,6 +3015,7 @@
                     const d = doc.data();
                     window.userProfileCache = d; 
                     mySavedPosts = d.savedPosts || [];
+                    window.mySavedCollections = d.savedCollections || {};
                     updateUI(d);
                     
                     const soundNameEl = document.getElementById('current-sound-name');
@@ -3238,6 +3385,20 @@
                              <span class="truncate text-xs text-slate-500">${m.replyTo.text}</span>
                         </div>`;
                     }
+
+                    // STORY REPLY CONTEXT UI (Instagram-style)
+                    let storyReplyBlock = '';
+                    if(m.storyReply) {
+                        const storyThumb = m.storyReply.type === 'video'
+                            ? `<video src="${m.storyReply.media}" class="w-16 h-20 object-cover rounded-lg" muted preload="metadata"></video>`
+                            : `<img src="${m.storyReply.media}" class="w-16 h-20 object-cover rounded-lg" alt="Story">`;
+                        const label = isMe ? `Replied to ${m.storyReply.ownerName}'s story` : `Replied to your story`;
+                        storyReplyBlock = `
+                        <div class="flex items-center gap-2 mb-1.5 opacity-80">
+                            <div class="flex-shrink-0 rounded-lg overflow-hidden border border-white/20 shadow-sm">${storyThumb}</div>
+                            <span class="text-[11px] italic">${label}</span>
+                        </div>`;
+                    }
                     
                     let receiptHtml = '';
 
@@ -3291,12 +3452,12 @@
                             const durStr = mins + ':' + String(secs).padStart(2,'0');
                             const bars = (md.waveform && md.waveform.length) ? md.waveform : Array.from({length:28}, ()=>Math.random()*0.7+0.15);
                             const barsHtml = bars.map(v=>`<div class="voice-waveform-bar" style="height:${Math.max(3,v*26)}px"></div>`).join('');
-                            mediaHtml = `<div class="voice-msg-player" data-src="${md.data}">
-                                <button type="button" onclick="playVoiceMsg(this.closest('.voice-msg-player'))"><i class="fa-solid fa-play text-xs"></i></button>
-                                <div class="voice-waveform">${barsHtml}</div>
-                                <span class="voice-duration">${durStr}</span>
-                                <audio src="${md.data}" preload="metadata"></audio>
-                            </div>`;
+                mediaHtml = `<div class="voice-msg-player" data-src="${md.data}" data-bar-count="${bars.length}">
+<button type="button" onclick="playVoiceMsg(this.closest('.voice-msg-player'))"><i class="fa-solid fa-play text-xs"></i></button>
+<div class="voice-waveform" onclick="seekVoice(event, this.closest('.voice-msg-player'))">${barsHtml}</div>
+<span class="voice-duration">${durStr}</span>
+<audio src="${md.data}" preload="metadata"></audio>
+</div>`;
                         } else if(md.type === 'file') {
                             const icon = md.mimeType && md.mimeType.startsWith('application/pdf') ? 'fa-file-pdf text-red-500' : 'fa-file text-blue-500';
                             mediaHtml = `<a href="${md.data}" download="${md.name||'file'}" class="chat-file-attachment mb-1">
@@ -3314,9 +3475,10 @@
                     <div class="flex w-full mb-1 ${isMe?'justify-end':'justify-start'} group msg-group" id="msg-container-${m.id}">
                         <div class="flex flex-col ${isMe?'items-end':'items-start'} max-w-[85%] w-full min-w-0 relative ${isMe?'msg-me-wrapper':'msg-them-wrapper'}">
                             <div class="msg-bubble ${isMe?'msg-me':'msg-them'} relative" id="msg-bubble-${m.id}">
-                                ${swipeIndicator}
-                                ${replyBlock}
-                                ${mediaHtml}
+${swipeIndicator}
+${storyReplyBlock}
+${replyBlock}
+${mediaHtml}
                                 ${m.text ? m.text : ''}
                                 ${m.edited ? '<span class="text-[10px] opacity-60 block text-right italic mt-1">(edited)</span>' : ''}
                                 <!-- Side emoji reaction picker with hover bridge -->
@@ -4092,11 +4254,16 @@
                 vidEl.src = story.media;
                 vidEl.currentTime = 0;
                 vidEl.onended = nextStory;
+                vidEl.onloadedmetadata = () => {
+                    startStoryProgressBar(group, index, story, vidEl.duration || 5);
+                };
+                vidEl.play().catch(()=>{});
             } else {
                 vidEl.classList.add('hidden');
                 imgEl.classList.remove('hidden');
                 imgEl.src = story.media;
                 storyTimer = setTimeout(nextStory, 5000);
+                startStoryProgressBar(group, index, story, 5);
             }
 
             // Like Button State
@@ -4112,7 +4279,7 @@
             document.getElementById('story-reply-input').value = "";
             document.getElementById('story-send-btn').classList.add('hidden');
             
-            // Render Progress Bars
+            // Render Progress Bars (static parts only; active bar animated by startStoryProgressBar)
             const barContainer = document.getElementById('story-progress-container');
             const count = group.items.length;
             barContainer.innerHTML = '';
@@ -4122,22 +4289,33 @@
                 bar.className = "h-1 rounded-full bg-white/30 flex-grow overflow-hidden";
                 const inner = document.createElement('div');
                 inner.className = "h-full bg-white story-progress-bar";
+                inner.dataset.barIndex = i;
                 
                 if(i < index) inner.style.width = "100%";
-                else if(i > index) inner.style.width = "0%";
-                else {
-                    // Active bar animation
-                    inner.style.width = "0%";
-                    setTimeout(() => {
-                        inner.style.transition = story.type === 'video' ? `width ${vidEl.duration || 5}s linear` : "width 5s linear";
-                        inner.style.width = "100%";
-                    }, 10);
-                }
+                else inner.style.width = "0%";
                 
                 bar.appendChild(inner);
                 barContainer.appendChild(bar);
             }
         };
+
+        function startStoryProgressBar(group, index, story, durationSec) {
+            const barContainer = document.getElementById('story-progress-container');
+            const bars = barContainer.querySelectorAll('.story-progress-bar');
+            bars.forEach(b => {
+                const i = parseInt(b.dataset.barIndex);
+                if (i === index) {
+                    b.style.width = "0%";
+                    b.style.transition = "none";
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            b.style.transition = `width ${durationSec}s linear`;
+                            b.style.width = "100%";
+                        });
+                    });
+                }
+            });
+        }
         
         window.deleteStory = async () => {
             if(!activeStoryUid) return;
@@ -4253,7 +4431,36 @@
              input.value = "";
              document.getElementById('story-send-btn').classList.add('hidden');
              
+             // Send as a DM with story context (like Instagram)
              if(story.uid !== currentUser.uid) {
+                  // Create/find chat
+                  const chatId = [currentUser.uid, story.uid].sort().join('_');
+                  const chatRef = doc(db, 'artifacts', appId, 'public', 'data', 'chats', chatId);
+                  const chatSnap = await getDoc(chatRef);
+                  if(!chatSnap.exists()) {
+                      await setDoc(chatRef, {
+                          lastUpdated: serverTimestamp(),
+                          participants: [currentUser.uid, story.uid],
+                          readBy: [currentUser.uid]
+                      });
+                  }
+                  // Send the message with storyReply context
+                  await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'chats', chatId, 'messages'), {
+                      text: text,
+                      senderId: currentUser.uid,
+                      createdAt: serverTimestamp(),
+                      storyReply: {
+                          media: story.media,
+                          type: story.type || 'image',
+                          ownerName: group.name || 'their'
+                      }
+                  });
+                  await setDoc(chatRef, {
+                      lastUpdated: serverTimestamp(),
+                      readBy: [currentUser.uid]
+                  }, { merge: true });
+
+                  // Also send notification
                   await addDoc(collection(db, 'artifacts', appId, 'users', story.uid, 'notifications'), {
                       type: 'story_reply', 
                       text: text, 
@@ -4471,6 +4678,14 @@
              if(isSaved) {
                  const idx = mySavedPosts.indexOf(postId);
                  if (idx > -1) mySavedPosts.splice(idx, 1);
+                 // Also remove from any collections
+                 if(window.mySavedCollections) {
+                     Object.keys(window.mySavedCollections).forEach(col => {
+                         const arr = window.mySavedCollections[col];
+                         const i = arr.indexOf(postId);
+                         if(i > -1) arr.splice(i, 1);
+                     });
+                 }
              } else {
                  mySavedPosts.push(postId);
              }
@@ -4501,7 +4716,7 @@
              const userRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'main');
              try {
                  if(isSaved) {
-                     await updateDoc(userRef, { savedPosts: arrayRemove(postId) });
+                     await updateDoc(userRef, { savedPosts: arrayRemove(postId), savedCollections: window.mySavedCollections || {} });
                  } else {
                      await updateDoc(userRef, { savedPosts: arrayUnion(postId) });
                  }
@@ -4515,6 +4730,167 @@
                  renderFeed(allPostsCache);
                  renderSavedPosts();
              }
+        };
+
+        // --- Collection System ---
+        window.mySavedCollections = window.mySavedCollections || {};
+        window.currentSavedCollection = 'all';
+        window._saveLongPressTimer = null;
+        window._saveLongPressPostId = null;
+        window._saveLongPressTriggered = false;
+
+        // Long press on bookmark to open collection picker
+        window.startSaveLongPress = (postId, e) => {
+            window._saveLongPressPostId = postId;
+            window._saveLongPressTriggered = false;
+            window._saveLongPressTimer = setTimeout(() => {
+                window._saveLongPressTriggered = true;
+                e.preventDefault && e.preventDefault();
+                openSaveCollectionModal(postId);
+                window._saveLongPressPostId = null;
+            }, 500);
+        };
+        window.cancelSaveLongPress = () => {
+            clearTimeout(window._saveLongPressTimer);
+        };
+
+        window.openSaveCollectionModal = (postId) => {
+            window._collectionModalPostId = postId;
+            window._selectedCollection = null;
+            const modal = document.getElementById('save-collection-modal');
+            modal.classList.remove('hidden');
+            document.getElementById('new-collection-inline').classList.add('hidden');
+            renderCollectionPickList();
+        };
+
+        window.closeSaveCollectionModal = () => {
+            document.getElementById('save-collection-modal').classList.add('hidden');
+            window._collectionModalPostId = null;
+        };
+
+        window.renderCollectionPickList = () => {
+            const list = document.getElementById('collection-pick-list');
+            const collections = Object.keys(window.mySavedCollections || {});
+            let html = `<div class="collection-pick-item ${!window._selectedCollection ? 'selected' : ''}" onclick="selectCollectionPick(null)">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-500"><i class="fa-solid fa-layer-group"></i></div>
+                <div class="flex-1"><div class="font-bold text-sm text-slate-800">All Posts</div><div class="text-[10px] text-slate-400">${mySavedPosts.length} saved</div></div>
+                ${!window._selectedCollection ? '<i class="fa-solid fa-circle-check text-blue-500"></i>' : ''}
+            </div>`;
+            collections.forEach(name => {
+                const count = (window.mySavedCollections[name] || []).length;
+                const isSelected = window._selectedCollection === name;
+                html += `<div class="collection-pick-item ${isSelected ? 'selected' : ''}" onclick="selectCollectionPick('${name.replace(/'/g, "\\'")}')">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center text-purple-500"><i class="fa-solid fa-folder"></i></div>
+                    <div class="flex-1"><div class="font-bold text-sm text-slate-800">${name}</div><div class="text-[10px] text-slate-400">${count} post${count !== 1 ? 's' : ''}</div></div>
+                    ${isSelected ? '<i class="fa-solid fa-circle-check text-blue-500"></i>' : ''}
+                </div>`;
+            });
+            list.innerHTML = html;
+        };
+
+        window.selectCollectionPick = (name) => {
+            window._selectedCollection = name;
+            renderCollectionPickList();
+        };
+
+        window.toggleNewCollectionInline = () => {
+            const el = document.getElementById('new-collection-inline');
+            el.classList.toggle('hidden');
+            if(!el.classList.contains('hidden')) {
+                document.getElementById('new-collection-name-input').focus();
+            }
+        };
+
+        window.confirmCreateCollectionInline = async () => {
+            const input = document.getElementById('new-collection-name-input');
+            const name = input.value.trim();
+            if(!name) return;
+            if(!window.mySavedCollections) window.mySavedCollections = {};
+            if(window.mySavedCollections[name]) { showToast('Collection already exists'); return; }
+            window.mySavedCollections[name] = [];
+            input.value = '';
+            document.getElementById('new-collection-inline').classList.add('hidden');
+            // Save to DB
+            const userRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'main');
+            await updateDoc(userRef, { savedCollections: window.mySavedCollections });
+            renderCollectionPickList();
+            renderCollectionTabs();
+            showToast(`Collection "${name}" created`);
+        };
+
+        window.confirmSaveToCollection = async () => {
+            const postId = window._collectionModalPostId;
+            if(!postId) return;
+            // Ensure post is saved first
+            if(!mySavedPosts.includes(postId)) {
+                mySavedPosts.push(postId);
+                const userRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'main');
+                await updateDoc(userRef, { savedPosts: arrayUnion(postId) });
+                // Update bookmark icons
+                const btnIcons = document.querySelectorAll(`#post-${postId}-feed .fa-bookmark, #post-${postId}-saved .fa-bookmark, #post-${postId}-profile .fa-bookmark, #post-${postId}-collaborate .fa-bookmark`);
+                btnIcons.forEach(btnIcon => {
+                    btnIcon.classList.remove('fa-regular');
+                    btnIcon.classList.add('fa-solid', 'text-purple-600');
+                });
+            }
+            // Add to selected collection
+            const colName = window._selectedCollection;
+            if(colName && window.mySavedCollections[colName]) {
+                if(!window.mySavedCollections[colName].includes(postId)) {
+                    window.mySavedCollections[colName].push(postId);
+                }
+            }
+            // Save collections to DB
+            const userRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'main');
+            await updateDoc(userRef, { savedCollections: window.mySavedCollections });
+            closeSaveCollectionModal();
+            renderSavedPosts();
+            showToast(colName ? `Saved to "${colName}"` : 'Saved to All');
+        };
+
+        // Standalone create collection from Saved view
+        window.openCreateCollectionModal = () => {
+            document.getElementById('create-collection-modal').classList.remove('hidden');
+            document.getElementById('standalone-collection-name').value = '';
+            setTimeout(() => document.getElementById('standalone-collection-name').focus(), 100);
+        };
+
+        window.createStandaloneCollection = async () => {
+            const input = document.getElementById('standalone-collection-name');
+            const name = input.value.trim();
+            if(!name) return;
+            if(!window.mySavedCollections) window.mySavedCollections = {};
+            if(window.mySavedCollections[name]) { showToast('Collection already exists'); return; }
+            window.mySavedCollections[name] = [];
+            const userRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'main');
+            await updateDoc(userRef, { savedCollections: window.mySavedCollections });
+            document.getElementById('create-collection-modal').classList.add('hidden');
+            renderCollectionTabs();
+            showToast(`Collection "${name}" created`);
+        };
+
+        window.switchCollection = (name) => {
+            window.currentSavedCollection = name;
+            document.querySelectorAll('.collection-tab').forEach(tab => tab.classList.remove('active-collection'));
+            const tabs = document.querySelectorAll('.collection-tab[data-collection]');
+            tabs.forEach(t => { if(t.dataset.collection === name) t.classList.add('active-collection'); });
+            renderSavedPosts();
+        };
+
+        window.renderCollectionTabs = () => {
+            const container = document.getElementById('collection-tabs-container');
+            if(!container) return;
+            const cols = Object.keys(window.mySavedCollections || {});
+            let html = `<button onclick="switchCollection('all')" class="collection-tab ${window.currentSavedCollection === 'all' ? 'active-collection' : ''}" data-collection="all">
+                <i class="fa-solid fa-layer-group mr-1.5 text-xs"></i> All
+            </button>`;
+            cols.forEach(name => {
+                const count = (window.mySavedCollections[name] || []).length;
+                html += `<button onclick="switchCollection('${name.replace(/'/g, "\\'")}')" class="collection-tab ${window.currentSavedCollection === name ? 'active-collection' : ''}" data-collection="${name}">
+                    <i class="fa-solid fa-folder mr-1.5 text-xs"></i> ${name} <span class="ml-1 text-[10px] opacity-60">${count}</span>
+                </button>`;
+            });
+            container.innerHTML = html;
         };
 
         function createPostHTML(post, context) {
@@ -4572,8 +4948,8 @@
                 ${post.attachment ? `<div class="mt-2 overflow-hidden bg-slate-100 flex items-center justify-center">${post.attachment.match(/\.(mp4|webm|mov|ogg)($|\?)/i) ? `<video src="${post.attachment}" class="w-full max-h-[500px] object-contain" controls preload="metadata"></video>` : `<img src="${post.attachment}" class="w-full max-h-[500px] object-contain hover:scale-[1.01] transition-transform duration-500 cursor-pointer" onclick="openLightbox(this.src)">`}</div>` : ''}
                 <div class="px-4 py-3 border-t border-slate-100 flex gap-1">
                     <button onclick="toggleLike('${post.id}')" class="flex-1 py-2 rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 text-slate-500 font-medium text-sm btn-bounce group"><i class="${likeIconClass} fa-heart text-lg transition-transform group-hover:scale-125"></i> <span class="${hasLiked ? 'text-blue-600' : ''}">${post.likes || 0}</span></button>
-                    <button onclick="toggleCommentSection('${post.id}', '${context}')" class="flex-1 py-2 rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 text-slate-500 font-medium text-sm btn-bounce group"><i class="fa-regular fa-comment text-lg transition-transform group-hover:scale-125"></i></button>
-                    <button onclick="savePost('${post.id}')" class="flex-1 py-2 rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 text-slate-500 font-medium text-sm btn-bounce group"><i class="${saveIconClass} fa-bookmark text-lg transition-transform group-hover:scale-125"></i></button>
+                    <button onclick="toggleCommentSection('${post.id}', '${context}')" class="flex-1 py-2 rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 text-slate-500 font-medium text-sm btn-bounce group"><i class="fa-regular fa-comment text-lg transition-transform group-hover:scale-125"></i> <span id="comment-count-${post.id}-${context}" class="comment-count-bubble ${(post.commentCount || 0) > 0 ? 'has-comments' : ''}">${post.commentCount || 0}</span></button>
+                    <button onclick="if(window._saveLongPressTriggered){window._saveLongPressTriggered=false;return;}savePost('${post.id}')" onmousedown="startSaveLongPress('${post.id}', event)" onmouseup="cancelSaveLongPress()" onmouseleave="cancelSaveLongPress()" ontouchstart="startSaveLongPress('${post.id}', event)" ontouchend="cancelSaveLongPress()" ontouchcancel="cancelSaveLongPress()" class="flex-1 py-2 rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 text-slate-500 font-medium text-sm btn-bounce group"><i class="${saveIconClass} fa-bookmark text-lg transition-transform group-hover:scale-125"></i></button>
                 </div>
                  <div id="comments-${post.id}-${context}" class="hidden mt-0 bg-slate-50/50 p-4 border-t border-slate-100 animate-slide-up">
                     <div id="comments-list-${post.id}-${context}" class="space-y-3 mb-3 max-h-60 overflow-y-auto custom-scrollbar"></div>
@@ -4596,10 +4972,22 @@
         
         window.renderSavedPosts = () => {
              const container = document.getElementById('saved-posts-stream');
-             const saved = allPostsCache.filter(p => mySavedPosts.includes(p.id));
+             const activeCollection = window.currentSavedCollection || 'all';
+             let savedIds;
+             if(activeCollection === 'all') {
+                 savedIds = mySavedPosts;
+             } else {
+                 savedIds = (window.mySavedCollections && window.mySavedCollections[activeCollection]) || [];
+             }
+             const saved = allPostsCache.filter(p => savedIds.includes(p.id));
              const countEl = document.getElementById('saved-count');
-             if(countEl) countEl.innerText = saved.length;
+             if(countEl) countEl.innerText = mySavedPosts.length;
+             renderCollectionTabs();
              if(!saved.length) { 
+                 const emptyMsg = activeCollection === 'all' 
+                     ? 'Posts you save will appear here. Tap the bookmark icon on any post to save it.'
+                     : `No posts in "${activeCollection}" yet. Hold the bookmark icon to save posts here.`;
+                 const emptyTitle = activeCollection === 'all' ? 'Nothing saved yet' : `"${activeCollection}" is empty`;
                  container.innerHTML = `
                  <div class="text-center py-16 animate-fade-in">
                      <div class="saved-empty-icon inline-block mb-4">
@@ -4607,8 +4995,8 @@
                              <i class="fa-regular fa-bookmark text-3xl text-purple-400"></i>
                          </div>
                      </div>
-                     <h3 class="font-heading font-bold text-lg text-slate-600 mb-2">Nothing saved yet</h3>
-                     <p class="text-sm text-slate-400 max-w-xs mx-auto">Posts you save will appear here. Tap the bookmark icon on any post to save it.</p>
+                     <h3 class="font-heading font-bold text-lg text-slate-600 mb-2">${emptyTitle}</h3>
+                     <p class="text-sm text-slate-400 max-w-xs mx-auto">${emptyMsg}</p>
                  </div>`; 
                  return; 
              }
@@ -4755,6 +5143,22 @@
                     list.innerHTML += `<div class="flex gap-2 animate-fade-in"><img src="${c.photoURL}" class="w-6 h-6 rounded-full mt-1"><div class="bg-white p-2 rounded-r-xl rounded-bl-xl shadow-sm border border-slate-100 text-sm"><p class="font-bold text-xs text-slate-800">${c.name}</p><p class="text-slate-600">${c.text}</p></div></div>`;
                 });
                 list.scrollTop = list.scrollHeight;
+                // Sync the count bubble with the real total from ALL users
+                const realTotal = snap.size;
+                document.querySelectorAll(`[id^="comment-count-${pid}-"]`).forEach(el => {
+                    const prev = parseInt(el.textContent) || 0;
+                    el.textContent = realTotal;
+                    if(realTotal > 0) el.classList.add('has-comments');
+                    else el.classList.remove('has-comments');
+                    // Pop animation if count changed
+                    if(realTotal !== prev) {
+                        el.style.transform = 'scale(1.3)';
+                        setTimeout(() => el.style.transform = '', 300);
+                    }
+                });
+                // Keep the cached post object in sync too
+                const cached = allPostsCache.find(x => x.id === pid);
+                if(cached) cached.commentCount = realTotal;
             });
         };
 
@@ -4767,6 +5171,16 @@
                 name: document.getElementById('menu-name').innerText,
                 photoURL: document.getElementById('nav-avatar').src,
                 createdAt: serverTimestamp()
+            });
+            // Increment comment count on the post
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'posts', pid), { commentCount: increment(1) });
+            // Update comment count in UI
+            document.querySelectorAll(`[id^="comment-count-${pid}-"]`).forEach(el => {
+                const newCount = (parseInt(el.textContent) || 0) + 1;
+                el.textContent = newCount;
+                if(newCount > 0) el.classList.add('has-comments');
+                el.style.transform = 'scale(1.3)';
+                setTimeout(() => el.style.transform = '', 300);
             });
             const p = allPostsCache.find(x => x.id === pid);
             if(p && p.uid !== currentUser.uid) {
@@ -5151,28 +5565,78 @@
             voiceRecStartTime = null;
         }
 
-        // Voice message playback
+        // Voice message playback with waveform progress
         window.playVoiceMsg = (playerEl) => {
             const audio = playerEl.querySelector('audio');
             const btn = playerEl.querySelector('button');
             const durEl = playerEl.querySelector('.voice-duration');
+            const waveform = playerEl.querySelector('.voice-waveform');
+            const bars = waveform.querySelectorAll('.voice-waveform-bar');
+            const totalBars = bars.length;
+
             if(audio.paused) {
                 // Stop any other playing voice
-                document.querySelectorAll('.voice-msg-player audio').forEach(a => { if(a !== audio) { a.pause(); a.currentTime=0; } });
-                document.querySelectorAll('.voice-msg-player button i').forEach(i => { i.className = 'fa-solid fa-play text-xs'; });
+                document.querySelectorAll('.voice-msg-player audio').forEach(a => {
+                    if(a !== audio) {
+                        a.pause(); a.currentTime=0;
+                        const otherPlayer = a.closest('.voice-msg-player');
+                        if(otherPlayer) {
+                            otherPlayer.querySelector('button i').className = 'fa-solid fa-play text-xs';
+                            otherPlayer.querySelectorAll('.voice-waveform-bar').forEach(b => b.classList.remove('played'));
+                        }
+                    }
+                });
                 audio.play();
                 btn.querySelector('i').className = 'fa-solid fa-pause text-xs';
-                audio.onended = () => { btn.querySelector('i').className = 'fa-solid fa-play text-xs'; };
-                audio.ontimeupdate = () => {
-                    const rem = audio.duration - audio.currentTime;
-                    if(isFinite(rem)) {
-                        const m = Math.floor(rem/60), s = Math.floor(rem%60);
+                audio.onended = () => {
+                    btn.querySelector('i').className = 'fa-solid fa-play text-xs';
+                    // Keep all bars highlighted when finished
+                    bars.forEach(b => b.classList.add('played'));
+                    // Show total duration
+                    if(isFinite(audio.duration)) {
+                        const m = Math.floor(audio.duration/60), s = Math.floor(audio.duration%60);
                         durEl.textContent = m+':'+String(s).padStart(2,'0');
                     }
+                };
+                audio.ontimeupdate = () => {
+                    if(!isFinite(audio.duration)) return;
+                    const progress = audio.currentTime / audio.duration;
+                    const playedCount = Math.floor(progress * totalBars);
+                    bars.forEach((b, i) => {
+                        if(i <= playedCount) b.classList.add('played');
+                        else b.classList.remove('played');
+                    });
+                    const rem = audio.duration - audio.currentTime;
+                    const m = Math.floor(rem/60), s = Math.floor(rem%60);
+                    durEl.textContent = m+':'+String(s).padStart(2,'0');
                 };
             } else {
                 audio.pause();
                 btn.querySelector('i').className = 'fa-solid fa-play text-xs';
+            }
+        };
+
+        // Seek voice message by clicking on waveform
+        window.seekVoice = (event, playerEl) => {
+            const audio = playerEl.querySelector('audio');
+            const waveform = playerEl.querySelector('.voice-waveform');
+            const bars = waveform.querySelectorAll('.voice-waveform-bar');
+            const rect = waveform.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const ratio = Math.max(0, Math.min(1, x / rect.width));
+
+            if(isFinite(audio.duration)) {
+                audio.currentTime = ratio * audio.duration;
+                // Update bars immediately
+                const playedCount = Math.floor(ratio * bars.length);
+                bars.forEach((b, i) => {
+                    if(i <= playedCount) b.classList.add('played');
+                    else b.classList.remove('played');
+                });
+                // Auto-play if paused
+                if(audio.paused) {
+                    playVoiceMsg(playerEl);
+                }
             }
         };
 
@@ -5393,7 +5857,7 @@
              Object.keys(links).forEach(k => { if(!links[k]) delete links[k]; });
              
              await setDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'main'), {
-                 headline, bio, links, savedPosts: mySavedPosts
+                 headline, bio, links, savedPosts: mySavedPosts, savedCollections: window.mySavedCollections || {}
              }, { merge: true });
              
              await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users_directory', currentUser.uid), {
@@ -5901,6 +6365,103 @@
     };
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') closeLightbox();
+    });
+
+    // Long-press spotlight for profile pic and cover photo — revamped with progress bar + glow
+    function attachLongPressLightbox(elementId) {
+        let timer = null;
+        let triggered = false;
+        let progressInterval = null;
+        let progress = 0;
+        const HOLD_DURATION = 800; // ms — snappier than before (was 2000)
+        const PROGRESS_STEP = 16; // ~60fps
+
+        const attach = () => {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            if (el._lpAttached) return; // prevent duplicate listeners
+            el._lpAttached = true;
+
+            // For <img> elements, we attach overlays to the parent container
+            const overlayParent = el.tagName === 'IMG' ? el.parentElement : el;
+            overlayParent.style.position = overlayParent.style.position || 'relative';
+            overlayParent.style.overflow = 'hidden';
+            el.style.cursor = 'pointer';
+
+            // Create progress bar overlay
+            let progressBar = overlayParent.querySelector('.lp-progress-bar');
+            if (!progressBar) {
+                progressBar = document.createElement('div');
+                progressBar.className = 'lp-progress-bar';
+                overlayParent.appendChild(progressBar);
+            }
+            // Create glow overlay
+            let glow = overlayParent.querySelector('.long-press-glow');
+            if (!glow) {
+                glow = document.createElement('div');
+                glow.className = 'long-press-glow';
+                overlayParent.appendChild(glow);
+            }
+
+            const start = (e) => {
+                triggered = false;
+                progress = 0;
+                progressBar.style.width = '0%';
+                glow.classList.add('active');
+
+                progressInterval = setInterval(() => {
+                    progress += (PROGRESS_STEP / HOLD_DURATION) * 100;
+                    progressBar.style.width = Math.min(progress, 100) + '%';
+                }, PROGRESS_STEP);
+
+                timer = setTimeout(() => {
+                    triggered = true;
+                    clearInterval(progressInterval);
+                    progressBar.style.width = '100%';
+                    
+                    // Haptic-like pulse feedback
+                    overlayParent.style.transform = 'scale(0.97)';
+                    setTimeout(() => {
+                        overlayParent.style.transform = '';
+                        overlayParent.style.transition = 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                    }, 100);
+
+                    const src = el.tagName === 'IMG' ? el.src : el.querySelector('img')?.src;
+                    if (src && !src.includes('placehold.co')) openLightbox(src);
+
+                    // Clean up visual
+                    setTimeout(() => {
+                        progressBar.style.width = '0%';
+                        glow.classList.remove('active');
+                    }, 300);
+                }, HOLD_DURATION);
+            };
+
+            const cancel = (e) => {
+                clearTimeout(timer);
+                clearInterval(progressInterval);
+                progress = 0;
+                progressBar.style.width = '0%';
+                glow.classList.remove('active');
+                if (triggered) { e.preventDefault && e.preventDefault(); e.stopPropagation && e.stopPropagation(); }
+            };
+
+            el.addEventListener('mousedown', start);
+            el.addEventListener('mouseup', cancel);
+            el.addEventListener('mouseleave', cancel);
+            el.addEventListener('touchstart', start, { passive: true });
+            el.addEventListener('touchend', cancel);
+            el.addEventListener('touchcancel', cancel);
+        };
+        // Attach now and re-attach on route changes
+        attach();
+        const observer = new MutationObserver(() => { attach(); });
+        observer.observe(document.body, { childList: true, subtree: true });
+    }
+    // Attach to profile avatar and cover photo once DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+        attachLongPressLightbox('profile-page-avatar');
+        attachLongPressLightbox('profile-cover-img');
     });
 </script>
 </body>
