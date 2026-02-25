@@ -3038,7 +3038,7 @@
                 const otherUser = allUsersCache.find(u => u.id === otherUid) || { name: "User", photoURL: "https://placehold.co/100x100" };
                 const isUnread = c.readBy && !c.readBy.includes(currentUser.uid);
                 
-                const isOnline = window.isUserTrulyOnline(otherUser);
+                const isOnline = otherUser.isOnline === true;
                 const lastSeenText = !isOnline && otherUser.lastSeen ? getLastSeenText(otherUser.lastSeen) : '';
                 
                 return `<div onclick="openChat('${c.id}', '${otherUser.name}')" class="flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all duration-200 ${c.id === currentChatId ? 'bg-white shadow-md ring-1 ring-slate-100 scale-[1.02]' : 'hover:bg-white hover:shadow-sm'} ${isUnread ? 'bg-blue-50/50' : ''}">
@@ -3066,7 +3066,7 @@
             const chatOtherUid = chatParts[0] === currentUser.uid ? chatParts[1] : chatParts[0];
             const chatOtherUser = allUsersCache.find(u => u.id === chatOtherUid);
             const statusEl = document.getElementById('chat-header-status');
-            if (window.isUserTrulyOnline(chatOtherUser)) {
+            if (chatOtherUser && chatOtherUser.isOnline) {
                 statusEl.innerHTML = '<i class="fa-solid fa-circle text-green-500 mr-1" style="font-size:6px;"></i>Online';
                 statusEl.classList.remove('hidden');
                 statusEl.className = 'text-[10px] text-green-500 font-semibold';
@@ -3584,34 +3584,7 @@
 
 
         // --- ONLINE PRESENCE SYSTEM ---
-        // lastSeen freshness is the SOLE source of truth for online status.
-        // The isOnline flag is ignored — it's unreliable due to Firestore write ordering races.
         let presenceInterval = null;
-        let staleCheckInterval = null;
-        const HEARTBEAT_MS = 30000;        // heartbeat every 30s
-        const STALE_THRESHOLD_MS = 65000;  // offline if no heartbeat for 65s
-
-        function _getLastSeenMs(user) {
-            if (!user || !user.lastSeen) return 0;
-            if (user.lastSeen.toDate) return user.lastSeen.toDate().getTime();
-            if (user.lastSeen.seconds) return user.lastSeen.seconds * 1000;
-            return new Date(user.lastSeen).getTime();
-        }
-
-        // Helper: check if a user is truly online (ONLY based on lastSeen freshness)
-        window.isUserTrulyOnline = function(user) {
-            if (!user || !user.lastSeen) return false;
-            return (Date.now() - _getLastSeenMs(user)) < STALE_THRESHOLD_MS;
-        };
-
-        function _startStaleChecker() {
-            // Periodically re-render chat lists so stale users flip to offline
-            // even if no new Firestore snapshot arrives
-            if (staleCheckInterval) return;
-            staleCheckInterval = setInterval(() => {
-                if (window.allChats) renderChatList(window.allChats);
-            }, 15000); // re-check every 15s
-        }
 
         function startPresence() {
             if (!currentUser) return;
@@ -3620,42 +3593,58 @@
             // Set online immediately
             setDoc(userRef, { isOnline: true, lastSeen: serverTimestamp() }, { merge: true });
 
-            // Heartbeat every 30 seconds — only when tab is visible
+            // Heartbeat every 60 seconds
             presenceInterval = setInterval(() => {
-                if (currentUser && document.visibilityState === 'visible') {
+                if (currentUser) {
                     setDoc(userRef, { isOnline: true, lastSeen: serverTimestamp() }, { merge: true });
                 }
-            }, HEARTBEAT_MS);
+            }, 60000);
 
-            // Start checking for stale users on the observer side
-            _startStaleChecker();
+            // Helper: set offline via sendBeacon (works during page close)
+            function sendOfflineBeacon() {
+                if (!currentUser) return;
+                const uid = currentUser.uid;
+                const firestoreUrl = `https://firestore.googleapis.com/v1/projects/luminix-bcc28/databases/(default)/documents/artifacts/lumini_v1/public/data/users_directory/${uid}?updateMask.fieldPaths=isOnline&updateMask.fieldPaths=lastSeen`;
+                const body = JSON.stringify({
+                    fields: {
+                        isOnline: { booleanValue: false },
+                        lastSeen: { timestampValue: new Date().toISOString() }
+                    }
+                });
+                if (navigator.sendBeacon) {
+                    navigator.sendBeacon(firestoreUrl + '&currentDocument.exists=true', new Blob([body], { type: 'application/json' }));
+                } else {
+                    // Fallback: sync XHR (last resort)
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('PATCH', firestoreUrl, false);
+                    xhr.setRequestHeader('Content-Type', 'application/json');
+                    xhr.send(body);
+                }
+            }
 
-            // Handle visibilitychange — stop heartbeat when hidden so lastSeen goes stale
+            // Go offline on page close
+            window.addEventListener('beforeunload', sendOfflineBeacon);
+
+            // Also handle pagehide (more reliable on mobile and some browsers)
+            window.addEventListener('pagehide', sendOfflineBeacon);
+
+            // Also handle visibilitychange
             document.addEventListener('visibilitychange', () => {
                 if (!currentUser) return;
                 if (document.visibilityState === 'hidden') {
-                    // Kill heartbeat so lastSeen naturally goes stale
-                    if (presenceInterval) { clearInterval(presenceInterval); presenceInterval = null; }
+                    sendOfflineBeacon();
+                    setDoc(userRef, { isOnline: false, lastSeen: serverTimestamp() }, { merge: true }).catch(() => {});
                 } else {
-                    // Tab is back — send fresh heartbeat immediately and restart interval
                     setDoc(userRef, { isOnline: true, lastSeen: serverTimestamp() }, { merge: true });
-                    if (!presenceInterval) {
-                        presenceInterval = setInterval(() => {
-                            if (currentUser && document.visibilityState === 'visible') {
-                                setDoc(userRef, { isOnline: true, lastSeen: serverTimestamp() }, { merge: true });
-                            }
-                        }, HEARTBEAT_MS);
-                    }
                 }
             });
-
-            // beforeunload — no-op, we rely on heartbeat stopping + stale threshold
-            // sendBeacon to Firestore REST is unreliable (auth issues, write races)
         }
 
         function stopPresence() {
-            if (presenceInterval) { clearInterval(presenceInterval); presenceInterval = null; }
-            if (staleCheckInterval) { clearInterval(staleCheckInterval); staleCheckInterval = null; }
+            if (presenceInterval) {
+                clearInterval(presenceInterval);
+                presenceInterval = null;
+            }
         }
 
         window.handleTypingIndicator = () => {
@@ -5308,7 +5297,7 @@
                 const otherUid = parts[0] === currentUser.uid ? parts[1] : parts[0];
                 const otherUser = allUsersCache.find(u => u.id === otherUid) || { name: "User", photoURL: "https://placehold.co/100x100" };
                 const isUnread = c.readBy && !c.readBy.includes(currentUser.uid);
-                const isOnline = window.isUserTrulyOnline(otherUser);
+                const isOnline = otherUser.isOnline === true;
                 
                 return `
                 <div onclick="openFloatingChat('${c.id}', '${otherUser.name}')" class="flex items-center gap-3 p-2.5 hover:bg-white rounded-xl cursor-pointer transition-all duration-200 mb-0.5 ${isUnread ? 'bg-blue-50/60' : ''}" style="animation: msgMorphIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; animation-delay: ${i * 0.05}s; writing-mode: horizontal-tb;">
