@@ -3038,7 +3038,7 @@
                 const otherUser = allUsersCache.find(u => u.id === otherUid) || { name: "User", photoURL: "https://placehold.co/100x100" };
                 const isUnread = c.readBy && !c.readBy.includes(currentUser.uid);
                 
-                const isOnline = otherUser.isOnline === true;
+                const isOnline = window.isUserTrulyOnline(otherUser);
                 const lastSeenText = !isOnline && otherUser.lastSeen ? getLastSeenText(otherUser.lastSeen) : '';
                 
                 return `<div onclick="openChat('${c.id}', '${otherUser.name}')" class="flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all duration-200 ${c.id === currentChatId ? 'bg-white shadow-md ring-1 ring-slate-100 scale-[1.02]' : 'hover:bg-white hover:shadow-sm'} ${isUnread ? 'bg-blue-50/50' : ''}">
@@ -3066,7 +3066,7 @@
             const chatOtherUid = chatParts[0] === currentUser.uid ? chatParts[1] : chatParts[0];
             const chatOtherUser = allUsersCache.find(u => u.id === chatOtherUid);
             const statusEl = document.getElementById('chat-header-status');
-            if (chatOtherUser && chatOtherUser.isOnline) {
+            if (window.isUserTrulyOnline(chatOtherUser)) {
                 statusEl.innerHTML = '<i class="fa-solid fa-circle text-green-500 mr-1" style="font-size:6px;"></i>Online';
                 statusEl.classList.remove('hidden');
                 statusEl.className = 'text-[10px] text-green-500 font-semibold';
@@ -3585,6 +3585,16 @@
 
         // --- ONLINE PRESENCE SYSTEM ---
         let presenceInterval = null;
+        const HEARTBEAT_MS = 60000;
+        const STALE_THRESHOLD_MS = 90000; // If lastSeen older than 90s, treat as offline
+
+        // Helper: check if a user is truly online (flag + fresh heartbeat)
+        window.isUserTrulyOnline = function(user) {
+            if (!user || user.isOnline !== true) return false;
+            if (!user.lastSeen) return false;
+            const lastSeenMs = user.lastSeen.toDate ? user.lastSeen.toDate().getTime() : (user.lastSeen.seconds ? user.lastSeen.seconds * 1000 : new Date(user.lastSeen).getTime());
+            return (Date.now() - lastSeenMs) < STALE_THRESHOLD_MS;
+        };
 
         function startPresence() {
             if (!currentUser) return;
@@ -3595,22 +3605,29 @@
 
             // Heartbeat every 60 seconds
             presenceInterval = setInterval(() => {
-                if (currentUser) {
+                if (currentUser && document.visibilityState === 'visible') {
                     setDoc(userRef, { isOnline: true, lastSeen: serverTimestamp() }, { merge: true });
                 }
-            }, 60000);
+            }, HEARTBEAT_MS);
 
-            // Go offline on page close — use sendBeacon with Firestore REST API for reliability
+            // Go offline on page close — use sendBeacon with Firestore :commit endpoint (accepts POST)
             window.addEventListener('beforeunload', () => {
                 if (currentUser) {
-                    const firestoreUrl = `https://firestore.googleapis.com/v1/projects/luminix-bcc28/databases/(default)/documents/artifacts/${appId}/public/data/users_directory/${currentUser.uid}?updateMask.fieldPaths=isOnline&updateMask.fieldPaths=lastSeen`;
+                    const docPath = `projects/luminix-bcc28/databases/(default)/documents/artifacts/${appId}/public/data/users_directory/${currentUser.uid}`;
+                    const commitUrl = `https://firestore.googleapis.com/v1/projects/luminix-bcc28/databases/(default)/documents:commit`;
                     const body = JSON.stringify({
-                        fields: {
-                            isOnline: { booleanValue: false },
-                            lastSeen: { timestampValue: new Date().toISOString() }
-                        }
+                        writes: [{
+                            update: {
+                                name: docPath,
+                                fields: {
+                                    isOnline: { booleanValue: false },
+                                    lastSeen: { timestampValue: new Date().toISOString() }
+                                }
+                            },
+                            updateMask: { fieldPaths: ['isOnline', 'lastSeen'] }
+                        }]
                     });
-                    navigator.sendBeacon && navigator.sendBeacon(firestoreUrl, new Blob([body], { type: 'application/json' }));
+                    navigator.sendBeacon && navigator.sendBeacon(commitUrl, new Blob([body], { type: 'application/json' }));
                 }
             });
 
@@ -3618,9 +3635,19 @@
             document.addEventListener('visibilitychange', () => {
                 if (!currentUser) return;
                 if (document.visibilityState === 'hidden') {
+                    // Stop heartbeat and set offline
+                    if (presenceInterval) { clearInterval(presenceInterval); presenceInterval = null; }
                     setDoc(userRef, { isOnline: false, lastSeen: serverTimestamp() }, { merge: true });
                 } else {
+                    // Resume heartbeat and set online
                     setDoc(userRef, { isOnline: true, lastSeen: serverTimestamp() }, { merge: true });
+                    if (!presenceInterval) {
+                        presenceInterval = setInterval(() => {
+                            if (currentUser && document.visibilityState === 'visible') {
+                                setDoc(userRef, { isOnline: true, lastSeen: serverTimestamp() }, { merge: true });
+                            }
+                        }, HEARTBEAT_MS);
+                    }
                 }
             });
         }
@@ -5282,7 +5309,7 @@
                 const otherUid = parts[0] === currentUser.uid ? parts[1] : parts[0];
                 const otherUser = allUsersCache.find(u => u.id === otherUid) || { name: "User", photoURL: "https://placehold.co/100x100" };
                 const isUnread = c.readBy && !c.readBy.includes(currentUser.uid);
-                const isOnline = otherUser.isOnline === true;
+                const isOnline = window.isUserTrulyOnline(otherUser);
                 
                 return `
                 <div onclick="openFloatingChat('${c.id}', '${otherUser.name}')" class="flex items-center gap-3 p-2.5 hover:bg-white rounded-xl cursor-pointer transition-all duration-200 mb-0.5 ${isUnread ? 'bg-blue-50/60' : ''}" style="animation: msgMorphIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; animation-delay: ${i * 0.05}s; writing-mode: horizontal-tb;">
