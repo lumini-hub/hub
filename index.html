@@ -265,11 +265,9 @@
         
         .msg-system { background: transparent; color: #94a3b8; font-size: 0.7rem; text-align: center; width: 100%; margin: 12px 0; font-style: normal; opacity: 0.7; font-weight: 500; letter-spacing: 0.01em; }
         
-        .profile-tab { cursor: pointer; padding-bottom: 12px; color: #64748b; font-weight: 500; transition: all 0.3s ease; border-bottom: 2px solid transparent; position: relative; }
-        .profile-tab::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 0%; height: 2px; background: #1e293b; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .profile-tab:hover { color: #334155; }
-        .profile-tab.active { color: #1e293b; }
-        .profile-tab.active::after { width: 100%; }
+        .profile-tab { cursor: pointer; color: #64748b; font-weight: 600; transition: all 0.3s ease; position: relative; }
+        .profile-tab:hover { color: #334155; background: rgba(0,0,0,0.04); }
+        .profile-tab.active { color: #1e293b; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
         
         .notification-dot { position: absolute; top: -2px; right: -2px; width: 12px; height: 12px; background-color: #ef4444; border-radius: 50%; border: 2px solid white; display: none; animation: pulse 2s infinite; }
         
@@ -280,6 +278,131 @@
         /* Interactive Elements */
         .btn-bounce { transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1); }
         .btn-bounce:active { transform: scale(0.95); }
+
+        /* Enhanced Page Headers */
+        .page-hero {
+            position: relative;
+            overflow: hidden;
+            border-radius: 1.5rem;
+            padding: 2rem 2.5rem;
+        }
+        .page-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: rgba(37, 99, 235, 0.06);
+            filter: blur(40px);
+            transition: transform 0.6s ease;
+        }
+        .page-hero:hover::before {
+            transform: scale(1.3) translate(-10%, 10%);
+        }
+
+        /* Network Card Enhanced */
+        .network-card {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+        .network-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(to right, #2563eb, #9333ea);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .network-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.1), 0 6px 12px -4px rgba(0, 0, 0, 0.06);
+        }
+        .network-card:hover::after {
+            transform: scaleX(1);
+        }
+        .network-card .network-avatar {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .network-card:hover .network-avatar {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+        }
+        .network-card .network-action {
+            opacity: 0;
+            transform: translateX(8px);
+            transition: all 0.3s ease;
+        }
+        .network-card:hover .network-action {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* Collaborate Filter Pills Enhanced */
+        .collab-filter-pill {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .collab-filter-pill::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: inherit;
+            z-index: 0;
+        }
+        .collab-filter-pill > * { position: relative; z-index: 1; }
+        .collab-filter-pill { isolation: isolate; }
+        .collab-filter-pill:hover::before {
+            opacity: 0.08;
+        }
+        .collab-filter-pill.active-filter::before {
+            opacity: 0;
+        }
+
+        /* Saved Posts Empty State */
+        .saved-empty-icon {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        /* Interactive stat counters */
+        .stat-hover {
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .stat-hover:hover {
+            transform: scale(1.08);
+            color: #2563eb;
+        }
+
+        /* Profile cover enhanced */
+        .profile-cover {
+            position: relative;
+            overflow: hidden;
+        }
+        .profile-cover::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60%;
+            background: linear-gradient(to top, rgba(0,0,0,0.15), transparent);
+        }
+
+        /* Dark mode enhancements */
+        html.dark .page-hero::before { background: rgba(99, 102, 241, 0.08); }
+        html.dark .network-card:hover { box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.4); }
+        html.dark .network-card::after { background: linear-gradient(to right, #6366f1, #a78bfa); }
         
         /* Online Status Dot */
         .status-dot-online { width: 12px; height: 12px; background-color: #22c55e; border: 2px solid white; border-radius: 50%; position: absolute; bottom: 0; right: 0; box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2); }
@@ -301,6 +424,22 @@
             gap: 4px;
             box-shadow: 0 2px 5px rgba(255, 0, 0, 0.3);
             vertical-align: middle;
+        }
+
+        /* Verified Badge Style */
+        .verified-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            margin-left: 4px;
+            vertical-align: middle;
+            flex-shrink: 0;
+        }
+        .verified-badge svg {
+            width: 18px;
+            height: 18px;
         }
         
         /* Video Call Specific Styles */
@@ -884,108 +1023,183 @@
 
                     <!-- View: Saved -->
                     <div id="view-saved" class="view-section hidden space-y-6">
-                        <div class="glass-card rounded-2xl p-6 bg-white/90">
-                            <h2 class="font-heading font-bold text-2xl text-slate-800 flex items-center gap-3"><i class="fa-solid fa-bookmark text-slate-500"></i> Saved Posts</h2>
-                            <p class="text-slate-500 text-sm mt-1">Only you can see what you've saved.</p>
+                        <div class="glass-card page-hero bg-white/90">
+                            <div class="flex items-start justify-between gap-4">
+                                <div>
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-xl shadow-lg shadow-purple-200">
+                                            <i class="fa-solid fa-bookmark"></i>
+                                        </div>
+                                        <h2 class="font-heading font-bold text-3xl text-slate-800">Saved Posts</h2>
+                                    </div>
+                                    <p class="text-slate-500 text-sm mt-2 ml-1">Your personal collection — only you can see these.</p>
+                                </div>
+                                <div class="text-right">
+                                    <div id="saved-count" class="text-3xl font-heading font-bold text-slate-300">0</div>
+                                    <div class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Saved</div>
+                                </div>
+                            </div>
                         </div>
                         <div id="saved-posts-stream" class="space-y-5 pb-20"></div>
                     </div>
 
                     <!-- View: Network -->
-                    <div id="view-network" class="view-section hidden space-y-4">
-                        <div class="glass-card rounded-2xl p-6 mb-6 bg-white/90">
-                            <h2 class="font-heading font-bold text-2xl text-slate-800">Grow your Network</h2>
-                            <p class="text-slate-500 text-sm mt-1">Find collaborators. <span class="text-xs text-slate-400">(Real users appear here)</span></p>
+                    <div id="view-network" class="view-section hidden space-y-6">
+                        <div class="glass-card page-hero bg-white/90">
+                            <div class="flex items-start justify-between gap-4">
+                                <div>
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-white text-xl shadow-lg shadow-blue-200">
+                                            <i class="fa-solid fa-user-group"></i>
+                                        </div>
+                                        <h2 class="font-heading font-bold text-3xl text-slate-800">Grow your Network</h2>
+                                    </div>
+                                    <p class="text-slate-500 text-sm mt-2 ml-1">Find collaborators and connect with people who share your interests.</p>
+                                </div>
+                                <div class="text-right">
+                                    <div id="network-count" class="text-3xl font-heading font-bold text-slate-300">0</div>
+                                    <div class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">People</div>
+                                </div>
+                            </div>
                         </div>
-                        <div id="network-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+                        <div id="network-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-5"></div>
                     </div>
 
                     <!-- View: Collaborate -->
                     <div id="view-collaborate" class="view-section hidden space-y-6">
-                        <div class="glass-card rounded-2xl p-6 bg-white/90">
-                             <div class="flex justify-between items-center mb-4 flex-wrap gap-4">
+                        <div class="glass-card page-hero bg-white/90">
+                             <div class="flex justify-between items-start mb-5 flex-wrap gap-4">
                                 <div>
-                                    <h2 class="font-heading font-bold text-2xl text-slate-800 flex items-center gap-3"><i class="fa-solid fa-rocket text-slate-500"></i> Project Board</h2>
-                                    <p class="text-slate-500 text-sm mt-1">Find collaborators or showcase your work.</p>
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-pink-500 flex items-center justify-center text-white text-xl shadow-lg shadow-orange-200">
+                                            <i class="fa-solid fa-rocket"></i>
+                                        </div>
+                                        <h2 class="font-heading font-bold text-3xl text-slate-800">Project Board</h2>
+                                    </div>
+                                    <p class="text-slate-500 text-sm mt-2 ml-1">Find collaborators or showcase your work to the community.</p>
                                 </div>
-                                <button onclick="openPostModal('project')" class="bg-slate-900 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-sm hover:bg-slate-700 transition-all duration-200 btn-bounce flex items-center gap-2">
-                                    <i class="fa-solid fa-plus"></i> Post Project
+                                <button onclick="openPostModal('project')" class="bg-gradient-to-r from-slate-900 to-slate-700 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg shadow-slate-300 hover:shadow-xl hover:shadow-slate-400 hover:scale-105 transition-all duration-300 btn-bounce flex items-center gap-2 group">
+                                    <i class="fa-solid fa-plus group-hover:rotate-90 transition-transform duration-300"></i> Post Project
                                 </button>
                             </div>
-                            <div class="flex gap-2 overflow-x-auto custom-scrollbar pb-1" id="collab-filters">
-                                <button onclick="filterCollaborate('all')" id="filter-all" class="px-4 py-1.5 rounded-full text-sm font-bold border border-slate-200 bg-slate-900 text-white transition-all duration-200 whitespace-nowrap hover:shadow-md btn-bounce">All</button>
-                                <button onclick="filterCollaborate('designer')" id="filter-designer" class="px-4 py-1.5 rounded-full text-sm font-bold border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all whitespace-nowrap hover:shadow-md btn-bounce">Designers</button>
-                                <button onclick="filterCollaborate('developer')" id="filter-developer" class="px-4 py-1.5 rounded-full text-sm font-bold border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all whitespace-nowrap hover:shadow-md btn-bounce">Developers</button>
-                                <button onclick="filterCollaborate('manager')" id="filter-manager" class="px-4 py-1.5 rounded-full text-sm font-bold border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all whitespace-nowrap hover:shadow-md btn-bounce">Managers</button>
-                                 <button onclick="filterCollaborate('marketing')" id="filter-marketing" class="px-4 py-1.5 rounded-full text-sm font-bold border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all whitespace-nowrap hover:shadow-md btn-bounce">Marketing</button>
+                            <div class="flex gap-2.5 overflow-x-auto custom-scrollbar pb-1" id="collab-filters">
+                                <button onclick="filterCollaborate('all')" id="filter-all" class="collab-filter-pill active-filter px-5 py-2 rounded-full text-sm font-bold border border-slate-200 bg-slate-900 text-white transition-all duration-200 whitespace-nowrap hover:shadow-md btn-bounce">All</button>
+                                <button onclick="filterCollaborate('designer')" id="filter-designer" class="collab-filter-pill px-5 py-2 rounded-full text-sm font-bold border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all whitespace-nowrap hover:shadow-md btn-bounce">🎨 Designers</button>
+                                <button onclick="filterCollaborate('developer')" id="filter-developer" class="collab-filter-pill px-5 py-2 rounded-full text-sm font-bold border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all whitespace-nowrap hover:shadow-md btn-bounce">💻 Developers</button>
+                                <button onclick="filterCollaborate('manager')" id="filter-manager" class="collab-filter-pill px-5 py-2 rounded-full text-sm font-bold border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all whitespace-nowrap hover:shadow-md btn-bounce">📊 Managers</button>
+                                <button onclick="filterCollaborate('marketing')" id="filter-marketing" class="collab-filter-pill px-5 py-2 rounded-full text-sm font-bold border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all whitespace-nowrap hover:shadow-md btn-bounce">📣 Marketing</button>
                             </div>
                         </div>
                         <div id="collaborate-stream" class="space-y-5 pb-20"></div>
                     </div>
 
                     <!-- View: Profile -->
-                    <div id="view-profile" class="view-section hidden space-y-6">
-                        <div class="glass-card rounded-2xl overflow-hidden bg-white/90">
-                            <div class="h-40 bg-gradient-to-r from-blue-500 to-purple-600 relative overflow-hidden">
-                                <div class="absolute inset-0 bg-white/10 backdrop-blur-[2px]"></div>
-                                <div class="shape-blob blob-1 !opacity-30"></div>
-                                <button onclick="router('feed')" class="absolute top-4 left-4 bg-black/20 hover:bg-black/40 text-white px-4 py-2 rounded-full backdrop-blur-md transition-all text-sm font-bold btn-bounce"><i class="fa-solid fa-arrow-left mr-2"></i> Back</button>
+                    <div id="view-profile" class="view-section hidden space-y-8 max-w-5xl mx-auto w-full">
+                        <!-- Hero Banner - Full width, taller, unique style -->
+                        <div class="glass-card rounded-3xl overflow-hidden bg-white/90 shadow-lg">
+                            <div id="profile-cover-container" class="h-72 relative overflow-hidden profile-cover" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 40%, #334155 70%, #475569 100%);">
+                                <img id="profile-cover-img" class="hidden absolute inset-0 w-full h-full object-cover">
+                                <div id="profile-cover-overlay" class="absolute inset-0" style="background: radial-gradient(circle at 70% 30%, rgba(99,102,241,0.3), transparent 60%), radial-gradient(circle at 20% 80%, rgba(37,99,235,0.2), transparent 50%);"></div>
+                                <!-- Decorative grid pattern -->
+                                <div id="profile-cover-grid" class="absolute inset-0 opacity-[0.04]" style="background-image: linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px); background-size: 40px 40px;"></div>
+                                <button onclick="router('feed')" class="absolute top-5 left-5 bg-white/10 hover:bg-white/20 text-white px-5 py-2.5 rounded-xl backdrop-blur-md transition-all text-sm font-bold btn-bounce border border-white/10 z-10"><i class="fa-solid fa-arrow-left mr-2"></i> Back</button>
+                                <!-- Cover photo upload button (own profile only) -->
+                                <button id="cover-upload-btn" onclick="document.getElementById('cover-photo-input').click()" class="hidden absolute top-5 right-5 bg-white/10 hover:bg-white/20 text-white px-4 py-2.5 rounded-xl backdrop-blur-md transition-all text-sm font-bold btn-bounce border border-white/10 z-10"><i class="fa-solid fa-camera mr-1.5"></i> Cover Photo</button>
+                                <input type="file" id="cover-photo-input" class="hidden" accept="image/*" onchange="handleCoverPhotoChange(this)">
+                                <!-- Floating badge -->
+                                <div class="absolute bottom-6 right-6 bg-white/10 backdrop-blur-md border border-white/10 rounded-xl px-4 py-2 text-white/70 text-xs font-medium z-10">
+                                    <i class="fa-solid fa-sparkles mr-1.5"></i> Member since <span id="profile-join-date">...</span>
+                                </div>
                             </div>
-                            <div class="px-6 pb-6 relative">
-                                <div class="flex flex-col sm:flex-row items-end -mt-12 mb-4 gap-4">
-                                    <div class="relative">
-                                        <div class="w-32 h-32 rounded-full border-4 border-white shadow-xl bg-white overflow-hidden relative z-10 group">
-                                            <img id="profile-page-avatar" src="" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                            
+                            <div class="px-8 md:px-12 pb-8 relative">
+                                <!-- Avatar + Name Row -->
+                                <div class="flex flex-col md:flex-row items-center md:items-end -mt-16 mb-4 gap-6">
+                                    <div class="relative group">
+                                        <div class="w-36 h-36 rounded-2xl border-4 border-white shadow-2xl bg-white overflow-hidden relative z-10 transition-transform duration-500 group-hover:scale-105 group-hover:rotate-1">
+                                            <img id="profile-page-avatar" src="" class="w-full h-full object-cover">
                                         </div>
+                                        <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-green-400 rounded-full border-[3px] border-white z-20"></div>
                                     </div>
                                     
-                                    <div class="flex-grow mb-2 text-center sm:text-left">
-                                        <h2 id="profile-page-name" class="font-heading font-bold text-3xl text-slate-800">User Name</h2>
-                                        <p id="profile-page-headline" class="text-slate-500 font-medium text-sm">Headline</p>
-                                        
-                                        <!-- Followers/Following UI -->
-                                        <div class="flex gap-4 text-sm mt-2 text-slate-600 justify-center sm:justify-start">
-                                            <span class="cursor-pointer hover:text-blue-600 transition-colors" onclick="openFollowModal('followers')"><b id="profile-followers-count" class="text-slate-900">0</b> Followers</span>
-                                            <span class="cursor-pointer hover:text-blue-600 transition-colors" onclick="openFollowModal('following')"><b id="profile-following-count" class="text-slate-900">0</b> Following</span>
+                                    <div class="flex-1 text-center md:text-left pb-1 min-w-0 w-full">
+                                        <div class="flex items-start gap-2 flex-wrap justify-center md:justify-start">
+                                            <h2 id="profile-page-name" class="font-heading font-extrabold text-2xl md:text-4xl text-slate-900 tracking-tight break-words leading-tight" style="word-break: break-word; overflow-wrap: anywhere;">User Name</h2>
+                                            <span id="profile-verified-badge" class="verified-badge hidden mt-1" title="Verified"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#2563eb"/><path d="M9 12l2 2 4-4" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
                                         </div>
+                                        <p id="profile-page-headline" class="text-slate-500 font-medium text-base mt-1.5 break-words" style="word-break: break-word; overflow-wrap: anywhere;">Headline</p>
                                     </div>
-                                    
-                                    <div class="flex gap-2 mb-3">
-                                         <button id="edit-profile-btn" onclick="openEditProfileModal()" class="bg-slate-200 text-slate-700 px-6 py-2 rounded-lg font-bold text-sm hover:bg-slate-300 transition-all hidden flex items-center gap-2 btn-bounce">
-                                            <i class="fa-solid fa-pen"></i> Edit Profile
-                                        </button>
-                                         <button id="follow-btn" onclick="toggleFollow(window.currentViewedUid)" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold text-sm hover:bg-blue-700 transition-all shadow-md flex items-center gap-2 hidden btn-bounce">
-                                            <i class="fa-solid fa-user-plus"></i> <span>Follow</span>
-                                        </button>
-                                        <button id="profile-chat-btn" class="bg-slate-200 text-slate-700 px-6 py-2 rounded-lg font-bold text-sm hover:bg-slate-300 transition-all flex items-center gap-2 hidden btn-bounce">
-                                            <i class="fa-brands fa-facebook-messenger"></i> Message
-                                        </button>
+                                </div>
+
+                                <div class="flex flex-wrap items-center justify-center md:justify-start gap-2.5 mb-6 w-full">
+                                    <button id="edit-profile-btn" onclick="openEditProfileModal()" class="bg-slate-900 text-white px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-800 transition-all hidden items-center gap-2 btn-bounce shadow-md hover:shadow-lg whitespace-nowrap">
+                                        <i class="fa-solid fa-pen-to-square"></i> Edit
+                                    </button>
+                                     <button id="follow-btn" onclick="toggleFollow(window.currentViewedUid)" class="bg-blue-600 text-white px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl items-center gap-2 hidden btn-bounce hover:-translate-y-0.5 whitespace-nowrap">
+                                        <i class="fa-solid fa-user-plus"></i> <span>Follow</span>
+                                    </button>
+                                    <button id="profile-chat-btn" class="bg-slate-100 text-slate-700 px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all items-center gap-2 hidden btn-bounce whitespace-nowrap">
+                                        <i class="fa-solid fa-paper-plane"></i> Message
+                                    </button>
+                                    <!-- Admin verify button -->
+                                    <button id="verify-user-btn" onclick="toggleVerify(window.currentViewedUid)" class="hidden bg-blue-100 text-blue-600 px-4 py-2.5 rounded-xl font-bold text-xs hover:bg-blue-200 transition-all items-center gap-1.5 btn-bounce whitespace-nowrap">
+                                        <i class="fa-solid fa-circle-check"></i> <span>Verify</span>
+                                    </button>
+                                    <div id="admin-controls-container" class="flex-shrink-0"></div>
+                                </div>
+
+                                <!-- Stats Bar -->
+                                <div class="flex flex-wrap gap-3 mb-6 justify-center md:justify-start">
+                                    <div class="stat-hover cursor-pointer rounded-2xl px-6 py-4 bg-gradient-to-br from-slate-50 to-slate-100/80 hover:from-blue-50 hover:to-indigo-50 transition-all border border-slate-100 hover:border-blue-200 group" onclick="openFollowModal('followers')">
+                                        <div class="text-2xl font-extrabold text-slate-900 group-hover:text-blue-600 transition-colors" id="profile-followers-count">0</div>
+                                        <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider mt-0.5">Followers</div>
                                     </div>
-                                    <div id="admin-controls-container"></div>
+                                    <div class="stat-hover cursor-pointer rounded-2xl px-6 py-4 bg-gradient-to-br from-slate-50 to-slate-100/80 hover:from-blue-50 hover:to-indigo-50 transition-all border border-slate-100 hover:border-blue-200 group" onclick="openFollowModal('following')">
+                                        <div class="text-2xl font-extrabold text-slate-900 group-hover:text-blue-600 transition-colors" id="profile-following-count">0</div>
+                                        <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider mt-0.5">Following</div>
+                                    </div>
+                                    <div class="stat-hover rounded-2xl px-6 py-4 bg-gradient-to-br from-slate-50 to-slate-100/80 border border-slate-100 group">
+                                        <div class="text-2xl font-extrabold text-slate-900" id="profile-posts-count">0</div>
+                                        <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider mt-0.5">Posts</div>
+                                    </div>
                                 </div>
                                 
-                                <div class="border-t border-slate-200 pt-4 flex gap-8 text-sm font-semibold">
-                                    <div onclick="switchProfileTab('posts')" id="tab-posts" class="profile-tab active">Posts</div>
-                                    <div onclick="switchProfileTab('about')" id="tab-about" class="profile-tab">About</div>
-                                    <div onclick="switchProfileTab('saved')" id="tab-saved" class="profile-tab hidden">Saved</div>
+                                <!-- Tabs - pill style -->
+                                <div class="flex gap-2 bg-slate-100 rounded-xl p-1.5 w-fit">
+                                    <div onclick="switchProfileTab('posts')" id="tab-posts" class="profile-tab active cursor-pointer px-5 py-2.5 rounded-lg text-sm font-bold transition-all">
+                                        <i class="fa-solid fa-grid-2 mr-1.5 text-xs"></i> Posts
+                                    </div>
+                                    <div onclick="switchProfileTab('about')" id="tab-about" class="profile-tab cursor-pointer px-5 py-2.5 rounded-lg text-sm font-bold transition-all">
+                                        <i class="fa-solid fa-user mr-1.5 text-xs"></i> About
+                                    </div>
+                                    <div onclick="switchProfileTab('saved')" id="tab-saved" class="profile-tab hidden cursor-pointer px-5 py-2.5 rounded-lg text-sm font-bold transition-all">
+                                        <i class="fa-solid fa-bookmark mr-1.5 text-xs"></i> Saved
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div class="md:col-span-1 space-y-4 animate-slide-up" style="animation-delay: 0.1s;">
-                                <div class="glass-card rounded-2xl p-5 bg-white/90">
-                                    <h3 class="font-bold text-slate-800 mb-3 text-lg">Intro</h3>
+                        <!-- Content area - full width -->
+                        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                            <div class="lg:col-span-1 space-y-5 animate-slide-up" style="animation-delay: 0.1s;">
+                                <div class="glass-card rounded-2xl p-6 bg-white/90">
+                                    <h3 class="font-bold text-slate-800 mb-4 text-base flex items-center gap-2"><i class="fa-solid fa-circle-info text-blue-500"></i> About</h3>
                                     <p id="profile-page-bio" class="text-sm text-slate-600 mb-4 leading-relaxed whitespace-pre-line"></p>
-                                    <div class="text-xs text-slate-400 flex items-center gap-2 mb-2"><i class="fa-solid fa-clock"></i> Joined <span id="profile-join-date">...</span></div>
+                                </div>
+                                <!-- Quick Links card -->
+                                <div class="glass-card rounded-2xl p-6 bg-white/90">
+                                    <h3 class="font-bold text-slate-800 mb-4 text-base flex items-center gap-2"><i class="fa-solid fa-link text-indigo-500"></i> Quick Links</h3>
+                                    <div id="profile-quick-links" class="space-y-2.5">
+                                        <p class="text-xs text-slate-400 italic">No links added yet.</p>
+                                    </div>
                                 </div>
                             </div>
                             
-                            <div class="md:col-span-2 animate-slide-up" style="animation-delay: 0.2s;">
+                            <div class="lg:col-span-3 animate-slide-up" style="animation-delay: 0.2s;">
                                 <div id="profile-content-posts" class="space-y-6"></div>
-                                <div id="profile-content-about" class="hidden glass-card rounded-2xl p-6 bg-white/90">
-                                    <h3 class="font-bold text-xl mb-4">Full Bio</h3>
-                                    <p id="profile-full-bio" class="text-slate-700 leading-relaxed whitespace-pre-line"></p>
+                                <div id="profile-content-about" class="hidden glass-card rounded-2xl p-8 bg-white/90">
+                                    <h3 class="font-bold text-2xl mb-5 flex items-center gap-3"><i class="fa-solid fa-address-card text-blue-500"></i> Full Bio</h3>
+                                    <p id="profile-full-bio" class="text-slate-700 leading-relaxed whitespace-pre-line text-base"></p>
                                 </div>
                                 <div id="profile-content-saved" class="hidden space-y-6"></div>
                             </div>
@@ -1051,8 +1265,8 @@
                                         <span>Editing message...</span>
                                         <button type="button" onclick="cancelEdit()" class="hover:text-red-300 ml-1 transition-colors duration-200"><i class="fa-solid fa-xmark"></i></button>
                                     </div>
-                                    <input id="message-input" type="text" placeholder="Type a message..." class="flex-1 bg-slate-100 border border-transparent focus:bg-white focus:border-slate-200 rounded-full px-5 py-3.5 outline-none transition-all duration-300 text-sm" disabled>
-                                    <button id="message-send-btn" type="submit" class="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center hover:bg-slate-700 transition-all duration-200 disabled:opacity-30 btn-bounce" disabled><i id="msg-send-icon" class="fa-solid fa-arrow-up text-sm"></i></button>
+                                    <input id="message-input" type="text" placeholder="Type a message..." class="flex-1 bg-slate-100 border border-transparent focus:bg-white focus:border-slate-200 rounded-full px-5 py-3.5 outline-none transition-all duration-300 text-sm" disabled oninput="handleTypingIndicator()">
+                                    <button id="message-send-btn" type="submit" class="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center hover:bg-slate-700 transition-all duration-200 disabled:opacity-30 btn-bounce flex-shrink-0" disabled><i id="msg-send-icon" class="fa-solid fa-arrow-up text-sm"></i></button>
                                 </form>
                             </div>
                         </div>
@@ -1120,10 +1334,10 @@
                 </div>
 
                 <!-- Conversation View -->
-                <div id="floating-conversation" class="hidden flex-col bg-white h-full" style="display: none;">
-                    <div id="floating-messages" class="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar text-xs" style="scroll-behavior: smooth;"></div>
-                    <form onsubmit="sendFloatingMessage(event)" class="p-2 border-t border-slate-100 bg-slate-50/80 flex gap-2 items-center">
-                        <input id="floating-input" type="text" placeholder="Type a message..." class="flex-1 bg-white border border-slate-200 rounded-full px-3 py-2 text-xs outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200/50 transition-all duration-300" style="writing-mode: horizontal-tb;">
+                <div id="floating-conversation" class="hidden flex-col bg-white min-h-0 h-full overflow-hidden" style="display: none; flex: 1;">
+                    <div id="floating-messages" class="flex-1 min-h-0 overflow-y-auto p-3 space-y-2 custom-scrollbar text-xs break-words" style="scroll-behavior: smooth;"></div>
+                    <form onsubmit="sendFloatingMessage(event)" class="p-2 border-t border-slate-100 bg-slate-50/80 flex gap-2 items-center shrink-0 sticky bottom-0">
+                        <input id="floating-input" type="text" placeholder="Type a message..." class="flex-1 min-w-0 bg-white border border-slate-200 rounded-full px-3 py-2 text-xs outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200/50 transition-all duration-300" style="writing-mode: horizontal-tb;" oninput="handleFloatingTyping()">
                         <button type="submit" class="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center hover:bg-slate-700 transition-all duration-200 flex-shrink-0"><i class="fa-solid fa-arrow-up text-xs"></i></button>
                     </form>
                 </div>
@@ -1204,6 +1418,26 @@
         </script>
 
         <!-- Modals -->
+
+        <!-- CUSTOM DIALOG MODAL -->
+        <div id="custom-dialog-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[140] hidden flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-pop-in border border-slate-100">
+                <div class="p-5 border-b border-slate-100 flex items-start justify-between gap-3">
+                    <h3 id="custom-dialog-title" class="font-heading font-bold text-lg text-slate-800">Notice</h3>
+                    <button onclick="closeCustomDialog(false)" class="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center transition-colors btn-bounce">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <div class="p-5 space-y-4">
+                    <p id="custom-dialog-message" class="text-sm text-slate-600 leading-relaxed">Message</p>
+                    <input id="custom-dialog-input" type="text" class="hidden w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all text-sm" placeholder="Type here...">
+                    <div class="flex justify-end gap-2.5">
+                        <button id="custom-dialog-cancel" onclick="closeCustomDialog(false)" class="hidden px-4 py-2 rounded-xl font-bold text-sm bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all btn-bounce">Cancel</button>
+                        <button id="custom-dialog-confirm" onclick="closeCustomDialog(true)" class="px-4 py-2 rounded-xl font-bold text-sm bg-slate-900 text-white hover:bg-slate-800 transition-all btn-bounce">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- ADD HIGHLIGHT MODAL (ADMIN) -->
         <div id="highlight-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] hidden flex items-center justify-center p-4 transition-all duration-300">
@@ -1298,7 +1532,7 @@
 
             <!-- Content -->
             <div class="relative w-full h-full md:max-w-lg md:h-[90vh] md:rounded-xl overflow-hidden bg-slate-900 flex items-center justify-center">
-                 <img id="viewer-img" class="hidden w-full h-full object-cover">
+                 <img id="viewer-img" class="hidden w-full h-full object-contain">
                  <video id="viewer-video" class="hidden w-full h-full object-contain" autoplay playsinline></video>
                  
                  <!-- Navigation Overlay -->
@@ -1503,7 +1737,28 @@
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Bio</label>
-                        <textarea id="edit-bio" rows="4" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all" placeholder="Tell us about yourself..."></textarea>
+                        <textarea id="edit-bio" rows="3" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all" placeholder="Tell us about yourself..."></textarea>
+                    </div>
+                    <div class="pt-2 border-t border-slate-100">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2"><i class="fa-solid fa-link mr-1"></i> Quick Links</label>
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-globe text-slate-400 w-5 text-center"></i>
+                                <input id="edit-link-website" type="url" class="flex-1 p-2.5 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all text-sm" placeholder="Portfolio URL">
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i class="fa-brands fa-github text-slate-400 w-5 text-center"></i>
+                                <input id="edit-link-github" type="url" class="flex-1 p-2.5 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all text-sm" placeholder="GitHub URL">
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i class="fa-brands fa-linkedin text-slate-400 w-5 text-center"></i>
+                                <input id="edit-link-linkedin" type="url" class="flex-1 p-2.5 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all text-sm" placeholder="LinkedIn URL">
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i class="fa-brands fa-twitter text-slate-400 w-5 text-center"></i>
+                                <input id="edit-link-twitter" type="url" class="flex-1 p-2.5 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all text-sm" placeholder="Twitter/X URL">
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="p-5 bg-slate-50 border-t border-slate-100 flex justify-end">
@@ -1690,6 +1945,7 @@
         let isFirstNotificationLoad = true;
         let isFirstChatLoad = true;
         let audioContextUnlocked = false;
+        let lastNotifiedMessageTimeByChat = new Map();
         
         // --- NEW: Reply & Mobile Interaction State ---
         window.replyingTo = null; // { id, name, text }
@@ -1719,6 +1975,77 @@
         // --- HIGHLIGHTS STATE ---
         let currentHighlightImage = null;
         let highlightImageType = 'upload'; // 'upload' or 'url'
+
+        // --- CUSTOM TOAST & DIALOG ---
+        let customDialogResolver = null;
+        let customDialogType = 'alert';
+
+        window.showToast = (message = 'Done') => {
+            let toastEl = document.getElementById('toast');
+            if (!toastEl) {
+                toastEl = document.createElement('div');
+                toastEl.id = 'toast';
+                document.body.appendChild(toastEl);
+            }
+            toastEl.textContent = message;
+            toastEl.classList.add('show');
+            setTimeout(() => toastEl.classList.remove('show'), 2200);
+        };
+
+        window.showCustomDialog = ({ type = 'alert', title = 'Notice', message = '', confirmText = 'OK', cancelText = 'Cancel', placeholder = '' } = {}) => {
+            customDialogType = type;
+            const modal = document.getElementById('custom-dialog-modal');
+            const titleEl = document.getElementById('custom-dialog-title');
+            const msgEl = document.getElementById('custom-dialog-message');
+            const inputEl = document.getElementById('custom-dialog-input');
+            const cancelBtn = document.getElementById('custom-dialog-cancel');
+            const confirmBtn = document.getElementById('custom-dialog-confirm');
+
+            if (!modal) {
+                window.showToast(message || title);
+                return Promise.resolve(type === 'confirm' ? false : '');
+            }
+
+            titleEl.textContent = title;
+            msgEl.textContent = message;
+            confirmBtn.textContent = confirmText;
+            cancelBtn.textContent = cancelText;
+
+            const needsInput = type === 'prompt';
+            inputEl.classList.toggle('hidden', !needsInput);
+            cancelBtn.classList.toggle('hidden', type === 'alert');
+
+            if (needsInput) {
+                inputEl.value = '';
+                inputEl.placeholder = placeholder || 'Type here...';
+                setTimeout(() => inputEl.focus(), 30);
+            }
+
+            modal.classList.remove('hidden');
+
+            return new Promise((resolve) => {
+                customDialogResolver = resolve;
+            });
+        };
+
+        window.closeCustomDialog = (confirmed = false) => {
+            const modal = document.getElementById('custom-dialog-modal');
+            const inputEl = document.getElementById('custom-dialog-input');
+            if (modal) modal.classList.add('hidden');
+            if (!customDialogResolver) return;
+
+            let result;
+            if (customDialogType === 'confirm') result = confirmed;
+            else if (customDialogType === 'prompt') result = confirmed ? inputEl.value.trim() : null;
+            else result = confirmed;
+
+            customDialogResolver(result);
+            customDialogResolver = null;
+        };
+
+        window.showAlert = (message, title = 'Notice') => window.showCustomDialog({ type: 'alert', title, message, confirmText: 'OK' });
+        window.showConfirm = (message, title = 'Please confirm') => window.showCustomDialog({ type: 'confirm', title, message, confirmText: 'Confirm', cancelText: 'Cancel' });
+        window.showPrompt = (message, title = 'Enter value', placeholder = '') => window.showCustomDialog({ type: 'prompt', title, message, placeholder, confirmText: 'Submit', cancelText: 'Cancel' });
 
         // --- THEME LOGIC (SYNCED) ---
         window.toggleTheme = async () => {
@@ -1796,7 +2123,7 @@
             if (input.files && input.files[0]) {
                 const file = input.files[0];
                 if (file.size > 500 * 1024) { 
-                    alert("File is too large. Please select an audio file under 500KB.");
+                    showAlert("File is too large. Please select an audio file under 500KB.", "Upload limit");
                     input.value = "";
                     return;
                 }
@@ -1828,7 +2155,7 @@
                 srcToPlay = window.userProfileCache.notificationSound;
             }
             const tempAudio = new Audio(srcToPlay);
-            tempAudio.play().catch(e => alert("Could not play sound preview."));
+            tempAudio.play().catch(async () => await showAlert("Could not play sound preview.", "Audio error"));
         };
         
         // --- ADMIN MODAL LOGIC ---
@@ -1883,11 +2210,15 @@
                 await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users_directory', userToBanId), {
                     isBanned: newStatus
                 });
+                // Update cache immediately so UI reflects change without refresh
+                const cached = allUsersCache.find(u => u.id === userToBanId);
+                if(cached) cached.isBanned = newStatus;
+                showToast(newStatus ? 'User has been banned' : 'User has been unbanned');
                 closeBanModal();
                 viewProfile(userToBanId);
             } catch (e) {
                 console.error("Error banning user:", e);
-                alert("Failed to update ban status.");
+                await showAlert("Failed to update ban status.", "Update failed");
             }
         };
 
@@ -2169,7 +2500,7 @@
                 });
             } catch (err) {
                 console.error("Error answering call:", err);
-                alert("Call Failed: Could not access camera/microphone or connect. Check permissions.");
+                await showAlert("Call Failed: Could not access camera/microphone or connect. Check permissions.", "Call failed");
                 endCallCleanup();
             }
         };
@@ -2178,7 +2509,7 @@
             if(!currentChatId) return;
             const parts = currentChatId.split('_');
             const targetUid = parts.find(id => id !== currentUser.uid);
-            if(!targetUid) return alert("Cannot call this user.");
+            if(!targetUid) { await showAlert("Cannot call this user.", "Call unavailable"); return; }
 
             callType = type;
             setupCallInterface(type);
@@ -2259,7 +2590,7 @@
                 });
             } catch (err) {
                 console.error("Error initiating call:", err);
-                alert("Call Failed: Could not access camera/microphone. Ensure you are on HTTPS.");
+                await showAlert("Call Failed: Could not access camera/microphone. Ensure you are on HTTPS.", "Call failed");
                 endCallCleanup();
             }
         };
@@ -2466,7 +2797,10 @@
              if(highlightImageType === 'url') {
                  imageUrl = document.getElementById('hl-input-url').value;
              }
-             if(!title || !imageUrl) return alert("Title and Image are required.");
+             if(!title || !imageUrl) {
+                 await showAlert("Title and Image are required.", "Missing fields");
+                 return;
+             }
              try {
                  await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'highlights'), {
                      title, 
@@ -2478,12 +2812,13 @@
                  document.getElementById('highlight-modal').classList.add('hidden');
              } catch(e) {
                  console.error("Highlight save failed", e);
-                 alert("Failed to save.");
+                 await showAlert("Failed to save highlight.", "Save failed");
              }
         };
         
         window.deleteHighlight = async (id) => {
-             if(confirm("Delete highlight?")) {
+             const confirmed = await showConfirm("Delete highlight?", "Delete highlight");
+             if(confirmed) {
                  await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'highlights', id));
              }
         };
@@ -2568,6 +2903,10 @@
                     const parts = d.id.split('_');
                     if(parts.includes(currentUser.uid)) {
                         chats.push({id: d.id, ...data});
+                        const lastUpdatedMillis = data.lastUpdated?.toMillis?.() || 0;
+                        if (!lastNotifiedMessageTimeByChat.has(d.id)) {
+                            lastNotifiedMessageTimeByChat.set(d.id, lastUpdatedMillis);
+                        }
                         if(data.readBy && !data.readBy.includes(currentUser.uid)) hasUnread = true;
                     }
                 });
@@ -2575,10 +2914,20 @@
                 if (!isFirstChatLoad) {
                     snap.docChanges().forEach(change => {
                         const data = change.doc.data();
+                        const chatId = change.doc.id;
+                        const lastUpdatedMillis = data.lastUpdated?.toMillis?.() || 0;
+                        const previousMillis = lastNotifiedMessageTimeByChat.get(chatId) || 0;
+                        const hasNewMessage = lastUpdatedMillis > previousMillis;
+                        const isUnread = data.readBy && !data.readBy.includes(currentUser.uid);
+
                         if ((change.type === 'added' || change.type === 'modified') &&
                             data.participants && data.participants.includes(currentUser.uid) &&
-                            data.readBy && !data.readBy.includes(currentUser.uid)) {
-                             window.playNotificationSound(); 
+                            isUnread && hasNewMessage) {
+                             window.playNotificationSound();
+                        }
+
+                        if (lastUpdatedMillis > previousMillis) {
+                            lastNotifiedMessageTimeByChat.set(chatId, lastUpdatedMillis);
                         }
                     });
                 }
@@ -2617,6 +2966,7 @@
         window.openChat = async (chatId, name) => {
             currentChatId = chatId;
             if(window.allChats) renderChatList(window.allChats);
+            monitorTyping(chatId);
             
             document.querySelector('#chat-header span').innerText = name;
             document.getElementById('start-video-call-btn').classList.remove('hidden');
@@ -2672,11 +3022,25 @@
                         }
                     }
 
-                    // TIME STRING
+                    // TIME STRING - only show if 5+ min gap from previous message
                     let timeStr = '';
                     if(m.createdAt) {
                         const d = new Date(m.createdAt.toMillis());
-                        timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                        let showTime = false;
+                        if(idx === 0) {
+                            showTime = true;
+                        } else {
+                            const prevMsg = messages[idx - 1];
+                            if(prevMsg && prevMsg.createdAt) {
+                                const gap = m.createdAt.toMillis() - prevMsg.createdAt.toMillis();
+                                if(gap > 5 * 60 * 1000) showTime = true;
+                            } else {
+                                showTime = true;
+                            }
+                        }
+                        if(showTime) {
+                            timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                        }
                     }
 
                     // REPLY CONTENT UI
@@ -2689,15 +3053,8 @@
                         </div>`;
                     }
                     
-                    // READ RECEIPT (only for my messages)
+                    // READ RECEIPT removed
                     let receiptHtml = '';
-                    if(isMe && timeStr) {
-                        // Check if other user has read (chat doc readBy includes otherUid)
-                        const chatDoc = window.allChats ? window.allChats.find(ch => ch.id === currentChatId) : null;
-                        const isRead = chatDoc && chatDoc.readBy && chatDoc.readBy.includes(otherUid);
-                        const isLastMsg = idx === messages.length - 1;
-                        receiptHtml = isLastMsg ? `<span class="msg-read-receipt"><i class="fa-solid fa-check-double check ${isRead ? 'read' : ''}"></i></span>` : '';
-                    }
 
                     // DESKTOP TRIGGER
                     let triggerHtml = '';
@@ -2723,6 +3080,16 @@
                     // SWIPE INDICATOR UI
                     const swipeIndicator = `<div class="reply-arrow-indicator ${isMe ? 'right-full mr-2' : 'left-full ml-2'}"><i class="fa-solid fa-reply"></i></div>`;
 
+                    // Reaction display
+                    const reactions = m.reactions || {};
+                    const reactionCounts = {};
+                    Object.values(reactions).forEach(emoji => { reactionCounts[emoji] = (reactionCounts[emoji] || 0) + 1; });
+                    const reactionDisplay = Object.keys(reactionCounts).length ? 
+                        `<div class="flex gap-1 mt-1 ${isMe ? 'justify-end' : 'justify-start'}">` + 
+                        Object.entries(reactionCounts).map(([emoji, count]) => 
+                            `<span class="inline-flex items-center gap-0.5 bg-white border border-slate-200 rounded-full px-1.5 py-0.5 text-xs cursor-pointer hover:scale-110 transition-transform shadow-sm" onclick="toggleReaction('${chatId}', '${m.id}', '${emoji}')">${emoji}${count > 1 ? `<span class="text-[9px] text-slate-500 font-bold">${count}</span>` : ''}</span>`
+                        ).join('') + '</div>' : '';
+
                     c.innerHTML += `
                     <div class="flex w-full mb-1 ${isMe?'justify-end':'justify-start'} group msg-group" id="msg-container-${m.id}">
                         <div class="flex flex-col ${isMe?'items-end':'items-start'} max-w-[85%] w-full min-w-0 relative">
@@ -2731,6 +3098,15 @@
                                 ${replyBlock}
                                 ${m.text}
                                 ${m.edited ? '<span class="text-[10px] opacity-60 block text-right italic mt-1">(edited)</span>' : ''}
+                            </div>
+                            ${reactionDisplay}
+                            <!-- Reaction picker -->
+                            <div class="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 mt-0.5">
+                                <button onclick="toggleReaction('${chatId}', '${m.id}', '❤️')" class="hover:scale-125 transition-transform text-xs p-0.5" title="Love">❤️</button>
+                                <button onclick="toggleReaction('${chatId}', '${m.id}', '😂')" class="hover:scale-125 transition-transform text-xs p-0.5" title="Laugh">😂</button>
+                                <button onclick="toggleReaction('${chatId}', '${m.id}', '👍')" class="hover:scale-125 transition-transform text-xs p-0.5" title="Like">👍</button>
+                                <button onclick="toggleReaction('${chatId}', '${m.id}', '😮')" class="hover:scale-125 transition-transform text-xs p-0.5" title="Wow">😮</button>
+                                <button onclick="toggleReaction('${chatId}', '${m.id}', '😢')" class="hover:scale-125 transition-transform text-xs p-0.5" title="Sad">😢</button>
                             </div>
                             <div class="msg-time ${isMe ? 'flex-row-reverse' : ''}">
                                 ${timeStr ? `<span>${timeStr}</span>` : ''}
@@ -2742,7 +3118,7 @@
                 });
                 
                 // Add typing indicator placeholder at bottom
-                c.innerHTML += `<div id="typing-indicator-container" class="hidden flex justify-start mb-1 msg-group">
+                c.innerHTML += `<div id="typing-indicator-container" class="${window._otherUserIsTyping ? '' : 'hidden'} flex justify-start mb-1 msg-group">
                     <div class="typing-indicator">
                         <div class="typing-dot"></div>
                         <div class="typing-dot"></div>
@@ -2765,6 +3141,8 @@
                     }
                 });
 
+                const chatDoc = window.allChats ? window.allChats.find(ch => ch.id === currentChatId) : null;
+                updateLiveReadReceipts(currentChatId, chatDoc?.readBy || []);
                 c.scrollTop = c.scrollHeight;
             });
             router('messaging');
@@ -2886,7 +3264,7 @@
             
             btnCopy.onclick = () => { 
                 closeMobileMenu(); 
-                navigator.clipboard.writeText(msgText).then(() => alert('Copied!')); 
+                navigator.clipboard.writeText(msgText).then(() => showToast('Copied!')); 
             };
 
             if(isMe) {
@@ -2942,6 +3320,20 @@
         };
 
         // -----------------------
+
+        window.toggleReaction = async (chatId, msgId, emoji) => {
+            if(!currentUser || !chatId) return;
+            const msgRef = doc(db, 'artifacts', appId, 'public', 'data', 'chats', chatId, 'messages', msgId);
+            const msgSnap = await getDoc(msgRef);
+            if(!msgSnap.exists()) return;
+            const reactions = msgSnap.data().reactions || {};
+            if(reactions[currentUser.uid] === emoji) {
+                delete reactions[currentUser.uid];
+            } else {
+                reactions[currentUser.uid] = emoji;
+            }
+            await updateDoc(msgRef, { reactions });
+        };
         
         window.openMsgOptions = (msgId, canEdit) => {
             currentActionMsgId = msgId;
@@ -2997,7 +3389,8 @@
         };
 
         window.unsendMessage = async (msgId) => {
-             if(confirm("Unsend this message?")) {
+             const confirmed = await showConfirm("Unsend this message?", "Unsend message");
+             if(confirmed) {
                  await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'chats', currentChatId, 'messages', msgId));
              }
         };
@@ -3012,7 +3405,8 @@
         };
         
         window.deleteChat = async () => {
-            if(!confirm("Delete this conversation?")) return;
+            const confirmed = await showConfirm("Delete this conversation?", "Delete conversation");
+            if(!confirmed) return;
             const s = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'chats', currentChatId, 'messages'));
             s.docs.forEach(d => deleteDoc(d.ref));
             await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'chats', currentChatId));
@@ -3061,13 +3455,93 @@
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'chats', currentChatId, 'messages'), payload);
                 await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'chats', currentChatId), {
                     lastUpdated: serverTimestamp(),
-                    readBy: [currentUser.uid]
+                    readBy: [currentUser.uid],
+                    [`typing_${currentUser.uid}`]: false
                 }, { merge: true });
+                isTyping = false;
+                clearTimeout(typingTimeout);
             }
             i.value = '';
         };
 
-        // --- STORIES LOGIC ---
+        // --- TYPING INDICATOR LOGIC ---
+        let typingTimeout = null;
+        let isTyping = false;
+        
+        window.handleTypingIndicator = () => {
+            if(!currentChatId || !currentUser) return;
+            
+            if(!isTyping) {
+                isTyping = true;
+                setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'chats', currentChatId), {
+                    [`typing_${currentUser.uid}`]: true
+                }, { merge: true });
+            }
+            
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                isTyping = false;
+                setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'chats', currentChatId), {
+                    [`typing_${currentUser.uid}`]: false
+                }, { merge: true });
+            }, 2000);
+        };
+        
+        // Monitor typing status of other user
+        let unsubscribeTyping = null;
+        window._otherUserIsTyping = false;
+
+        function updateLiveReadReceipts(chatId, readBy = []) {
+            // Read receipts removed
+        }
+
+        function monitorTyping(chatId) {
+            if(unsubscribeTyping) unsubscribeTyping();
+            window._otherUserIsTyping = false;
+            unsubscribeTyping = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'chats', chatId), (snap) => {
+                if(!snap.exists()) return;
+                const data = snap.data();
+                const parts = chatId.split('_');
+                const otherUid = parts[0] === currentUser.uid ? parts[1] : parts[0];
+                const otherTyping = data[`typing_${otherUid}`] === true;
+                window._otherUserIsTyping = otherTyping;
+                
+                // Update read receipt state in allChats cache for real-time read status
+                if(window.allChats) {
+                    const chatObj = window.allChats.find(ch => ch.id === chatId);
+                    if(chatObj && data.readBy) chatObj.readBy = data.readBy;
+                }
+                updateLiveReadReceipts(chatId, data.readBy || []);
+                
+                const indicator = document.getElementById('typing-indicator-container');
+                if(indicator) {
+                    indicator.classList.toggle('hidden', !otherTyping);
+                    if(otherTyping) {
+                        const c = document.getElementById('chat-messages');
+                        if(c) c.scrollTop = c.scrollHeight;
+                    }
+                }
+            });
+        }
+
+        // --- VERIFIED BADGE LOGIC ---
+        window.toggleVerify = async (uid) => {
+            if(!currentUser || !checkIsAdmin(currentUser.email)) return;
+            const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users_directory', uid);
+            const userSnap = await getDoc(userRef);
+            const isVerified = userSnap.exists() && userSnap.data().isVerified;
+            
+            await updateDoc(userRef, { isVerified: !isVerified });
+            
+            // Update cache
+            const cached = allUsersCache.find(u => u.id === uid);
+            if(cached) cached.isVerified = !isVerified;
+            
+            showToast(isVerified ? 'Verification removed' : 'User verified ✓');
+            viewProfile(uid);
+        };
+
+
         function monitorStories() {
             if (unsubscribeStories) unsubscribeStories();
             // Fetch all stories. In production, use "where" clause for expiresAt.
@@ -3183,7 +3657,7 @@
                 const isVideo = file.type.startsWith('video/');
                 
                 if(file.size > 800 * 1024) {
-                    alert("File too large. Max 800KB for stories.");
+                    showAlert("File too large. Max 800KB for stories.", "Upload limit");
                     input.value = "";
                     return;
                 }
@@ -3246,7 +3720,7 @@
                 document.getElementById('story-upload-modal').classList.add('hidden');
             } catch(e) {
                 console.error("Story upload failed", e);
-                alert("Upload failed.");
+                await showAlert("Upload failed.", "Story upload");
             } finally {
             }
         };
@@ -3362,13 +3836,14 @@
             
             if(story.uid !== currentUser.uid) return;
             
-            if(confirm("Delete this story?")) {
+            const confirmed = await showConfirm("Delete this story?", "Delete story");
+            if(confirmed) {
                 try {
                     await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'stories', story.id));
                     closeStoryViewer();
                 } catch(e) {
                     console.error("Delete story failed", e);
-                    alert("Could not delete.");
+                    await showAlert("Could not delete this story.", "Delete failed");
                 }
             }
         };
@@ -3741,8 +4216,10 @@
             const canDelete = currentUser.uid === post.uid || isAdmin;
             const canEdit = currentUser.uid === post.uid;
 
-            const postAuthorIsAdmin = allUsersCache.find(u => u.id === post.uid)?.isAdmin;
+            const postAuthor = allUsersCache.find(u => u.id === post.uid);
+            const postAuthorIsAdmin = postAuthor?.isAdmin;
             const adminBadge = postAuthorIsAdmin ? `<span class="admin-badge">Admin 🛡️</span>` : '';
+            const verifiedBadge = postAuthor?.isVerified ? `<span class="verified-badge" title="Verified"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#2563eb"/><path d="M9 12l2 2 4-4" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>` : '';
 
             return `<div id="post-${post.id}-${context}" class="glass-card rounded-2xl bg-white p-0 overflow-hidden animate-slide-up mb-4 hover:shadow-lg transition-shadow duration-300">
                 <div class="p-4 flex gap-3">
@@ -3751,7 +4228,7 @@
                         <div class="flex justify-between items-start">
                             <div>
                                 <h4 class="font-bold text-slate-800 text-sm">
-                                    <span class="hover:underline cursor-pointer transition-colors hover:text-blue-600" onclick="viewProfile('${post.uid}')">${post.name}</span>${adminBadge}${taggedHTML}
+                                    <span class="hover:underline cursor-pointer transition-colors hover:text-blue-600" onclick="viewProfile('${post.uid}')">${post.name}</span>${verifiedBadge}${adminBadge}${taggedHTML}
                                 </h4>
                                 <p class="text-xs text-slate-400">${post.headline || 'Member'}</p>
                             </div>
@@ -3772,7 +4249,7 @@
                     <p class="text-slate-700 text-sm whitespace-pre-line leading-relaxed">${post.text}</p>
                     <div class="mt-2 flex flex-wrap gap-2">${tags}</div>
                 </div>
-                ${post.attachment ? `<div class="mt-2 overflow-hidden"><img src="${post.attachment}" class="w-full object-cover max-h-[500px] bg-slate-50 hover:scale-[1.01] transition-transform duration-500"></div>` : ''}
+                ${post.attachment ? `<div class="mt-2 overflow-hidden bg-slate-100 flex items-center justify-center">${post.attachment.match(/\.(mp4|webm|mov|ogg)($|\?)/i) ? `<video src="${post.attachment}" class="w-full max-h-[500px] object-contain" controls preload="metadata"></video>` : `<img src="${post.attachment}" class="w-full max-h-[500px] object-contain hover:scale-[1.01] transition-transform duration-500">`}</div>` : ''}
                 <div class="px-4 py-3 border-t border-slate-100 flex gap-1">
                     <button onclick="toggleLike('${post.id}')" class="flex-1 py-2 rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 text-slate-500 font-medium text-sm btn-bounce group"><i class="${likeIconClass} fa-heart text-lg transition-transform group-hover:scale-125"></i> <span class="${hasLiked ? 'text-blue-600' : ''}">${post.likes || 0}</span></button>
                     <button onclick="toggleCommentSection('${post.id}', '${context}')" class="flex-1 py-2 rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 text-slate-500 font-medium text-sm btn-bounce group"><i class="fa-regular fa-comment text-lg transition-transform group-hover:scale-125"></i></button>
@@ -3800,7 +4277,21 @@
         window.renderSavedPosts = () => {
              const container = document.getElementById('saved-posts-stream');
              const saved = allPostsCache.filter(p => mySavedPosts.includes(p.id));
-             if(!saved.length) { container.innerHTML = `<p class="text-center text-slate-400 py-8 animate-fade-in">No saved posts.</p>`; return; }
+             const countEl = document.getElementById('saved-count');
+             if(countEl) countEl.innerText = saved.length;
+             if(!saved.length) { 
+                 container.innerHTML = `
+                 <div class="text-center py-16 animate-fade-in">
+                     <div class="saved-empty-icon inline-block mb-4">
+                         <div class="w-20 h-20 rounded-full bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center mx-auto shadow-lg shadow-purple-100">
+                             <i class="fa-regular fa-bookmark text-3xl text-purple-400"></i>
+                         </div>
+                     </div>
+                     <h3 class="font-heading font-bold text-lg text-slate-600 mb-2">Nothing saved yet</h3>
+                     <p class="text-sm text-slate-400 max-w-xs mx-auto">Posts you save will appear here. Tap the bookmark icon on any post to save it.</p>
+                 </div>`; 
+                 return; 
+             }
              container.innerHTML = saved.map(p => createPostHTML(p, 'saved')).join('');
         };
 
@@ -3827,38 +4318,48 @@
 
         window.filterCollaborate = (filter) => {
             window.currentCollabFilter = filter;
-            document.querySelectorAll('.collab-filter').forEach(btn => {
-                btn.className = "collab-filter px-4 py-1.5 rounded-full text-sm font-medium border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all whitespace-nowrap";
+            document.querySelectorAll('#collab-filters button').forEach(btn => {
+                btn.className = "collab-filter-pill px-5 py-2 rounded-full text-sm font-bold border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all whitespace-nowrap hover:shadow-md btn-bounce";
             });
             const activeBtn = document.getElementById(`filter-${filter}`);
             if(activeBtn) {
-                 activeBtn.className = "collab-filter active px-4 py-1.5 rounded-full text-sm font-medium border border-slate-200 bg-slate-800 text-white transition-all whitespace-nowrap shadow-md";
+                 activeBtn.className = "collab-filter-pill active-filter px-5 py-2 rounded-full text-sm font-bold border border-slate-200 bg-slate-900 text-white transition-all whitespace-nowrap shadow-md btn-bounce";
             }
             renderCollaborate();
         };
 
         function renderNetwork(users) {
             const g = document.getElementById('network-grid');
+            const countEl = document.getElementById('network-count');
+            if(countEl) countEl.innerText = users.length;
+            
             if(!users.length) { 
                 if(currentUser) {
-                     g.innerHTML = `<p class="col-span-2 text-center text-slate-400 animate-fade-in">Initializing your network...</p>`;
+                     g.innerHTML = `<p class="col-span-2 text-center text-slate-400 animate-fade-in py-12"><i class="fa-solid fa-spinner fa-spin text-2xl mb-3 block"></i>Initializing your network...</p>`;
                      return;
                 }
-                g.innerHTML = `<p class="col-span-2 text-center text-slate-400 animate-fade-in">No users found.</p>`; 
+                g.innerHTML = `<p class="col-span-2 text-center text-slate-400 animate-fade-in py-12">No users found.</p>`; 
                 return; 
             }
-            g.innerHTML = users.map(u => `
-            <div class="glass-card rounded-xl p-4 flex items-center gap-4 hover:border-blue-300 transition-colors duration-300 animate-pop-in hover:shadow-md">
-                <div class="flex items-center gap-4 flex-grow cursor-pointer" onclick="viewProfile('${u.id}')">
-                    <img src="${u.photoURL}" class="w-12 h-12 rounded-full bg-slate-100 object-cover">
-                    <div>
-                        <h4 class="font-bold text-slate-800 text-sm group-hover:text-blue-600 transition-colors">${u.name}</h4>
-                        <p class="text-xs text-slate-500 truncate">${u.headline || 'Member'}</p>
+            g.innerHTML = users.map((u, i) => `
+            <div class="glass-card network-card rounded-2xl p-5 animate-pop-in" style="animation-delay: ${i * 0.06}s;" onclick="viewProfile('${u.id}')">
+                <div class="flex items-center gap-4">
+                    <div class="relative">
+                        <img src="${u.photoURL}" class="network-avatar w-14 h-14 rounded-full bg-slate-100 object-cover ring-2 ring-white shadow-md">
+                    </div>
+                    <div class="flex-grow min-w-0">
+                        <h4 class="font-bold text-slate-800 text-sm truncate">${u.name}</h4>
+                        <p class="text-xs text-slate-500 truncate mt-0.5">${u.headline || 'Member'}</p>
+                    </div>
+                    <div class="flex gap-2 items-center">
+                        <button onclick="event.stopPropagation(); startChat('${u.id}', '${u.name}')" class="network-action w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100 hover:scale-110 transition-all z-10 btn-bounce" title="Message">
+                            <i class="fa-regular fa-comment-dots"></i>
+                        </button>
+                        <button onclick="event.stopPropagation(); viewProfile('${u.id}')" class="network-action w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-slate-200 hover:scale-110 transition-all z-10 btn-bounce" title="View Profile" style="transition-delay: 0.05s;">
+                            <i class="fa-solid fa-arrow-right text-xs"></i>
+                        </button>
                     </div>
                 </div>
-                <button onclick="startChat('${u.id}', '${u.name}')" class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100 transition-colors z-10 btn-bounce" title="Message">
-                    <i class="fa-regular fa-comment-dots"></i>
-                </button>
             </div>`).join('');
         }
 
@@ -4168,6 +4669,25 @@
              document.getElementById('profile-page-avatar').src = user ? user.photoURL : "https://placehold.co/100x100";
              document.getElementById('profile-page-headline').innerText = user ? (user.headline || "") : "";
              
+             // Verified badge
+             const verifiedBadge = document.getElementById('profile-verified-badge');
+             if(user && user.isVerified) {
+                 verifiedBadge.classList.remove('hidden');
+             } else {
+                 verifiedBadge.classList.add('hidden');
+             }
+             
+             // Admin verify button
+             const verifyBtn = document.getElementById('verify-user-btn');
+             if(checkIsAdmin(currentUser.email) && uid !== currentUser.uid) {
+                 verifyBtn.classList.remove('hidden');
+                 verifyBtn.classList.add('flex');
+                 const btnSpan = verifyBtn.querySelector('span');
+                 btnSpan.innerText = user.isVerified ? 'Unverify' : 'Verify';
+             } else {
+                 verifyBtn.classList.add('hidden');
+             }
+             
              const dateSpan = document.getElementById('profile-join-date');
              if (user.createdAt) {
                  const date = new Date(user.createdAt.seconds * 1000);
@@ -4180,11 +4700,13 @@
                  document.getElementById('edit-profile-btn').classList.remove('hidden');
                  document.getElementById('follow-btn').classList.add('hidden');
                  document.getElementById('profile-chat-btn').classList.add('hidden');
+                 document.getElementById('cover-upload-btn').classList.remove('hidden');
              } else {
                  document.getElementById('edit-profile-btn').classList.add('hidden');
                  document.getElementById('follow-btn').classList.remove('hidden');
                  document.getElementById('profile-chat-btn').classList.remove('hidden');
                  document.getElementById('profile-chat-btn').onclick = () => startChat(uid, user.name);
+                 document.getElementById('cover-upload-btn').classList.add('hidden');
              }
              
              const pDoc = await getDoc(doc(db, 'artifacts', appId, 'users', uid, 'profile', 'main'));
@@ -4198,6 +4720,47 @@
                  document.getElementById('profile-full-bio').innerText = d.bio || "No details available.";
                  followerCount = (d.followers || []).length;
                  followingCount = (d.following || []).length;
+                 
+                 // Cover photo
+                 const coverImg = document.getElementById('profile-cover-img');
+                 if(d.coverPhoto) {
+                     coverImg.src = d.coverPhoto;
+                     coverImg.classList.remove('hidden');
+                 } else {
+                     coverImg.classList.add('hidden');
+                 }
+                 
+                 // Quick Links
+                 const linksContainer = document.getElementById('profile-quick-links');
+                 const links = d.links || {};
+                 const linkItems = [
+                     { icon: 'fa-solid fa-globe', label: 'Website', url: links.website },
+                     { icon: 'fa-brands fa-github', label: 'GitHub', url: links.github },
+                     { icon: 'fa-brands fa-linkedin', label: 'LinkedIn', url: links.linkedin },
+                     { icon: 'fa-brands fa-twitter', label: 'Twitter/X', url: links.twitter },
+                 ].filter(l => l.url);
+                 
+                 if(linkItems.length) {
+                     linksContainer.innerHTML = linkItems.map(l => `
+                         <a href="${l.url}" target="_blank" rel="noopener" class="flex items-center gap-3 text-sm text-slate-500 hover:text-blue-600 transition-colors cursor-pointer group">
+                             <i class="${l.icon} w-5 text-center text-slate-400 group-hover:text-blue-500 transition-colors"></i>
+                             <span class="truncate">${l.label}</span>
+                             <i class="fa-solid fa-arrow-up-right-from-square text-[10px] opacity-0 group-hover:opacity-100 transition-opacity ml-auto text-slate-400"></i>
+                         </a>
+                     `).join('');
+                 } else {
+                     linksContainer.innerHTML = '<p class="text-xs text-slate-400 italic">No links added yet.</p>';
+                 }
+                 
+                 // Populate edit modal fields if own profile
+                 if(uid === currentUser.uid) {
+                     document.getElementById('edit-headline').value = d.headline || '';
+                     document.getElementById('edit-bio').value = d.bio || '';
+                     document.getElementById('edit-link-website').value = (d.links || {}).website || '';
+                     document.getElementById('edit-link-github').value = (d.links || {}).github || '';
+                     document.getElementById('edit-link-linkedin').value = (d.links || {}).linkedin || '';
+                     document.getElementById('edit-link-twitter').value = (d.links || {}).twitter || '';
+                 }
                  
                  if(uid !== currentUser.uid) {
                      const myRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'main');
@@ -4220,6 +4783,8 @@
              } else {
                  document.getElementById('profile-page-bio').innerText = "No bio yet.";
                  document.getElementById('profile-full-bio').innerText = "No details available.";
+                 document.getElementById('profile-cover-img').classList.add('hidden');
+                 document.getElementById('profile-quick-links').innerHTML = '<p class="text-xs text-slate-400 italic">No links added yet.</p>';
              }
              
              document.getElementById('profile-followers-count').innerText = followerCount;
@@ -4229,9 +4794,8 @@
                  const isBanned = user.isBanned || false;
                  let adminControls = document.getElementById('admin-controls-container');
                  adminControls.innerHTML = `
-                     <div class="mt-4 pt-4 border-t border-red-100 animate-fade-in">
-                         <h4 class="text-xs font-bold text-red-500 uppercase mb-2">Admin Controls</h4>
-                         <button onclick="toggleBan('${uid}', ${isBanned})" class="bg-red-100 text-red-600 px-4 py-2 rounded-lg font-bold text-xs hover:bg-red-200 transition-colors btn-bounce">
+                     <div class="flex items-center">
+                         <button onclick="toggleBan('${uid}', ${isBanned})" class="bg-red-100 text-red-600 px-4 py-2 rounded-lg font-bold text-xs hover:bg-red-200 transition-colors btn-bounce whitespace-nowrap">
                              ${isBanned ? 'Unban User' : 'Ban User'}
                          </button>
                      </div>
@@ -4249,7 +4813,7 @@
         window.openSettingsModal = () => document.getElementById('settings-modal').classList.remove('hidden');
         window.closeSettingsModal = () => document.getElementById('settings-modal').classList.add('hidden');
         
-        window.saveSettings = async () => {
+         window.saveSettings = async () => {
              const updates = {};
              
              const newName = document.getElementById('settings-username').value;
@@ -4280,7 +4844,7 @@
              if (newName && newName !== currentUser.displayName) location.reload();
              else {
                  closeSettingsModal();
-                 alert("Settings Saved!");
+                 showToast("Settings saved!");
              }
         };
 
@@ -4290,9 +4854,17 @@
         window.saveProfileData = async () => {
              const headline = document.getElementById('edit-headline').value;
              const bio = document.getElementById('edit-bio').value;
+             const links = {
+                 website: document.getElementById('edit-link-website').value.trim(),
+                 github: document.getElementById('edit-link-github').value.trim(),
+                 linkedin: document.getElementById('edit-link-linkedin').value.trim(),
+                 twitter: document.getElementById('edit-link-twitter').value.trim(),
+             };
+             // Remove empty links
+             Object.keys(links).forEach(k => { if(!links[k]) delete links[k]; });
              
              await setDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'main'), {
-                 headline, bio, savedPosts: mySavedPosts
+                 headline, bio, links, savedPosts: mySavedPosts
              }, { merge: true });
              
              await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users_directory', currentUser.uid), {
@@ -4303,6 +4875,24 @@
              
              closeEditProfileModal();
              viewMyProfile();
+        };
+
+        window.handleCoverPhotoChange = (input) => {
+             if(input.files && input.files[0]) {
+                 const reader = new FileReader();
+                 reader.onload = async (e) => {
+                     const dataUrl = e.target.result;
+                     // Save to profile
+                     await setDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'main'), {
+                         coverPhoto: dataUrl
+                     }, { merge: true });
+                     // Update UI immediately
+                     const coverImg = document.getElementById('profile-cover-img');
+                     coverImg.src = dataUrl;
+                     coverImg.classList.remove('hidden');
+                 };
+                 reader.readAsDataURL(input.files[0]);
+             }
         };
 
         window.handlePfpChange = (input) => {
@@ -4406,7 +4996,7 @@
                 await batch.commit();
             } catch(e) {
                 console.error("Error clearing notifications:", e);
-                alert("Failed to clear notifications.");
+                await showAlert("Failed to clear notifications.", "Action failed");
             }
         };
         
@@ -4431,7 +5021,7 @@
         window.submitReport = async () => {
              const reason = document.getElementById('report-reason').value;
              if (!reason.trim()) {
-                 alert("Please provide a reason for the report.");
+                 await showAlert("Please provide a reason for the report.", "Missing reason");
                  return;
              }
 
@@ -4479,10 +5069,10 @@
                     body: JSON.stringify(formData)
                  });
 
-                 alert("Report submitted to admins.");
+                 showToast("Report submitted to admins.");
              } catch (e) {
                  console.error("Error submitting report:", e);
-                 alert("Failed to submit report.");
+                 await showAlert("Failed to submit report.", "Submission failed");
              }
 
              closeReportModal();
@@ -4550,6 +5140,7 @@
             convo.style.display = 'flex';
             convo.style.flexDirection = 'column';
             convo.style.flex = '1';
+            convo.style.minHeight = '0';
             document.getElementById('floating-back-btn').classList.remove('hidden');
             document.getElementById('floating-header-title').innerText = name;
             
@@ -4563,18 +5154,38 @@
             window.unsubscribeFloatingMessages = onSnapshot(q, (snap) => {
                 const container = document.getElementById('floating-messages');
                 container.innerHTML = '';
-                snap.forEach(d => {
-                    const m = d.data();
+                const messages = [];
+                snap.forEach(d => messages.push({id: d.id, ...d.data()}));
+                
+                const parts = chatId.split('_');
+                const otherUid = parts[0] === currentUser.uid ? parts[1] : parts[0];
+                
+                messages.forEach((m, idx) => {
                     if(m.type === 'system') {
                          container.innerHTML += `<div class="text-[10px] text-center text-slate-400 my-2 font-medium">${m.text}</div>`;
                          return;
                     }
                     const isMe = m.senderId === currentUser.uid;
                     let timeStr = '';
+                    let showTime = false;
                     if(m.createdAt) {
                         const dt = new Date(m.createdAt.toMillis());
-                        timeStr = dt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                        if(idx === 0) {
+                            showTime = true;
+                        } else {
+                            const prevMsg = messages[idx - 1];
+                            if(prevMsg && prevMsg.createdAt) {
+                                const gap = m.createdAt.toMillis() - prevMsg.createdAt.toMillis();
+                                if(gap > 5 * 60 * 1000) showTime = true;
+                            } else {
+                                showTime = true;
+                            }
+                        }
+                        if(showTime) {
+                            timeStr = dt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                        }
                     }
+                    
                     container.innerHTML += `
                     <div class="flex w-full mb-1 ${isMe?'justify-end':'justify-start'}" style="animation: msgMorphIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;">
                         <div style="max-width: 85%; writing-mode: horizontal-tb;">
@@ -4585,11 +5196,64 @@
                         </div>
                     </div>`;
                 });
+                
+                // Typing indicator
+                container.innerHTML += `<div id="floating-typing-indicator" class="hidden flex justify-start mb-1">
+                    <div class="typing-indicator" style="padding:8px 14px;">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>`;
+                
                 container.scrollTop = container.scrollHeight;
+            });
+            
+            // Monitor typing in floating chat
+            if(window.unsubFloatingTyping) window.unsubFloatingTyping();
+            window.unsubFloatingTyping = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'chats', chatId), (snap) => {
+                if(!snap.exists()) return;
+                const data = snap.data();
+                const parts = chatId.split('_');
+                const otherUid = parts[0] === currentUser.uid ? parts[1] : parts[0];
+                const otherTyping = data[`typing_${otherUid}`] === true;
+                if(window.allChats) {
+                    const chatObj = window.allChats.find(ch => ch.id === chatId);
+                    if(chatObj && data.readBy) chatObj.readBy = data.readBy;
+                }
+                updateLiveReadReceipts(chatId, data.readBy || []);
+                const indicator = document.getElementById('floating-typing-indicator');
+                if(indicator) indicator.classList.toggle('hidden', !otherTyping);
             });
         };
 
+        // Floating chat typing handler
+        let floatingTypingTimeout = null;
+        let floatingIsTyping = false;
+        window.handleFloatingTyping = () => {
+            if(!window.currentFloatingChatId || !currentUser) return;
+            if(!floatingIsTyping) {
+                floatingIsTyping = true;
+                setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'chats', window.currentFloatingChatId), {
+                    [`typing_${currentUser.uid}`]: true
+                }, { merge: true });
+            }
+            clearTimeout(floatingTypingTimeout);
+            floatingTypingTimeout = setTimeout(() => {
+                floatingIsTyping = false;
+                setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'chats', window.currentFloatingChatId), {
+                    [`typing_${currentUser.uid}`]: false
+                }, { merge: true });
+            }, 2000);
+        };
+
         window.backToFloatingList = () => {
+            // Clear typing state
+            if(window.currentFloatingChatId && currentUser) {
+                setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'chats', window.currentFloatingChatId), {
+                    [`typing_${currentUser.uid}`]: false
+                }, { merge: true });
+            }
             document.getElementById('floating-conversation').style.display = 'none';
             document.getElementById('floating-chat-list').style.display = '';
             document.getElementById('floating-back-btn').classList.add('hidden');
@@ -4598,6 +5262,10 @@
             if(window.unsubscribeFloatingMessages) {
                 window.unsubscribeFloatingMessages();
                 window.unsubscribeFloatingMessages = null;
+            }
+            if(window.unsubFloatingTyping) {
+                window.unsubFloatingTyping();
+                window.unsubFloatingTyping = null;
             }
         };
 
@@ -4614,8 +5282,11 @@
             });
             await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'chats', window.currentFloatingChatId), {
                 lastUpdated: serverTimestamp(),
-                readBy: [currentUser.uid]
+                readBy: [currentUser.uid],
+                [`typing_${currentUser.uid}`]: false
             }, { merge: true });
+            floatingIsTyping = false;
+            clearTimeout(floatingTypingTimeout);
             
             input.value = '';
         };
@@ -4643,19 +5314,21 @@
                 document.onmousemove = elementDrag;
             }
 
+            let totalDragDistance = 0;
             function elementDrag(e) {
                 e = e || window.event;
                 e.preventDefault();
-                // calculate the new cursor position:
                 pos1 = pos3 - e.clientX;
                 pos2 = pos4 - e.clientY;
+                totalDragDistance += Math.abs(pos1) + Math.abs(pos2);
                 pos3 = e.clientX;
                 pos4 = e.clientY;
                 
-                // set the element's new position:
+                // Only start dragging after moving at least 8px total
+                if(totalDragDistance < 8) return;
+                
                 elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
                 elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
-                // Remove bottom/right positioning once we start dragging to allow free movement
                 elmnt.style.bottom = "auto";
                 elmnt.style.right = "auto";
                 
@@ -4663,10 +5336,10 @@
             }
 
             function closeDragElement() {
-                // stop moving when mouse button is released:
                 document.onmouseup = null;
                 document.onmousemove = null;
-                setTimeout(() => { window.hasDraggedWidget = false; }, 100);
+                totalDragDistance = 0;
+                setTimeout(() => { window.hasDraggedWidget = false; }, 150);
             }
         }
         
