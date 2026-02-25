@@ -3600,13 +3600,17 @@
                 }
             }, 60000);
 
-            // Go offline on page close
+            // Go offline on page close — use sendBeacon with Firestore REST API for reliability
             window.addEventListener('beforeunload', () => {
                 if (currentUser) {
-                    // Use sendBeacon or sync XHR for reliability - but Firestore doesn't support that easily
-                    // Best effort: set offline
-                    navigator.sendBeacon && navigator.sendBeacon('about:blank'); // noop, just trigger
-                    // We rely on the heartbeat timeout instead
+                    const firestoreUrl = `https://firestore.googleapis.com/v1/projects/luminix-bcc28/databases/(default)/documents/artifacts/${appId}/public/data/users_directory/${currentUser.uid}?updateMask.fieldPaths=isOnline&updateMask.fieldPaths=lastSeen`;
+                    const body = JSON.stringify({
+                        fields: {
+                            isOnline: { booleanValue: false },
+                            lastSeen: { timestampValue: new Date().toISOString() }
+                        }
+                    });
+                    navigator.sendBeacon && navigator.sendBeacon(firestoreUrl, new Blob([body], { type: 'application/json' }));
                 }
             });
 
