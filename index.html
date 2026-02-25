@@ -4410,7 +4410,17 @@
              }
         };
 
-        window.handleSignOut = () => signOut(auth);
+        window.handleSignOut = async () => {
+            if (currentUser) {
+                const uid = currentUser.uid;
+                try {
+                    const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users_directory', uid);
+                    await setDoc(userRef, { isOnline: false, lastSeen: serverTimestamp() }, { merge: true });
+                } catch(e) {}
+                stopPresence();
+            }
+            signOut(auth);
+        };
 
         function updateUI(data) {
              const user = currentUser;
