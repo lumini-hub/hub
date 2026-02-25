@@ -3584,17 +3584,34 @@
 
 
         // --- ONLINE PRESENCE SYSTEM ---
+        // lastSeen freshness is the SOLE source of truth for online status.
+        // The isOnline flag is ignored — it's unreliable due to Firestore write ordering races.
         let presenceInterval = null;
-        const HEARTBEAT_MS = 60000;
-        const STALE_THRESHOLD_MS = 90000; // If lastSeen older than 90s, treat as offline
+        let staleCheckInterval = null;
+        const HEARTBEAT_MS = 30000;        // heartbeat every 30s
+        const STALE_THRESHOLD_MS = 65000;  // offline if no heartbeat for 65s
 
-        // Helper: check if a user is truly online (flag + fresh heartbeat)
+        function _getLastSeenMs(user) {
+            if (!user || !user.lastSeen) return 0;
+            if (user.lastSeen.toDate) return user.lastSeen.toDate().getTime();
+            if (user.lastSeen.seconds) return user.lastSeen.seconds * 1000;
+            return new Date(user.lastSeen).getTime();
+        }
+
+        // Helper: check if a user is truly online (ONLY based on lastSeen freshness)
         window.isUserTrulyOnline = function(user) {
-            if (!user || user.isOnline !== true) return false;
-            if (!user.lastSeen) return false;
-            const lastSeenMs = user.lastSeen.toDate ? user.lastSeen.toDate().getTime() : (user.lastSeen.seconds ? user.lastSeen.seconds * 1000 : new Date(user.lastSeen).getTime());
-            return (Date.now() - lastSeenMs) < STALE_THRESHOLD_MS;
+            if (!user || !user.lastSeen) return false;
+            return (Date.now() - _getLastSeenMs(user)) < STALE_THRESHOLD_MS;
         };
+
+        function _startStaleChecker() {
+            // Periodically re-render chat lists so stale users flip to offline
+            // even if no new Firestore snapshot arrives
+            if (staleCheckInterval) return;
+            staleCheckInterval = setInterval(() => {
+                if (window.allChats) renderChatList(window.allChats);
+            }, 15000); // re-check every 15s
+        }
 
         function startPresence() {
             if (!currentUser) return;
@@ -3603,43 +3620,24 @@
             // Set online immediately
             setDoc(userRef, { isOnline: true, lastSeen: serverTimestamp() }, { merge: true });
 
-            // Heartbeat every 60 seconds
+            // Heartbeat every 30 seconds — only when tab is visible
             presenceInterval = setInterval(() => {
                 if (currentUser && document.visibilityState === 'visible') {
                     setDoc(userRef, { isOnline: true, lastSeen: serverTimestamp() }, { merge: true });
                 }
             }, HEARTBEAT_MS);
 
-            // Go offline on page close — use sendBeacon with Firestore :commit endpoint (accepts POST)
-            window.addEventListener('beforeunload', () => {
-                if (currentUser) {
-                    const docPath = `projects/luminix-bcc28/databases/(default)/documents/artifacts/${appId}/public/data/users_directory/${currentUser.uid}`;
-                    const commitUrl = `https://firestore.googleapis.com/v1/projects/luminix-bcc28/databases/(default)/documents:commit`;
-                    const body = JSON.stringify({
-                        writes: [{
-                            update: {
-                                name: docPath,
-                                fields: {
-                                    isOnline: { booleanValue: false },
-                                    lastSeen: { timestampValue: new Date().toISOString() }
-                                }
-                            },
-                            updateMask: { fieldPaths: ['isOnline', 'lastSeen'] }
-                        }]
-                    });
-                    navigator.sendBeacon && navigator.sendBeacon(commitUrl, new Blob([body], { type: 'application/json' }));
-                }
-            });
+            // Start checking for stale users on the observer side
+            _startStaleChecker();
 
-            // Also handle visibilitychange
+            // Handle visibilitychange — stop heartbeat when hidden so lastSeen goes stale
             document.addEventListener('visibilitychange', () => {
                 if (!currentUser) return;
                 if (document.visibilityState === 'hidden') {
-                    // Stop heartbeat and set offline
+                    // Kill heartbeat so lastSeen naturally goes stale
                     if (presenceInterval) { clearInterval(presenceInterval); presenceInterval = null; }
-                    setDoc(userRef, { isOnline: false, lastSeen: serverTimestamp() }, { merge: true });
                 } else {
-                    // Resume heartbeat and set online
+                    // Tab is back — send fresh heartbeat immediately and restart interval
                     setDoc(userRef, { isOnline: true, lastSeen: serverTimestamp() }, { merge: true });
                     if (!presenceInterval) {
                         presenceInterval = setInterval(() => {
@@ -3650,13 +3648,14 @@
                     }
                 }
             });
+
+            // beforeunload — no-op, we rely on heartbeat stopping + stale threshold
+            // sendBeacon to Firestore REST is unreliable (auth issues, write races)
         }
 
         function stopPresence() {
-            if (presenceInterval) {
-                clearInterval(presenceInterval);
-                presenceInterval = null;
-            }
+            if (presenceInterval) { clearInterval(presenceInterval); presenceInterval = null; }
+            if (staleCheckInterval) { clearInterval(staleCheckInterval); staleCheckInterval = null; }
         }
 
         window.handleTypingIndicator = () => {
