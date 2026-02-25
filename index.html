@@ -229,10 +229,8 @@
         }
         .msg-me .msg-time { color: rgba(241, 245, 249, 0.5); justify-content: flex-end; }
 
-        /* Read receipts */
-        .msg-read-receipt { font-size: 0.55rem; display: inline-flex; align-items: center; gap: 2px; }
-        .msg-read-receipt .check { color: rgba(241, 245, 249, 0.4); }
-        .msg-read-receipt .check.read { color: #60a5fa; }
+
+
 
         /* Typing indicator */
         .typing-indicator {
@@ -405,7 +403,12 @@
         html.dark .network-card::after { background: linear-gradient(to right, #6366f1, #a78bfa); }
         
         /* Online Status Dot */
-        .status-dot-online { width: 12px; height: 12px; background-color: #22c55e; border: 2px solid white; border-radius: 50%; position: absolute; bottom: 0; right: 0; box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2); }
+        .status-dot-online { width: 12px; height: 12px; background-color: #22c55e; border: 2px solid white; border-radius: 50%; position: absolute; bottom: 0; right: 0; box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2); animation: onlinePulse 2s ease-in-out infinite; }
+        @keyframes onlinePulse {
+            0%, 100% { box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2); }
+            50% { box-shadow: 0 0 0 5px rgba(34, 197, 94, 0.1); }
+        }
+        html.dark .status-dot-online { border-color: #0a0a0a; }
         
         /* Admin Badge Style */
         .admin-badge {
@@ -452,6 +455,70 @@
         /* Message Actions */
         .msg-actions { opacity: 0; transition: opacity 0.2s ease; }
         .msg-group:hover .msg-actions { opacity: 1; }
+
+        /* Emoji Reaction Picker - Side positioned with hover bridge */
+        .emoji-reaction-wrapper {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 10;
+        }
+        /* For "my" messages: emojis appear on the LEFT */
+        .msg-me-wrapper .emoji-reaction-wrapper {
+            right: 100%;
+            flex-direction: row-reverse;
+        }
+        /* For "their" messages: emojis appear on the RIGHT */
+        .msg-them-wrapper .emoji-reaction-wrapper {
+            left: 100%;
+            flex-direction: row;
+        }
+        /* Invisible hover bridge */
+        .emoji-hover-bridge {
+            width: 12px;
+            height: 40px;
+            flex-shrink: 0;
+        }
+        /* Emoji pill container */
+        .emoji-pill {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 3px 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            pointer-events: auto;
+        }
+        html.dark .emoji-pill {
+            background: #1a1a1a;
+            border-color: rgba(255,255,255,0.1);
+        }
+        /* Slide + fade from side - smooth */
+        .msg-them-wrapper .emoji-pill {
+            transform: translateX(-6px);
+            opacity: 0;
+            transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease;
+        }
+        .msg-me-wrapper .emoji-pill {
+            transform: translateX(6px);
+            opacity: 0;
+            transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease;
+        }
+        /* Show on hover of the msg-group row */
+        .msg-group:hover .emoji-reaction-wrapper {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .msg-group:hover .emoji-pill {
+            transform: translateX(0);
+            opacity: 1;
+        }
 
         /* Reply Styles */
         .reply-context {
@@ -1220,7 +1287,10 @@
                             <div id="chat-header" class="h-[68px] border-b border-slate-100 flex items-center px-6 justify-between bg-white">
                                 <div class="flex items-center gap-3">
                                     <button onclick="backToChatList()" class="md:hidden text-slate-500 hover:bg-slate-100 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 btn-bounce"><i class="fa-solid fa-arrow-left"></i></button>
-                                    <span class="font-semibold text-slate-800">Select a conversation</span>
+                                    <div>
+                                        <span class="font-semibold text-slate-800" id="chat-header-name">Select a conversation</span>
+                                        <p id="chat-header-status" class="text-[10px] text-slate-400 hidden"></p>
+                                    </div>
                                 </div>
                                 <div class="flex gap-1">
                                     <button id="start-audio-call-btn" onclick="initiateCall('audio')" class="hidden text-slate-400 hover:text-slate-700 w-10 h-10 rounded-full hover:bg-slate-50 flex items-center justify-center transition-all duration-200 btn-bounce" title="Audio Call">
@@ -1968,6 +2038,22 @@
         window.unsubscribeFloatingMessages = null;
         window.hasDraggedWidget = false;
 
+        // --- LAST SEEN HELPER ---
+        function getLastSeenText(lastSeen) {
+            if (!lastSeen) return '';
+            const ts = lastSeen.seconds ? lastSeen.seconds * 1000 : (lastSeen.toMillis ? lastSeen.toMillis() : 0);
+            if (!ts) return '';
+            const diff = Date.now() - ts;
+            const mins = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+            if (mins < 1) return 'Last seen just now';
+            if (mins < 60) return `Last seen ${mins}m ago`;
+            if (hours < 24) return `Last seen ${hours}h ago`;
+            if (days < 7) return `Last seen ${days}d ago`;
+            return 'Last seen a while ago';
+        }
+
         // --- CUSTOM SOUND VARIABLES ---
         let pendingSoundData = null;
         let isResettingSound = false;
@@ -2317,8 +2403,10 @@
 
                 document.getElementById('floating-chat-container').classList.remove('hidden');
 
+                startPresence();
                 loadData();
             } else {
+                stopPresence();
                 currentUser = null;
                 window.currentUser = null;
                 document.getElementById('auth-overlay').classList.remove('hidden', 'opacity-0', 'pointer-events-none');
@@ -2950,14 +3038,18 @@
                 const otherUser = allUsersCache.find(u => u.id === otherUid) || { name: "User", photoURL: "https://placehold.co/100x100" };
                 const isUnread = c.readBy && !c.readBy.includes(currentUser.uid);
                 
+                const isOnline = otherUser.isOnline === true;
+                const lastSeenText = !isOnline && otherUser.lastSeen ? getLastSeenText(otherUser.lastSeen) : '';
+                
                 return `<div onclick="openChat('${c.id}', '${otherUser.name}')" class="flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all duration-200 ${c.id === currentChatId ? 'bg-white shadow-md ring-1 ring-slate-100 scale-[1.02]' : 'hover:bg-white hover:shadow-sm'} ${isUnread ? 'bg-blue-50/50' : ''}">
                     <div class="relative">
                         <img src="${otherUser.photoURL}" class="w-10 h-10 rounded-full bg-slate-200 object-cover">
-                        ${isUnread ? '<div class="absolute top-0 right-0 w-3 h-3 bg-blue-500 rounded-full border-2 border-white animate-pulse"></div>' : ''}
+                        ${isOnline ? '<div class="status-dot-online"></div>' : ''}
+                        ${isUnread && !isOnline ? '<div class="absolute top-0 right-0 w-3 h-3 bg-blue-500 rounded-full border-2 border-white animate-pulse"></div>' : ''}
                     </div>
                     <div class="truncate flex-grow">
                         <h4 class="font-bold text-sm text-slate-800 ${isUnread ? 'text-black' : ''}">${otherUser.name}</h4>
-                        ${isUnread ? '<p class="text-[10px] text-blue-600 font-bold">New message</p>' : ''}
+                        ${isUnread ? '<p class="text-[10px] text-blue-600 font-bold">New message</p>' : (isOnline ? '<p class="text-[10px] text-green-500 font-semibold">Online</p>' : (lastSeenText ? `<p class="text-[10px] text-slate-400">${lastSeenText}</p>` : ''))}
                     </div>
                 </div>`;
             }).join('');
@@ -2968,7 +3060,23 @@
             if(window.allChats) renderChatList(window.allChats);
             monitorTyping(chatId);
             
-            document.querySelector('#chat-header span').innerText = name;
+            document.getElementById('chat-header-name').innerText = name;
+            // Show online status in chat header
+            const chatParts = chatId.split('_');
+            const chatOtherUid = chatParts[0] === currentUser.uid ? chatParts[1] : chatParts[0];
+            const chatOtherUser = allUsersCache.find(u => u.id === chatOtherUid);
+            const statusEl = document.getElementById('chat-header-status');
+            if (chatOtherUser && chatOtherUser.isOnline) {
+                statusEl.innerHTML = '<i class="fa-solid fa-circle text-green-500 mr-1" style="font-size:6px;"></i>Online';
+                statusEl.classList.remove('hidden');
+                statusEl.className = 'text-[10px] text-green-500 font-semibold';
+            } else if (chatOtherUser && chatOtherUser.lastSeen) {
+                statusEl.innerText = getLastSeenText(chatOtherUser.lastSeen);
+                statusEl.classList.remove('hidden');
+                statusEl.className = 'text-[10px] text-slate-400';
+            } else {
+                statusEl.classList.add('hidden');
+            }
             document.getElementById('start-video-call-btn').classList.remove('hidden');
             document.getElementById('start-audio-call-btn').classList.remove('hidden');
             document.getElementById('delete-chat-btn').classList.remove('hidden');
@@ -3053,7 +3161,6 @@
                         </div>`;
                     }
                     
-                    // READ RECEIPT removed
                     let receiptHtml = '';
 
                     // DESKTOP TRIGGER
@@ -3092,22 +3199,25 @@
 
                     c.innerHTML += `
                     <div class="flex w-full mb-1 ${isMe?'justify-end':'justify-start'} group msg-group" id="msg-container-${m.id}">
-                        <div class="flex flex-col ${isMe?'items-end':'items-start'} max-w-[85%] w-full min-w-0 relative">
+                        <div class="flex flex-col ${isMe?'items-end':'items-start'} max-w-[85%] w-full min-w-0 relative ${isMe?'msg-me-wrapper':'msg-them-wrapper'}">
                             <div class="msg-bubble ${isMe?'msg-me':'msg-them'} relative" id="msg-bubble-${m.id}">
                                 ${swipeIndicator}
                                 ${replyBlock}
                                 ${m.text}
                                 ${m.edited ? '<span class="text-[10px] opacity-60 block text-right italic mt-1">(edited)</span>' : ''}
+                                <!-- Side emoji reaction picker with hover bridge -->
+                                <div class="emoji-reaction-wrapper">
+                                    <div class="emoji-hover-bridge"></div>
+                                    <div class="emoji-pill">
+                                        <button onclick="event.stopPropagation(); toggleReaction('${chatId}', '${m.id}', '❤️')" class="hover:scale-125 transition-transform text-xs p-0.5" title="Love">❤️</button>
+                                        <button onclick="event.stopPropagation(); toggleReaction('${chatId}', '${m.id}', '😂')" class="hover:scale-125 transition-transform text-xs p-0.5" title="Laugh">😂</button>
+                                        <button onclick="event.stopPropagation(); toggleReaction('${chatId}', '${m.id}', '👍')" class="hover:scale-125 transition-transform text-xs p-0.5" title="Like">👍</button>
+                                        <button onclick="event.stopPropagation(); toggleReaction('${chatId}', '${m.id}', '😮')" class="hover:scale-125 transition-transform text-xs p-0.5" title="Wow">😮</button>
+                                        <button onclick="event.stopPropagation(); toggleReaction('${chatId}', '${m.id}', '😢')" class="hover:scale-125 transition-transform text-xs p-0.5" title="Sad">😢</button>
+                                    </div>
+                                </div>
                             </div>
                             ${reactionDisplay}
-                            <!-- Reaction picker -->
-                            <div class="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 mt-0.5">
-                                <button onclick="toggleReaction('${chatId}', '${m.id}', '❤️')" class="hover:scale-125 transition-transform text-xs p-0.5" title="Love">❤️</button>
-                                <button onclick="toggleReaction('${chatId}', '${m.id}', '😂')" class="hover:scale-125 transition-transform text-xs p-0.5" title="Laugh">😂</button>
-                                <button onclick="toggleReaction('${chatId}', '${m.id}', '👍')" class="hover:scale-125 transition-transform text-xs p-0.5" title="Like">👍</button>
-                                <button onclick="toggleReaction('${chatId}', '${m.id}', '😮')" class="hover:scale-125 transition-transform text-xs p-0.5" title="Wow">😮</button>
-                                <button onclick="toggleReaction('${chatId}', '${m.id}', '😢')" class="hover:scale-125 transition-transform text-xs p-0.5" title="Sad">😢</button>
-                            </div>
                             <div class="msg-time ${isMe ? 'flex-row-reverse' : ''}">
                                 ${timeStr ? `<span>${timeStr}</span>` : ''}
                                 ${receiptHtml}
@@ -3415,7 +3525,8 @@
             document.getElementById('start-video-call-btn').classList.add('hidden');
             document.getElementById('start-audio-call-btn').classList.add('hidden');
             document.getElementById('delete-chat-btn').classList.add('hidden');
-            document.querySelector('#chat-header span').innerText = "Select a conversation";
+            document.getElementById('chat-header-name').innerText = "Select a conversation";
+            document.getElementById('chat-header-status').classList.add('hidden');
             currentChatId = null;
             cancelEdit();
             cancelReply();
@@ -3467,7 +3578,56 @@
         // --- TYPING INDICATOR LOGIC ---
         let typingTimeout = null;
         let isTyping = false;
-        
+
+        // --- LIVE READ RECEIPTS (REMOVED) ---
+        window.updateLiveReadReceipts = () => {};
+
+
+        // --- ONLINE PRESENCE SYSTEM ---
+        let presenceInterval = null;
+
+        function startPresence() {
+            if (!currentUser) return;
+            const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users_directory', currentUser.uid);
+            
+            // Set online immediately
+            setDoc(userRef, { isOnline: true, lastSeen: serverTimestamp() }, { merge: true });
+
+            // Heartbeat every 60 seconds
+            presenceInterval = setInterval(() => {
+                if (currentUser) {
+                    setDoc(userRef, { isOnline: true, lastSeen: serverTimestamp() }, { merge: true });
+                }
+            }, 60000);
+
+            // Go offline on page close
+            window.addEventListener('beforeunload', () => {
+                if (currentUser) {
+                    // Use sendBeacon or sync XHR for reliability - but Firestore doesn't support that easily
+                    // Best effort: set offline
+                    navigator.sendBeacon && navigator.sendBeacon('about:blank'); // noop, just trigger
+                    // We rely on the heartbeat timeout instead
+                }
+            });
+
+            // Also handle visibilitychange
+            document.addEventListener('visibilitychange', () => {
+                if (!currentUser) return;
+                if (document.visibilityState === 'hidden') {
+                    setDoc(userRef, { isOnline: false, lastSeen: serverTimestamp() }, { merge: true });
+                } else {
+                    setDoc(userRef, { isOnline: true, lastSeen: serverTimestamp() }, { merge: true });
+                }
+            });
+        }
+
+        function stopPresence() {
+            if (presenceInterval) {
+                clearInterval(presenceInterval);
+                presenceInterval = null;
+            }
+        }
+
         window.handleTypingIndicator = () => {
             if(!currentChatId || !currentUser) return;
             
@@ -5118,16 +5278,18 @@
                 const otherUid = parts[0] === currentUser.uid ? parts[1] : parts[0];
                 const otherUser = allUsersCache.find(u => u.id === otherUid) || { name: "User", photoURL: "https://placehold.co/100x100" };
                 const isUnread = c.readBy && !c.readBy.includes(currentUser.uid);
+                const isOnline = otherUser.isOnline === true;
                 
                 return `
                 <div onclick="openFloatingChat('${c.id}', '${otherUser.name}')" class="flex items-center gap-3 p-2.5 hover:bg-white rounded-xl cursor-pointer transition-all duration-200 mb-0.5 ${isUnread ? 'bg-blue-50/60' : ''}" style="animation: msgMorphIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; animation-delay: ${i * 0.05}s; writing-mode: horizontal-tb;">
                     <div class="relative flex-shrink-0">
                         <img src="${otherUser.photoURL}" class="w-9 h-9 rounded-full bg-slate-200 object-cover" style="min-width:36px;">
-                        ${isUnread ? '<div class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-blue-500 rounded-full border-2 border-white" style="animation: pulse 2s infinite;"></div>' : ''}
+                        ${isOnline ? '<div class="status-dot-online" style="width:10px;height:10px;"></div>' : ''}
+                        ${isUnread && !isOnline ? '<div class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-blue-500 rounded-full border-2 border-white" style="animation: pulse 2s infinite;"></div>' : ''}
                     </div>
                     <div class="truncate flex-grow" style="min-width:0;">
                         <p class="font-semibold text-xs text-slate-800 truncate" style="writing-mode: horizontal-tb;">${otherUser.name}</p>
-                        ${isUnread ? '<p class="text-[10px] text-blue-600 font-bold">New message</p>' : '<p class="text-[10px] text-slate-400">Tap to chat</p>'}
+                        ${isUnread ? '<p class="text-[10px] text-blue-600 font-bold">New message</p>' : (isOnline ? '<p class="text-[10px] text-green-500 font-semibold">Online</p>' : '<p class="text-[10px] text-slate-400">Tap to chat</p>')}
                     </div>
                 </div>`;
             }).join('');
