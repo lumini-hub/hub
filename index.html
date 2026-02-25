@@ -445,6 +445,48 @@
             height: 18px;
         }
         
+        /* Chat Media Styles */
+        .chat-media-img, .chat-media-video { max-width: 360px; max-height: 320px; border-radius: 12px; object-fit: cover; cursor: pointer; transition: transform 0.2s ease; }
+
+        /* Image Lightbox / Spotlight */
+        #image-lightbox { display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); align-items: center; justify-content: center; cursor: zoom-out; animation: lbFadeIn 0.25s ease; }
+        #image-lightbox.active { display: flex; }
+        #image-lightbox img { max-width: 92vw; max-height: 90vh; object-fit: contain; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); animation: lbZoomIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        #image-lightbox .lb-close { position: absolute; top: 16px; right: 20px; color: white; font-size: 1.5rem; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(255,255,255,0.15); transition: background 0.2s; }
+        #image-lightbox .lb-close:hover { background: rgba(255,255,255,0.3); }
+        @keyframes lbFadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes lbZoomIn { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .chat-media-img:hover, .chat-media-video:hover { transform: scale(1.02); }
+        .chat-file-attachment { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 10px; background: rgba(0,0,0,0.05); cursor: pointer; transition: background 0.2s; text-decoration: none; color: inherit; }
+        .chat-file-attachment:hover { background: rgba(0,0,0,0.1); }
+        .msg-me .chat-file-attachment { background: rgba(255,255,255,0.15); }
+        .msg-me .chat-file-attachment:hover { background: rgba(255,255,255,0.25); }
+        html.dark .msg-them .chat-file-attachment { background: rgba(255,255,255,0.08); }
+        html.dark .msg-them .chat-file-attachment:hover { background: rgba(255,255,255,0.14); }
+        .voice-msg-player { display: flex; align-items: center; gap: 8px; min-width: 180px; }
+        .voice-msg-player button { width: 32px; height: 32px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+        .msg-me .voice-msg-player button { background: rgba(255,255,255,0.2); color: #f1f5f9; }
+        .msg-me .voice-msg-player button:hover { background: rgba(255,255,255,0.35); }
+        .msg-them .voice-msg-player button { background: rgba(0,0,0,0.08); color: #1e293b; }
+        .msg-them .voice-msg-player button:hover { background: rgba(0,0,0,0.15); }
+        html.dark .msg-them .voice-msg-player button { background: rgba(255,255,255,0.1); color: #e2e8f0; }
+        .voice-waveform { flex: 1; height: 28px; display: flex; align-items: center; gap: 1.5px; }
+        .voice-waveform-bar { width: 3px; border-radius: 2px; transition: height 0.15s ease; }
+        .msg-me .voice-waveform-bar { background: rgba(255,255,255,0.45); }
+        .msg-them .voice-waveform-bar { background: rgba(0,0,0,0.2); }
+        html.dark .msg-them .voice-waveform-bar { background: rgba(255,255,255,0.2); }
+        .voice-duration { font-size: 0.65rem; min-width: 32px; text-align: center; opacity: 0.7; }
+        .chat-attachment-toolbar { display: flex; align-items: center; gap: 2px; }
+        .chat-attachment-toolbar button { width: 34px; height: 34px; border-radius: 50%; border: none; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748b; transition: all 0.2s; font-size: 0.95rem; }
+        .chat-attachment-toolbar button:hover { background: #f1f5f9; color: #1e293b; transform: scale(1.1); }
+        html.dark .chat-attachment-toolbar button:hover { background: rgba(255,255,255,0.08); color: #e2e8f0; }
+        .chat-attach-preview { padding: 8px 12px; display: flex; align-items: center; gap: 10px; border-top: 1px solid #e2e8f0; animation: msgMorphIn 0.3s ease both; }
+        html.dark .chat-attach-preview { border-top-color: rgba(255,255,255,0.08); }
+        .chat-attach-preview img, .chat-attach-preview video { max-height: 60px; max-width: 80px; border-radius: 8px; object-fit: cover; }
+        .voice-recording-indicator { display: flex; align-items: center; gap: 8px; flex: 1; }
+        .voice-rec-dot { width: 10px; height: 10px; border-radius: 50%; background: #ef4444; animation: pulse 1s infinite; }
+        .voice-rec-timer { font-size: 0.85rem; font-weight: 600; color: #ef4444; font-variant-numeric: tabular-nums; }
+
         /* Video Call Specific Styles */
         #localVideo { transform: scaleX(-1); }
         .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
@@ -1322,8 +1364,27 @@
                                 </div>
                             </div>
 
-                            <div class="p-5 border-t border-slate-100 bg-white relative z-30">
-                                <form id="message-form" class="flex gap-3 relative items-center" onsubmit="sendMessage(event)">
+                            <div class="p-3 border-t border-slate-100 bg-white relative z-30">
+                                <!-- Chat Attachment Preview -->
+                                <div id="chat-attach-preview" class="chat-attach-preview hidden">
+                                    <div id="chat-attach-thumb"></div>
+                                    <div class="flex-1 min-w-0">
+                                        <p id="chat-attach-name" class="text-xs font-semibold text-slate-700 truncate"></p>
+                                        <p id="chat-attach-size" class="text-[10px] text-slate-400"></p>
+                                    </div>
+                                    <button type="button" onclick="clearChatAttachment()" class="text-slate-400 hover:text-red-500 w-6 h-6 flex items-center justify-center rounded-full transition-colors flex-shrink-0"><i class="fa-solid fa-xmark"></i></button>
+                                </div>
+                                <!-- Voice Recording Indicator -->
+                                <div id="voice-rec-bar" class="chat-attach-preview hidden">
+                                    <div class="voice-recording-indicator">
+                                        <div class="voice-rec-dot"></div>
+                                        <span class="voice-rec-timer" id="voice-rec-timer">0:00</span>
+                                        <div class="voice-waveform" id="voice-rec-waveform" style="flex:1;"></div>
+                                    </div>
+                                    <button type="button" onclick="cancelVoiceRecording()" class="text-slate-400 hover:text-red-500 w-8 h-8 flex items-center justify-center rounded-full transition-colors flex-shrink-0" title="Cancel"><i class="fa-solid fa-xmark"></i></button>
+                                    <button type="button" onclick="stopAndSendVoice()" class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition-colors flex-shrink-0" title="Send voice"><i class="fa-solid fa-arrow-up text-xs"></i></button>
+                                </div>
+                                <form id="message-form" class="flex gap-2 relative items-center" onsubmit="sendMessage(event)">
                                     <div id="reply-indicator" class="hidden absolute -top-14 left-0 right-0 bg-white p-2 rounded-t-xl border-t border-x border-slate-100 flex justify-between items-center px-4 shadow-sm" style="animation: msgAppear 0.3s ease both;">
                                          <div class="flex flex-col text-xs overflow-hidden pr-2">
                                              <span class="font-semibold text-slate-600">Replying to <span id="reply-to-name"></span></span>
@@ -1335,7 +1396,16 @@
                                         <span>Editing message...</span>
                                         <button type="button" onclick="cancelEdit()" class="hover:text-red-300 ml-1 transition-colors duration-200"><i class="fa-solid fa-xmark"></i></button>
                                     </div>
-                                    <input id="message-input" type="text" placeholder="Type a message..." class="flex-1 bg-slate-100 border border-transparent focus:bg-white focus:border-slate-200 rounded-full px-5 py-3.5 outline-none transition-all duration-300 text-sm" disabled oninput="handleTypingIndicator()">
+                                    <!-- Hidden file inputs -->
+                                    <input type="file" id="chat-img-input" class="hidden" accept="image/*,video/*" onchange="handleChatMediaSelect(this)">
+                                    <input type="file" id="chat-file-input" class="hidden" accept="*/*" onchange="handleChatFileSelect(this)">
+                                    <!-- Attachment toolbar -->
+                                    <div class="chat-attachment-toolbar flex-shrink-0">
+                                        <button type="button" onclick="document.getElementById('chat-img-input').click()" title="Image or Video" class="disabled-chat-btn"><i class="fa-solid fa-image text-green-500"></i></button>
+                                        <button type="button" onclick="document.getElementById('chat-file-input').click()" title="Attachment" class="disabled-chat-btn"><i class="fa-solid fa-paperclip text-blue-500"></i></button>
+                                        <button type="button" id="voice-record-btn" onclick="toggleVoiceRecording()" title="Voice Message" class="disabled-chat-btn"><i class="fa-solid fa-microphone text-red-400"></i></button>
+                                    </div>
+                                    <input id="message-input" type="text" placeholder="Type a message..." class="flex-1 bg-slate-100 border border-transparent focus:bg-white focus:border-slate-200 rounded-full px-5 py-3 outline-none transition-all duration-300 text-sm" disabled oninput="handleTypingIndicator()">
                                     <button id="message-send-btn" type="submit" class="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center hover:bg-slate-700 transition-all duration-200 disabled:opacity-30 btn-bounce flex-shrink-0" disabled><i id="msg-send-icon" class="fa-solid fa-arrow-up text-sm"></i></button>
                                 </form>
                             </div>
@@ -2020,6 +2090,14 @@
         // --- NEW: Reply & Mobile Interaction State ---
         window.replyingTo = null; // { id, name, text }
         let touchData = {};
+
+        // --- CHAT MEDIA / VOICE STATE ---
+        let chatAttachment = null; // { type: 'image'|'video'|'file'|'voice', data: base64, name: string, size: string, mimeType: string, duration?: number, waveform?: number[] }
+        let voiceMediaRecorder = null;
+        let voiceChunks = [];
+        let voiceRecStartTime = null;
+        let voiceRecInterval = null;
+        let voiceRecStream = null;
         
         // --- NEW: Collaborate State ---
         window.currentCollabFilter = 'all';
@@ -3165,6 +3243,8 @@
 
                     // DESKTOP TRIGGER
                     let triggerHtml = '';
+                    const safeText = (m.text || '').replace(/'/g, "\\'");
+                    const displayLabel = m.text || (m.media ? (m.media.type === 'voice' ? 'Voice message' : (m.media.type === 'image' ? 'Photo' : (m.media.type === 'video' ? 'Video' : 'Attachment'))) : '');
                     if (isMe) {
                          const now = Date.now();
                          const msgTime = m.createdAt ? m.createdAt.toMillis() : now;
@@ -3173,14 +3253,14 @@
                          <div class="text-[10px] text-slate-400 hover:text-blue-600 cursor-pointer mt-1 mr-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center gap-1 select-none md:flex hidden" onclick="openMsgOptions('${m.id}', ${canEdit})">
                             <i class="fa-solid fa-ellipsis"></i> Options
                          </div>
-                         <div class="hidden" id="msg-text-${m.id}">${m.text}</div>
+                         <div class="hidden" id="msg-text-${m.id}">${displayLabel}</div>
                          `;
                     } else {
                         triggerHtml = `
-                         <div class="text-[10px] text-slate-400 hover:text-blue-600 cursor-pointer mt-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center gap-1 select-none md:flex hidden" onclick="startReply('${m.id}', '${senderName}', '${m.text.replace(/'/g, "\\'")}')">
+                         <div class="text-[10px] text-slate-400 hover:text-blue-600 cursor-pointer mt-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center gap-1 select-none md:flex hidden" onclick="startReply('${m.id}', '${senderName}', '${safeText || displayLabel.replace(/'/g, "\\'")}')">
                             <i class="fa-solid fa-reply"></i> Reply
                          </div>
-                         <div class="hidden" id="msg-text-${m.id}">${m.text}</div>
+                         <div class="hidden" id="msg-text-${m.id}">${displayLabel}</div>
                          `;
                     }
 
@@ -3197,13 +3277,47 @@
                             `<span class="inline-flex items-center gap-0.5 bg-white border border-slate-200 rounded-full px-1.5 py-0.5 text-xs cursor-pointer hover:scale-110 transition-transform shadow-sm" onclick="toggleReaction('${chatId}', '${m.id}', '${emoji}')">${emoji}${count > 1 ? `<span class="text-[9px] text-slate-500 font-bold">${count}</span>` : ''}</span>`
                         ).join('') + '</div>' : '';
 
+                    // MEDIA CONTENT
+                    let mediaHtml = '';
+                    if(m.media) {
+                        const md = m.media;
+                        if(md.type === 'image') {
+                            mediaHtml = `<img src="${md.data}" alt="Image" class="chat-media-img mb-1" onclick="openLightbox(this.src)">`;
+                        } else if(md.type === 'video') {
+                            mediaHtml = `<video src="${md.data}" class="chat-media-video mb-1" controls preload="metadata"></video>`;
+                        } else if(md.type === 'voice') {
+                            const dur = md.duration || 0;
+                            const mins = Math.floor(dur/60); const secs = Math.floor(dur%60);
+                            const durStr = mins + ':' + String(secs).padStart(2,'0');
+                            const bars = (md.waveform && md.waveform.length) ? md.waveform : Array.from({length:28}, ()=>Math.random()*0.7+0.15);
+                            const barsHtml = bars.map(v=>`<div class="voice-waveform-bar" style="height:${Math.max(3,v*26)}px"></div>`).join('');
+                            mediaHtml = `<div class="voice-msg-player" data-src="${md.data}">
+                                <button type="button" onclick="playVoiceMsg(this.closest('.voice-msg-player'))"><i class="fa-solid fa-play text-xs"></i></button>
+                                <div class="voice-waveform">${barsHtml}</div>
+                                <span class="voice-duration">${durStr}</span>
+                                <audio src="${md.data}" preload="metadata"></audio>
+                            </div>`;
+                        } else if(md.type === 'file') {
+                            const icon = md.mimeType && md.mimeType.startsWith('application/pdf') ? 'fa-file-pdf text-red-500' : 'fa-file text-blue-500';
+                            mediaHtml = `<a href="${md.data}" download="${md.name||'file'}" class="chat-file-attachment mb-1">
+                                <i class="fa-solid ${icon} text-lg"></i>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-xs font-semibold truncate">${md.name||'File'}</p>
+                                    <p class="text-[10px] opacity-60">${md.size||''}</p>
+                                </div>
+                                <i class="fa-solid fa-download text-xs opacity-50"></i>
+                            </a>`;
+                        }
+                    }
+
                     c.innerHTML += `
                     <div class="flex w-full mb-1 ${isMe?'justify-end':'justify-start'} group msg-group" id="msg-container-${m.id}">
                         <div class="flex flex-col ${isMe?'items-end':'items-start'} max-w-[85%] w-full min-w-0 relative ${isMe?'msg-me-wrapper':'msg-them-wrapper'}">
                             <div class="msg-bubble ${isMe?'msg-me':'msg-them'} relative" id="msg-bubble-${m.id}">
                                 ${swipeIndicator}
                                 ${replyBlock}
-                                ${m.text}
+                                ${mediaHtml}
+                                ${m.text ? m.text : ''}
                                 ${m.edited ? '<span class="text-[10px] opacity-60 block text-right italic mt-1">(edited)</span>' : ''}
                                 <!-- Side emoji reaction picker with hover bridge -->
                                 <div class="emoji-reaction-wrapper">
@@ -3245,8 +3359,9 @@
                         const senderName = isMe ? 'You' : name;
                         
                         if(bubble) {
-                            handleSwipe(bubble, m.id, m.text, senderName, isMe);
-                            handleMobileLongPress(bubble, m.id, isMe, m.text, senderName);
+                            const mobileText = m.text || (m.media ? (m.media.type === 'voice' ? 'Voice message' : (m.media.type === 'image' ? 'Photo' : (m.media.type === 'video' ? 'Video' : 'Attachment'))) : '');
+                            handleSwipe(bubble, m.id, mobileText, senderName, isMe);
+                            handleMobileLongPress(bubble, m.id, isMe, mobileText, senderName);
                         }
                     }
                 });
@@ -3538,7 +3653,7 @@
             e.preventDefault(); 
             const i = document.getElementById('message-input'); 
             const text = i.value.trim();
-            if(!text) return;
+            if(!text && !chatAttachment) return;
 
             if (window.editingMsgId) {
                 // UPDATE EXISTING MESSAGE
@@ -3561,6 +3676,22 @@
                 if(window.replyingTo) {
                     payload.replyTo = window.replyingTo;
                     cancelReply();
+                }
+
+                // Add media/attachment if exists
+                if(chatAttachment) {
+                    payload.media = {
+                        type: chatAttachment.type,
+                        data: chatAttachment.data,
+                        name: chatAttachment.name || '',
+                        size: chatAttachment.size || '',
+                        mimeType: chatAttachment.mimeType || ''
+                    };
+                    if(chatAttachment.type === 'voice') {
+                        payload.media.duration = chatAttachment.duration || 0;
+                        payload.media.waveform = chatAttachment.waveform || [];
+                    }
+                    clearChatAttachment();
                 }
 
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'chats', currentChatId, 'messages'), payload);
@@ -4428,7 +4559,7 @@
                     <p class="text-slate-700 text-sm whitespace-pre-line leading-relaxed">${post.text}</p>
                     <div class="mt-2 flex flex-wrap gap-2">${tags}</div>
                 </div>
-                ${post.attachment ? `<div class="mt-2 overflow-hidden bg-slate-100 flex items-center justify-center">${post.attachment.match(/\.(mp4|webm|mov|ogg)($|\?)/i) ? `<video src="${post.attachment}" class="w-full max-h-[500px] object-contain" controls preload="metadata"></video>` : `<img src="${post.attachment}" class="w-full max-h-[500px] object-contain hover:scale-[1.01] transition-transform duration-500">`}</div>` : ''}
+                ${post.attachment ? `<div class="mt-2 overflow-hidden bg-slate-100 flex items-center justify-center">${post.attachment.match(/\.(mp4|webm|mov|ogg)($|\?)/i) ? `<video src="${post.attachment}" class="w-full max-h-[500px] object-contain" controls preload="metadata"></video>` : `<img src="${post.attachment}" class="w-full max-h-[500px] object-contain hover:scale-[1.01] transition-transform duration-500 cursor-pointer" onclick="openLightbox(this.src)">`}</div>` : ''}
                 <div class="px-4 py-3 border-t border-slate-100 flex gap-1">
                     <button onclick="toggleLike('${post.id}')" class="flex-1 py-2 rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 text-slate-500 font-medium text-sm btn-bounce group"><i class="${likeIconClass} fa-heart text-lg transition-transform group-hover:scale-125"></i> <span class="${hasLiked ? 'text-blue-600' : ''}">${post.likes || 0}</span></button>
                     <button onclick="toggleCommentSection('${post.id}', '${context}')" class="flex-1 py-2 rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 text-slate-500 font-medium text-sm btn-bounce group"><i class="fa-regular fa-comment text-lg transition-transform group-hover:scale-125"></i></button>
@@ -4827,6 +4958,215 @@
             document.getElementById('file-input').value = '';
             document.getElementById('attachment-preview').classList.add('hidden');
         };
+
+        // ========== CHAT MEDIA & VOICE FUNCTIONS ==========
+
+        function formatFileSize(bytes) {
+            if(bytes < 1024) return bytes + ' B';
+            if(bytes < 1048576) return (bytes/1024).toFixed(1) + ' KB';
+            return (bytes/1048576).toFixed(1) + ' MB';
+        }
+
+        function showChatAttachPreview() {
+            const el = document.getElementById('chat-attach-preview');
+            const thumb = document.getElementById('chat-attach-thumb');
+            const nameEl = document.getElementById('chat-attach-name');
+            const sizeEl = document.getElementById('chat-attach-size');
+            if(!chatAttachment) { el.classList.add('hidden'); return; }
+            el.classList.remove('hidden');
+            nameEl.textContent = chatAttachment.name || 'Attachment';
+            sizeEl.textContent = chatAttachment.size || '';
+            thumb.innerHTML = '';
+            if(chatAttachment.type === 'image') {
+                thumb.innerHTML = `<img src="${chatAttachment.data}" alt="preview">`;
+            } else if(chatAttachment.type === 'video') {
+                thumb.innerHTML = `<video src="${chatAttachment.data}" style="max-height:60px;max-width:80px;border-radius:8px;"></video>`;
+            } else {
+                const icon = chatAttachment.mimeType && chatAttachment.mimeType.startsWith('application/pdf') ? 'fa-file-pdf text-red-500' : 'fa-file text-blue-500';
+                thumb.innerHTML = `<i class="fa-solid ${icon} text-2xl"></i>`;
+            }
+        }
+
+        window.clearChatAttachment = () => {
+            chatAttachment = null;
+            document.getElementById('chat-attach-preview').classList.add('hidden');
+            document.getElementById('chat-img-input').value = '';
+            document.getElementById('chat-file-input').value = '';
+        };
+
+        window.handleChatMediaSelect = (input) => {
+            if(!input.files || !input.files[0]) return;
+            const file = input.files[0];
+            const isVideo = file.type.startsWith('video/');
+            if(file.size > 10 * 1048576) { showToast('File too large (max 10 MB)'); input.value=''; return; }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                chatAttachment = {
+                    type: isVideo ? 'video' : 'image',
+                    data: e.target.result,
+                    name: file.name,
+                    size: formatFileSize(file.size),
+                    mimeType: file.type
+                };
+                showChatAttachPreview();
+            };
+            reader.readAsDataURL(file);
+        };
+
+        window.handleChatFileSelect = (input) => {
+            if(!input.files || !input.files[0]) return;
+            const file = input.files[0];
+            if(file.size > 10 * 1048576) { showToast('File too large (max 10 MB)'); input.value=''; return; }
+            // If it's an image or video, treat it as media
+            if(file.type.startsWith('image/') || file.type.startsWith('video/')) {
+                return handleChatMediaSelect(input);
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                chatAttachment = {
+                    type: 'file',
+                    data: e.target.result,
+                    name: file.name,
+                    size: formatFileSize(file.size),
+                    mimeType: file.type
+                };
+                showChatAttachPreview();
+            };
+            reader.readAsDataURL(file);
+        };
+
+        // --- VOICE RECORDING ---
+        window.toggleVoiceRecording = async () => {
+            if(voiceMediaRecorder && voiceMediaRecorder.state === 'recording') {
+                stopAndSendVoice();
+                return;
+            }
+            try {
+                voiceRecStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                voiceChunks = [];
+                
+                // Try to use webm, fallback to whatever is supported
+                const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 
+                                 MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' :
+                                 MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : '';
+                voiceMediaRecorder = mimeType ? new MediaRecorder(voiceRecStream, { mimeType }) : new MediaRecorder(voiceRecStream);
+                voiceMediaRecorder.ondataavailable = (e) => { if(e.data.size > 0) voiceChunks.push(e.data); };
+                voiceMediaRecorder.onstop = () => {};
+                voiceMediaRecorder.start(100);
+                voiceRecStartTime = Date.now();
+
+                // Show recording bar, hide form
+                document.getElementById('voice-rec-bar').classList.remove('hidden');
+                document.getElementById('message-form').classList.add('hidden');
+
+                // Timer
+                const timerEl = document.getElementById('voice-rec-timer');
+                voiceRecInterval = setInterval(() => {
+                    const elapsed = Math.floor((Date.now() - voiceRecStartTime) / 1000);
+                    const m = Math.floor(elapsed/60), s = elapsed%60;
+                    timerEl.textContent = m + ':' + String(s).padStart(2,'0');
+                }, 200);
+
+                // Live waveform bars
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const analyser = audioCtx.createAnalyser();
+                analyser.fftSize = 64;
+                const source = audioCtx.createMediaStreamSource(voiceRecStream);
+                source.connect(analyser);
+                const waveEl = document.getElementById('voice-rec-waveform');
+                const bufLen = analyser.frequencyBinCount;
+                const dataArr = new Uint8Array(bufLen);
+                function drawWave() {
+                    if(!voiceMediaRecorder || voiceMediaRecorder.state !== 'recording') return;
+                    analyser.getByteFrequencyData(dataArr);
+                    let html = '';
+                    for(let i=0;i<28;i++) {
+                        const v = dataArr[Math.floor(i*bufLen/28)] / 255;
+                        html += `<div class="voice-waveform-bar" style="height:${Math.max(3,v*26)}px;background:rgba(239,68,68,${0.3+v*0.7})"></div>`;
+                    }
+                    waveEl.innerHTML = html;
+                    requestAnimationFrame(drawWave);
+                }
+                drawWave();
+                voiceMediaRecorder._audioCtx = audioCtx;
+            } catch(err) {
+                showToast('Microphone access denied');
+            }
+        };
+
+        window.cancelVoiceRecording = () => {
+            if(voiceMediaRecorder && voiceMediaRecorder.state === 'recording') {
+                voiceMediaRecorder.stop();
+            }
+            cleanupVoiceRec();
+            document.getElementById('voice-rec-bar').classList.add('hidden');
+            document.getElementById('message-form').classList.remove('hidden');
+        };
+
+        window.stopAndSendVoice = () => {
+            if(!voiceMediaRecorder || voiceMediaRecorder.state !== 'recording') return;
+            const duration = (Date.now() - voiceRecStartTime) / 1000;
+            voiceMediaRecorder.onstop = () => {
+                const blob = new Blob(voiceChunks, { type: voiceMediaRecorder.mimeType || 'audio/webm' });
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    // Generate fake waveform from recording
+                    const waveform = Array.from({length:28}, ()=>Math.random()*0.7+0.15);
+                    chatAttachment = {
+                        type: 'voice',
+                        data: e.target.result,
+                        name: 'Voice message',
+                        size: formatFileSize(blob.size),
+                        mimeType: blob.type,
+                        duration: duration,
+                        waveform: waveform
+                    };
+                    // Auto-send voice message
+                    document.getElementById('voice-rec-bar').classList.add('hidden');
+                    document.getElementById('message-form').classList.remove('hidden');
+                    sendMessage(new Event('submit', {cancelable:true}));
+                };
+                reader.readAsDataURL(blob);
+                cleanupVoiceRec();
+            };
+            voiceMediaRecorder.stop();
+        };
+
+        function cleanupVoiceRec() {
+            clearInterval(voiceRecInterval);
+            if(voiceRecStream) { voiceRecStream.getTracks().forEach(t=>t.stop()); voiceRecStream = null; }
+            if(voiceMediaRecorder && voiceMediaRecorder._audioCtx) { try { voiceMediaRecorder._audioCtx.close(); } catch(e){} }
+            voiceMediaRecorder = null;
+            voiceChunks = [];
+            voiceRecStartTime = null;
+        }
+
+        // Voice message playback
+        window.playVoiceMsg = (playerEl) => {
+            const audio = playerEl.querySelector('audio');
+            const btn = playerEl.querySelector('button');
+            const durEl = playerEl.querySelector('.voice-duration');
+            if(audio.paused) {
+                // Stop any other playing voice
+                document.querySelectorAll('.voice-msg-player audio').forEach(a => { if(a !== audio) { a.pause(); a.currentTime=0; } });
+                document.querySelectorAll('.voice-msg-player button i').forEach(i => { i.className = 'fa-solid fa-play text-xs'; });
+                audio.play();
+                btn.querySelector('i').className = 'fa-solid fa-pause text-xs';
+                audio.onended = () => { btn.querySelector('i').className = 'fa-solid fa-play text-xs'; };
+                audio.ontimeupdate = () => {
+                    const rem = audio.duration - audio.currentTime;
+                    if(isFinite(rem)) {
+                        const m = Math.floor(rem/60), s = Math.floor(rem%60);
+                        durEl.textContent = m+':'+String(s).padStart(2,'0');
+                    }
+                };
+            } else {
+                audio.pause();
+                btn.querySelector('i').className = 'fa-solid fa-play text-xs';
+            }
+        };
+
+        // ========== END CHAT MEDIA & VOICE ==========
 
         window.viewMyProfile = () => { if(currentUser) viewProfile(currentUser.uid); };
         window.viewProfile = async (uid) => {
@@ -5531,5 +5871,27 @@
         }
 
     </script>
+<!-- Image Lightbox Overlay -->
+<div id="image-lightbox" onclick="closeLightbox()">
+    <div class="lb-close" onclick="closeLightbox()"><i class="fa-solid fa-xmark"></i></div>
+    <img id="lightbox-img" src="" alt="Preview" onclick="event.stopPropagation()">
+</div>
+<script>
+    window.openLightbox = function(src) {
+        const lb = document.getElementById('image-lightbox');
+        const img = document.getElementById('lightbox-img');
+        img.src = src;
+        lb.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    };
+    window.closeLightbox = function() {
+        const lb = document.getElementById('image-lightbox');
+        lb.classList.remove('active');
+        document.body.style.overflow = '';
+    };
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeLightbox();
+    });
+</script>
 </body>
 </html>
