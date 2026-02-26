@@ -226,12 +226,9 @@
             60% { opacity: 1; transform: translateY(-2px) scale(1.02) rotateX(0deg); filter: blur(0); }
             100% { opacity: 1; transform: translateY(0) scale(1) rotateX(0deg); filter: blur(0); } 
         }
-        /* Staggered entry for multiple messages */
-        .msg-group:nth-child(1) .msg-bubble { animation-delay: 0s; }
-        .msg-group:nth-child(2) .msg-bubble { animation-delay: 0.04s; }
-        .msg-group:nth-child(3) .msg-bubble { animation-delay: 0.08s; }
-        .msg-group:nth-child(4) .msg-bubble { animation-delay: 0.12s; }
-        .msg-group:nth-child(5) .msg-bubble { animation-delay: 0.16s; }
+        /* Only animate NEW messages, not on initial load */
+        .msg-bubble.no-animate { animation: none !important; }
+        .msg-group.no-animate .msg-bubble { animation: none !important; }
 
         /* Timestamp labels between message groups */
         .msg-timestamp-divider {
@@ -283,8 +280,32 @@
         }
         .chat-morph-enter { animation: chatViewMorphIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
-        /* Message area smooth scroll indicator */
-        #chat-messages { scroll-behavior: smooth; }
+        /* Group chat typing name indicator */
+        .group-typing-indicator {
+            font-size: 0.65rem; color: #64748b; font-style: italic; padding: 2px 16px 6px;
+            animation: fadeIn 0.3s ease;
+        }
+        html.dark .group-typing-indicator { color: #8b9dc3; }
+
+        /* Message area scroll */
+        #chat-messages { scroll-behavior: auto; }
+        #chat-messages.smooth-scroll { scroll-behavior: smooth; }
+
+        /* See More for long text */
+        .post-text-clamp { display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
+        .post-text-clamp.expanded { -webkit-line-clamp: unset; overflow: visible; }
+        .msg-text-clamp { display: -webkit-box; -webkit-line-clamp: 12; -webkit-box-orient: vertical; overflow: hidden; }
+        .msg-text-clamp.expanded { -webkit-line-clamp: unset; overflow: visible; }
+        .see-more-btn { cursor: pointer; font-size: 0.75rem; font-weight: 600; color: #2563eb; margin-top: 4px; display: inline-block; transition: color 0.2s; }
+        .see-more-btn:hover { color: #1d4ed8; }
+        html.dark .see-more-btn { color: #60a5fa; }
+        html.dark .see-more-btn:hover { color: #93bbfd; }
+
+        /* Group chat styles */
+        .group-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #3b82f6); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
+        .group-msg-sender { font-size: 0.65rem; font-weight: 700; margin-bottom: 2px; }
+        .typing-name-indicator { font-size: 0.65rem; color: #64748b; font-style: italic; padding: 2px 16px 4px; }
+        html.dark .typing-name-indicator { color: #8b9dc3; }
         
         .msg-system { background: transparent; color: #94a3b8; font-size: 0.7rem; text-align: center; width: 100%; margin: 12px 0; font-style: normal; opacity: 0.7; font-weight: 500; letter-spacing: 0.01em; }
         
@@ -1463,8 +1484,9 @@
                     <div id="view-messaging" class="view-section hidden h-[calc(100vh-90px)] rounded-2xl flex overflow-hidden border border-slate-200/80 bg-white" style="margin: 0 auto;">
                         
                         <div id="msg-list-col" class="w-full md:w-[340px] md:min-w-[340px] border-r border-slate-100 bg-white flex flex-col">
-                            <div class="p-6 border-b border-slate-100">
+                            <div class="p-6 border-b border-slate-100 flex items-center justify-between">
                                 <h3 class="font-heading font-bold text-slate-900 text-xl tracking-tight">Messages</h3>
+                                <button onclick="openCreateGroupModal()" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all text-slate-600 btn-bounce" title="New Group Chat"><i class="fa-solid fa-user-group text-sm"></i></button>
                             </div>
                             <div id="chat-list" class="flex-1 overflow-y-auto p-3 space-y-0.5 custom-scrollbar"></div>
                         </div>
@@ -1986,6 +2008,25 @@
                         <button onclick="closeBanModal()" class="flex-1 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-colors btn-bounce">Cancel</button>
                         <button id="confirm-ban-btn" onclick="executeBan()" class="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm shadow-lg shadow-red-200 transition-colors btn-bounce">Ban User</button>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CREATE GROUP CHAT MODAL -->
+        <div id="create-group-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] hidden flex items-center justify-center p-4 transition-all duration-300">
+            <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-pop-in h-[550px] flex flex-col">
+                <div class="flex justify-between items-center p-4 border-b border-slate-100">
+                    <h3 class="font-heading font-bold text-lg text-slate-800"><i class="fa-solid fa-user-group text-blue-500 mr-2"></i>New Group Chat</h3>
+                    <button onclick="document.getElementById('create-group-modal').classList.add('hidden')" class="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center transition-colors btn-bounce"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="p-4 border-b border-slate-50">
+                    <input id="group-name-input" type="text" placeholder="Group name..." class="w-full bg-slate-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:bg-white focus:ring-2 focus:ring-blue-200 border border-transparent focus:border-blue-300 transition-all mb-2">
+                    <input type="text" placeholder="Search members..." class="w-full bg-slate-50 rounded-lg px-3 py-2 text-sm outline-none" oninput="filterGroupMembers(this.value)">
+                    <div id="group-selected-members" class="flex flex-wrap gap-1.5 mt-2"></div>
+                </div>
+                <div id="group-member-list" class="flex-1 overflow-y-auto custom-scrollbar p-2"></div>
+                <div class="p-4 border-t border-slate-100">
+                    <button onclick="createGroupChat()" class="w-full py-3 rounded-xl font-bold text-sm bg-slate-900 text-white hover:bg-slate-800 transition-all btn-bounce shadow-md disabled:opacity-40" id="create-group-btn" disabled>Create Group</button>
                 </div>
             </div>
         </div>
@@ -2898,6 +2939,8 @@
             });
         }
         
+        let _incomingCallAutoCloseTimer = null;
+
         function showIncomingCall(callId, data) {
             currentCallId = callId;
             incomingCallData = data;
@@ -2919,9 +2962,18 @@
                     console.log("Autoplay blocked. User needs to interact with DOM first.");
                 });
             }
+
+            clearTimeout(_incomingCallAutoCloseTimer);
+            _incomingCallAutoCloseTimer = setTimeout(() => {
+                if(!document.getElementById('incoming-call-modal').classList.contains('hidden')) {
+                    declineCall();
+                    showToast('Missed call - auto-declined after 1 minute');
+                }
+            }, 60000);
         }
 
         window.declineCall = async () => {
+            clearTimeout(_incomingCallAutoCloseTimer);
             document.getElementById('incoming-call-modal').classList.add('hidden');
             document.getElementById('call-ringtone').pause();
             if(incomingCallData) {
@@ -2932,6 +2984,7 @@
         };
 
         window.answerCall = async () => {
+            clearTimeout(_incomingCallAutoCloseTimer);
             document.getElementById('incoming-call-modal').classList.add('hidden');
             document.getElementById('call-ringtone').pause();
             setupCallInterface(callType);
@@ -2993,6 +3046,7 @@
             }
         };
 
+        let _outgoingCallAutoCloseTimer = null;
         window.initiateCall = async (type = 'video') => {
             if(!currentChatId) return;
             const parts = currentChatId.split('_');
@@ -3002,6 +3056,14 @@
             callType = type;
             setupCallInterface(type);
             document.getElementById('call-status-text').innerText = "Calling...";
+
+            clearTimeout(_outgoingCallAutoCloseTimer);
+            _outgoingCallAutoCloseTimer = setTimeout(() => {
+                if(document.getElementById('call-status-text').innerText === 'Calling...') {
+                    endCall();
+                    showToast('Call not answered - auto-ended after 1 minute');
+                }
+            }, 60000);
             
             const r = document.getElementById('call-ringtone');
             r.currentTime = 0;
@@ -3059,6 +3121,7 @@
                         startCallTimer();
                         if(callType === 'audio') document.getElementById('audio-call-subtitle').textContent = 'Connected';
                         document.getElementById('call-quality-indicator').classList.remove('hidden');
+                        clearTimeout(_outgoingCallAutoCloseTimer);
                     }
                     
                     if(data.status === 'ended') endCallCleanup();
@@ -3145,6 +3208,7 @@
         };
 
         function endCallCleanup() {
+            clearTimeout(_outgoingCallAutoCloseTimer);
             document.getElementById('call-interface').classList.add('hidden');
             document.getElementById('call-ringtone').pause();
             document.getElementById('call-quality-indicator').classList.add('hidden');
@@ -3469,8 +3533,9 @@
                 const chats = [];
                 snap.forEach(d => {
                     const data = d.data();
+                    const isGroup = data.isGroup === true;
                     const parts = d.id.split('_');
-                    if(parts.includes(currentUser.uid)) {
+                    if((isGroup && data.participants && data.participants.includes(currentUser.uid)) || (!isGroup && parts.includes(currentUser.uid))) {
                         chats.push({id: d.id, ...data});
                         const lastUpdatedMillis = data.lastUpdated?.toMillis?.() || 0;
                         if (!lastNotifiedMessageTimeByChat.has(d.id)) {
@@ -3514,10 +3579,25 @@
             const container = document.getElementById('chat-list');
             if(chats.length === 0) { container.innerHTML = '<p class="text-center text-xs text-slate-400 mt-4">No chats yet.</p>'; return; }
             container.innerHTML = chats.map(c => {
+                const isGroup = c.isGroup === true;
+                const isUnread = c.readBy && !c.readBy.includes(currentUser.uid);
+
+                if(isGroup) {
+                    const groupName = c.groupName || 'Group Chat';
+                    const memberCount = (c.participants || []).length;
+                    const escapedName = groupName.replace(/'/g, "\\'");
+                    return `<div onclick="openChat('${c.id}', '${escapedName}')" class="flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all duration-200 ${c.id === currentChatId ? 'bg-white shadow-md ring-1 ring-slate-100 scale-[1.02]' : 'hover:bg-white hover:shadow-sm'} ${isUnread ? 'bg-blue-50/50' : ''}">
+                        <div class="group-avatar">${groupName.charAt(0).toUpperCase()}</div>
+                        <div class="truncate flex-grow">
+                            <h4 class="font-bold text-sm text-slate-800 ${isUnread ? 'text-black' : ''}">${groupName}</h4>
+                            <p class="text-[10px] text-slate-400">${memberCount} members</p>
+                        </div>
+                    </div>`;
+                }
+
                 const parts = c.id.split('_');
                 const otherUid = parts[0] === currentUser.uid ? parts[1] : parts[0];
                 const otherUser = allUsersCache.find(u => u.id === otherUid) || { name: "User", photoURL: "https://placehold.co/100x100" };
-                const isUnread = c.readBy && !c.readBy.includes(currentUser.uid);
                 
                 const isOnline = otherUser.isOnline === true;
                 const lastSeenText = !isOnline && otherUser.lastSeen ? getLastSeenText(otherUser.lastSeen) : '';
@@ -3538,28 +3618,39 @@
 
         window.openChat = async (chatId, name) => {
             currentChatId = chatId;
+            const chatDocData = window.allChats ? window.allChats.find(ch => ch.id === chatId) : null;
+            const _isGroupChat = chatDocData && chatDocData.isGroup === true;
             if(window.allChats) renderChatList(window.allChats);
             monitorTyping(chatId);
             
             document.getElementById('chat-header-name').innerText = name;
-            // Show online status in chat header
-            const chatParts = chatId.split('_');
-            const chatOtherUid = chatParts[0] === currentUser.uid ? chatParts[1] : chatParts[0];
-            const chatOtherUser = allUsersCache.find(u => u.id === chatOtherUid);
             const statusEl = document.getElementById('chat-header-status');
-            if (chatOtherUser && chatOtherUser.isOnline) {
-                statusEl.innerHTML = '<i class="fa-solid fa-circle text-green-500 mr-1" style="font-size:6px;"></i>Online';
-                statusEl.classList.remove('hidden');
-                statusEl.className = 'text-[10px] text-green-500 font-semibold';
-            } else if (chatOtherUser && chatOtherUser.lastSeen) {
-                statusEl.innerText = getLastSeenText(chatOtherUser.lastSeen);
+
+            if(_isGroupChat) {
+                const memberCount = (chatDocData.participants || []).length;
+                statusEl.innerText = `${memberCount} members`;
                 statusEl.classList.remove('hidden');
                 statusEl.className = 'text-[10px] text-slate-400';
+                document.getElementById('start-video-call-btn').classList.add('hidden');
+                document.getElementById('start-audio-call-btn').classList.add('hidden');
             } else {
-                statusEl.classList.add('hidden');
+                const chatParts = chatId.split('_');
+                const chatOtherUid = chatParts[0] === currentUser.uid ? chatParts[1] : chatParts[0];
+                const chatOtherUser = allUsersCache.find(u => u.id === chatOtherUid);
+                if (chatOtherUser && chatOtherUser.isOnline) {
+                    statusEl.innerHTML = '<i class="fa-solid fa-circle text-green-500 mr-1" style="font-size:6px;"></i>Online';
+                    statusEl.classList.remove('hidden');
+                    statusEl.className = 'text-[10px] text-green-500 font-semibold';
+                } else if (chatOtherUser && chatOtherUser.lastSeen) {
+                    statusEl.innerText = getLastSeenText(chatOtherUser.lastSeen);
+                    statusEl.classList.remove('hidden');
+                    statusEl.className = 'text-[10px] text-slate-400';
+                } else {
+                    statusEl.classList.add('hidden');
+                }
+                document.getElementById('start-video-call-btn').classList.remove('hidden');
+                document.getElementById('start-audio-call-btn').classList.remove('hidden');
             }
-            document.getElementById('start-video-call-btn').classList.remove('hidden');
-            document.getElementById('start-audio-call-btn').classList.remove('hidden');
             document.getElementById('delete-chat-btn').classList.remove('hidden');
 
             const input = document.getElementById('message-input');
@@ -3576,11 +3667,16 @@
             const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'chats', chatId, 'messages'), orderBy('createdAt', 'asc'));
             
             // --- REVAMPED MESSAGE RENDERING WITH MORPH ANIMATIONS, TIMESTAMPS, READ RECEIPTS ---
+            let _isFirstMessageLoad = true;
+            let _previousMessageIds = new Set();
             unsubscribeMessages = onSnapshot(q, (snap) => {
                 const c = document.getElementById('chat-messages');
                 c.innerHTML = '';
                 const messages = [];
                 snap.forEach(d => messages.push({id: d.id, ...d.data()}));
+                const currentMsgIds = new Set(messages.map(m => m.id));
+                const isInitialLoad = _isFirstMessageLoad;
+                _isFirstMessageLoad = false;
                 
                 let lastDateLabel = '';
                 
@@ -3593,7 +3689,12 @@
                     const isMe = m.senderId === currentUser.uid;
                     const parts = currentChatId.split('_');
                     const otherUid = parts[0] === currentUser.uid ? parts[1] : parts[0];
-                    const senderName = isMe ? 'You' : name;
+                    let senderName = isMe ? 'You' : name;
+                    if(_isGroupChat && !isMe) {
+                        const senderUser = allUsersCache.find(u => u.id === m.senderId);
+                        senderName = senderUser ? senderUser.name : (m.senderName || 'Unknown');
+                    }
+                    const showGroupSender = _isGroupChat && !isMe;
 
                     // DATE DIVIDER
                     if(m.createdAt) {
@@ -3727,15 +3828,18 @@
                         }
                     }
 
+                    const isNewMsg = !isInitialLoad && !_previousMessageIds.has(m.id);
+                    const noAnimClass = isNewMsg ? '' : 'no-animate';
                     c.innerHTML += `
-                    <div class="flex w-full mb-1 ${isMe?'justify-end':'justify-start'} group msg-group" id="msg-container-${m.id}">
+                    <div class="flex w-full mb-1 ${isMe?'justify-end':'justify-start'} group msg-group ${noAnimClass}" id="msg-container-${m.id}">
                         <div class="flex flex-col ${isMe?'items-end':'items-start'} max-w-[85%] w-full min-w-0 relative ${isMe?'msg-me-wrapper':'msg-them-wrapper'}">
                             <div class="msg-bubble ${isMe?'msg-me':'msg-them'} relative" id="msg-bubble-${m.id}">
+${showGroupSender ? `<p class="group-msg-sender" style="color:${getGroupColor(m.senderId)}">${senderName}</p>` : ''}
 ${swipeIndicator}
 ${storyReplyBlock}
 ${replyBlock}
 ${mediaHtml}
-                                ${m.text ? m.text : ''}
+                                ${m.text ? (m.text.length > 500 ? `<span class="msg-text-clamp" id="msg-clamp-${m.id}">${m.text}</span><span class="see-more-btn" onclick="toggleSeeMore('msg-clamp-${m.id}', this)">See more</span>` : m.text) : ''}
                                 ${m.edited ? '<span class="text-[10px] opacity-60 block text-right italic mt-1">(edited)</span>' : ''}
                                 <!-- Side emoji reaction picker with hover bridge -->
                                 <div class="emoji-reaction-wrapper">
@@ -3760,7 +3864,8 @@ ${mediaHtml}
                 });
                 
                 // Add typing indicator placeholder at bottom
-                c.innerHTML += `<div id="typing-indicator-container" class="${window._otherUserIsTyping ? '' : 'hidden'} flex justify-start mb-1 msg-group">
+                c.innerHTML += `<div id="typing-indicator-container" class="${window._otherUserIsTyping ? '' : 'hidden'} flex flex-col justify-start mb-1 msg-group">
+                    <div id="typing-name-label" class="group-typing-indicator hidden"></div>
                     <div class="typing-indicator">
                         <div class="typing-dot"></div>
                         <div class="typing-dot"></div>
@@ -3784,6 +3889,7 @@ ${mediaHtml}
                     }
                 });
 
+                _previousMessageIds = currentMsgIds;
                 const chatDoc = window.allChats ? window.allChats.find(ch => ch.id === currentChatId) : null;
                 updateLiveReadReceipts(currentChatId, chatDoc?.readBy || []);
                 c.scrollTop = c.scrollHeight;
@@ -4079,11 +4185,14 @@ ${mediaHtml}
             if(window.innerWidth < 768) backToChatList();
         };
 
+        let _isSendingMessage = false;
         window.sendMessage = async (e) => {
             e.preventDefault(); 
+            if(_isSendingMessage) return;
             const i = document.getElementById('message-input'); 
             const text = i.value.trim();
             if(!text && !chatAttachment) return;
+            _isSendingMessage = true;
 
             if (window.editingMsgId) {
                 // UPDATE EXISTING MESSAGE
@@ -4099,6 +4208,7 @@ ${mediaHtml}
                 const payload = { 
                     text: text, 
                     senderId: currentUser.uid, 
+                    senderName: currentUser.displayName || 'User',
                     createdAt: serverTimestamp() 
                 };
 
@@ -4149,6 +4259,79 @@ ${mediaHtml}
                 clearTimeout(typingTimeout);
             }
             i.value = '';
+            _isSendingMessage = false;
+        };
+
+        // --- GROUP CHAT FUNCTIONS ---
+        let _groupSelectedMembers = [];
+
+        window.openCreateGroupModal = () => {
+            _groupSelectedMembers = [];
+            document.getElementById('group-name-input').value = '';
+            document.getElementById('group-selected-members').innerHTML = '';
+            document.getElementById('create-group-btn').disabled = true;
+            renderGroupMemberList('');
+            document.getElementById('create-group-modal').classList.remove('hidden');
+        };
+
+        window.filterGroupMembers = (val) => {
+            renderGroupMemberList(val);
+        };
+
+        function renderGroupMemberList(filter) {
+            const list = document.getElementById('group-member-list');
+            const users = allUsersCache.filter(u => u.id !== currentUser.uid && u.name.toLowerCase().includes(filter.toLowerCase()));
+            list.innerHTML = users.map(u => {
+                const isSelected = _groupSelectedMembers.find(m => m.id === u.id);
+                return `<div onclick="toggleGroupMember('${u.id}', '${u.name.replace(/'/g, "\\'")}')" class="flex items-center gap-3 p-2.5 rounded-xl cursor-pointer transition-all duration-200 ${isSelected ? 'bg-blue-50 ring-1 ring-blue-200' : 'hover:bg-slate-50'}">
+                    <img src="${u.photoURL}" class="w-8 h-8 rounded-full object-cover">
+                    <span class="text-sm font-semibold text-slate-700 flex-grow">${u.name}</span>
+                    ${isSelected ? '<i class="fa-solid fa-check-circle text-blue-500"></i>' : '<div class="w-5 h-5 rounded-full border-2 border-slate-300"></div>'}
+                </div>`;
+            }).join('');
+        }
+
+        window.toggleGroupMember = (uid, name) => {
+            const idx = _groupSelectedMembers.findIndex(m => m.id === uid);
+            if(idx > -1) {
+                _groupSelectedMembers.splice(idx, 1);
+            } else {
+                _groupSelectedMembers.push({ id: uid, name: name });
+            }
+            renderGroupMemberList(document.querySelector('#create-group-modal input[type="text"][placeholder="Search members..."]')?.value || '');
+            const selectedContainer = document.getElementById('group-selected-members');
+            selectedContainer.innerHTML = _groupSelectedMembers.map(m => `<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1">${m.name} <i class="fa-solid fa-xmark cursor-pointer hover:text-blue-900" onclick="event.stopPropagation(); toggleGroupMember('${m.id}', '${m.name.replace(/'/g, "\\'")}');"></i></span>`).join('');
+            document.getElementById('create-group-btn').disabled = _groupSelectedMembers.length < 2;
+        };
+
+        window.createGroupChat = async () => {
+            const groupName = document.getElementById('group-name-input').value.trim();
+            if(!groupName) { showToast('Please enter a group name'); return; }
+            if(_groupSelectedMembers.length < 2) { showToast('Select at least 2 members'); return; }
+
+            const participants = [currentUser.uid, ..._groupSelectedMembers.map(m => m.id)];
+            const chatRef = doc(collection(db, 'artifacts', appId, 'public', 'data', 'chats'));
+
+            await setDoc(chatRef, {
+                isGroup: true,
+                groupName: groupName,
+                participants: participants,
+                createdBy: currentUser.uid,
+                createdAt: serverTimestamp(),
+                lastUpdated: serverTimestamp(),
+                readBy: [currentUser.uid]
+            });
+
+            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'chats', chatRef.id, 'messages'), {
+                text: `${currentUser.displayName} created the group "${groupName}"`,
+                type: 'system',
+                senderId: 'system',
+                createdAt: serverTimestamp()
+            });
+
+            document.getElementById('create-group-modal').classList.add('hidden');
+            showToast('Group created!');
+            openChat(chatRef.id, groupName);
         };
 
         // --- TYPING INDICATOR LOGIC ---
@@ -4250,30 +4433,66 @@ ${mediaHtml}
             // Read receipts removed
         }
 
+        function getGroupColor(uid) {
+            const colors = ['#2563eb','#9333ea','#dc2626','#059669','#d97706','#0891b2','#7c3aed','#be185d','#4f46e5','#0d9488'];
+            let hash = 0;
+            for(let i = 0; i < uid.length; i++) hash = uid.charCodeAt(i) + ((hash << 5) - hash);
+            return colors[Math.abs(hash) % colors.length];
+        }
+
         function monitorTyping(chatId) {
             if(unsubscribeTyping) unsubscribeTyping();
             window._otherUserIsTyping = false;
             unsubscribeTyping = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'chats', chatId), (snap) => {
                 if(!snap.exists()) return;
                 const data = snap.data();
-                const parts = chatId.split('_');
-                const otherUid = parts[0] === currentUser.uid ? parts[1] : parts[0];
-                const otherTyping = data[`typing_${otherUid}`] === true;
-                window._otherUserIsTyping = otherTyping;
+                const isGroup = data.isGroup === true;
                 
-                // Update read receipt state in allChats cache for real-time read status
                 if(window.allChats) {
                     const chatObj = window.allChats.find(ch => ch.id === chatId);
                     if(chatObj && data.readBy) chatObj.readBy = data.readBy;
                 }
                 updateLiveReadReceipts(chatId, data.readBy || []);
-                
-                const indicator = document.getElementById('typing-indicator-container');
-                if(indicator) {
-                    indicator.classList.toggle('hidden', !otherTyping);
-                    if(otherTyping) {
-                        const c = document.getElementById('chat-messages');
-                        if(c) c.scrollTop = c.scrollHeight;
+
+                if(isGroup) {
+                    const typingUsers = [];
+                    const participants = data.participants || [];
+                    participants.forEach(uid => {
+                        if(uid !== currentUser.uid && data[`typing_${uid}`] === true) {
+                            const u = allUsersCache.find(x => x.id === uid);
+                            typingUsers.push(u ? u.name.split(' ')[0] : 'Someone');
+                        }
+                    });
+                    window._otherUserIsTyping = typingUsers.length > 0;
+                    const indicator = document.getElementById('typing-indicator-container');
+                    const nameLabel = document.getElementById('typing-name-label');
+                    if(indicator) {
+                        indicator.classList.toggle('hidden', !window._otherUserIsTyping);
+                        if(nameLabel && typingUsers.length > 0) {
+                            nameLabel.classList.remove('hidden');
+                            nameLabel.textContent = typingUsers.length === 1 ? `${typingUsers[0]} is typing...` : `${typingUsers.join(', ')} are typing...`;
+                        } else if(nameLabel) {
+                            nameLabel.classList.add('hidden');
+                        }
+                        if(window._otherUserIsTyping) {
+                            const c = document.getElementById('chat-messages');
+                            if(c) c.scrollTop = c.scrollHeight;
+                        }
+                    }
+                } else {
+                    const parts = chatId.split('_');
+                    const otherUid = parts[0] === currentUser.uid ? parts[1] : parts[0];
+                    const otherTyping = data[`typing_${otherUid}`] === true;
+                    window._otherUserIsTyping = otherTyping;
+                    const indicator = document.getElementById('typing-indicator-container');
+                    const nameLabel = document.getElementById('typing-name-label');
+                    if(indicator) {
+                        indicator.classList.toggle('hidden', !otherTyping);
+                        if(nameLabel) nameLabel.classList.add('hidden');
+                        if(otherTyping) {
+                            const c = document.getElementById('chat-messages');
+                            if(c) c.scrollTop = c.scrollHeight;
+                        }
                     }
                 }
             });
@@ -5287,7 +5506,8 @@ ${mediaHtml}
                 </div>
                 <div class="px-4 pb-2">
                     ${isProject ? '<span class="inline-block bg-gradient-to-r from-blue-600 to-purple-600 text-white text-[10px] font-bold px-2 py-1 rounded-full mb-2 animate-pulse-slow"><i class="fa-solid fa-rocket mr-1"></i> PROJECT</span>' : ''}
-                    <p class="text-slate-700 text-sm whitespace-pre-line leading-relaxed">${post.text}</p>
+                    <p class="text-slate-700 text-sm whitespace-pre-line leading-relaxed ${post.text && post.text.length > 300 ? 'post-text-clamp' : ''}" id="post-text-${post.id}-${context}">${post.text}</p>
+                    ${post.text && post.text.length > 300 ? `<span class="see-more-btn" onclick="toggleSeeMore('post-text-${post.id}-${context}', this)">See more</span>` : ''}
                     <div class="mt-2 flex flex-wrap gap-2">${tags}</div>
                 </div>
                 ${post.attachment ? `<div class="mt-2 overflow-hidden bg-slate-100 flex items-center justify-center">${(post.attachmentType === 'video' || post.attachment.match(/\.(mp4|webm|mov|ogg)($|\?)/i) || post.attachment.includes('/video/upload/')) ? `<div class="post-video-wrapper paused pv-show-controls"><video src="${post.attachment}" class="w-full max-h-[500px] object-contain" preload="metadata" playsinline></video><button class="post-video-big-play"><i class="fa-solid fa-play" style="margin-left:3px"></i></button><div class="post-video-controls"><div class="pv-row"><button class="pv-play-btn"><i class="fa-solid fa-play"></i></button><div class="pv-progress-track"><div class="pv-progress-fill" style="width:0%"></div><div class="pv-progress-thumb" style="left:0%"></div></div><span class="pv-time">0:00 / 0:00</span><button class="pv-vol-btn"><i class="fa-solid fa-volume-high"></i></button><button class="pv-fs-btn"><i class="fa-solid fa-expand"></i></button></div></div></div>` : `<img src="${post.attachment}" class="w-full max-h-[500px] object-contain hover:scale-[1.01] transition-transform duration-500 cursor-pointer" onclick="openLightbox(this.src)">`}</div>` : ''}
@@ -5619,6 +5839,56 @@ ${mediaHtml}
              }
         };
 
+        window.toggleSeeMore = (elId, btn) => {
+            const el = document.getElementById(elId);
+            if(!el) return;
+            if(el.classList.contains('expanded')) {
+                el.classList.remove('expanded');
+                btn.textContent = 'See more';
+            } else {
+                el.classList.add('expanded');
+                btn.textContent = 'See less';
+            }
+        };
+
+        function updatePostInPlace(post) {
+            const contexts = ['feed', 'profile', 'saved', 'collaborate'];
+            contexts.forEach(ctx => {
+                const el = document.getElementById(`post-${post.id}-${ctx}`);
+                if(!el) return;
+                const cachedIdx = allPostsCache.findIndex(p => p.id === post.id);
+                if(cachedIdx > -1) allPostsCache[cachedIdx] = post;
+                const hasLiked = post.likedBy && post.likedBy.includes(currentUser.uid);
+                const isSaved = mySavedPosts.includes(post.id);
+                const heartIcons = el.querySelectorAll('.fa-heart');
+                heartIcons.forEach(btn => {
+                    if(hasLiked) {
+                        btn.classList.remove('fa-regular');
+                        btn.classList.add('fa-solid', 'text-blue-600');
+                    } else {
+                        btn.classList.remove('fa-solid', 'text-blue-600');
+                        btn.classList.add('fa-regular');
+                    }
+                    const countSpan = btn.nextElementSibling;
+                    if(countSpan) {
+                        countSpan.innerText = post.likes || 0;
+                        if(hasLiked) countSpan.classList.add('text-blue-600');
+                        else countSpan.classList.remove('text-blue-600');
+                    }
+                });
+                const bookmarkIcons = el.querySelectorAll('.fa-bookmark');
+                bookmarkIcons.forEach(btn => {
+                    if(isSaved) {
+                        btn.classList.remove('fa-regular');
+                        btn.classList.add('fa-solid', 'text-purple-600');
+                    } else {
+                        btn.classList.remove('fa-solid', 'text-purple-600');
+                        btn.classList.add('fa-regular');
+                    }
+                });
+            });
+        }
+
         window.toggleMenu = (pid, ctx) => document.getElementById(`menu-${pid}-${ctx}`).classList.toggle('hidden');
         
         window.toggleCommentSection = (pid, ctx) => {
@@ -5645,16 +5915,19 @@ ${mediaHtml}
                     const isMyComment = c.uid === currentUser.uid;
                     const isAdmin = checkIsAdmin(currentUser.email);
                     const canDelete = isMyComment || isAdmin;
+                    const cachedUser = allUsersCache.find(u => u.id === c.uid);
+                    const displayName = cachedUser ? cachedUser.name : c.name;
+                    const displayPhoto = cachedUser ? cachedUser.photoURL : c.photoURL;
                     const replyToHtml = c.replyToName ? `<p class="text-[10px] text-blue-500 font-semibold mb-0.5"><i class="fa-solid fa-reply text-[8px] mr-1"></i>Replying to ${c.replyToName}</p>` : '';
-                    list.innerHTML += `<div id="comment-${commentId}" class="flex gap-2 animate-fade-in group/comment rounded-lg p-1 transition-all"><img src="${c.photoURL}" class="w-6 h-6 rounded-full mt-1 cursor-pointer" onclick="viewProfile('${c.uid}')">
+                    list.innerHTML += `<div id="comment-${commentId}" class="flex gap-2 animate-fade-in group/comment rounded-lg p-1 transition-all"><img src="${displayPhoto}" class="w-6 h-6 rounded-full mt-1 cursor-pointer" onclick="viewProfile('${c.uid}')">
                     <div class="flex-1 min-w-0">
                         <div class="bg-white p-2 rounded-r-xl rounded-bl-xl shadow-sm border border-slate-100 text-sm">
                             ${replyToHtml}
-                            <p class="font-bold text-xs text-slate-800">${c.name}</p>
+                            <p class="font-bold text-xs text-slate-800">${displayName}</p>
                             <p class="text-slate-600">${c.text}</p>
                         </div>
                         <div class="flex items-center gap-3 mt-0.5 ml-1 opacity-0 group-hover/comment:opacity-100 transition-opacity">
-                            <button onclick="replyToComment('${pid}','${ctx}','${commentId}','${c.name.replace(/'/g, "\\'")}')"
+                            <button onclick="replyToComment('${pid}','${ctx}','${commentId}','${displayName.replace(/'/g, "\\'")}')"
                                 class="text-[10px] text-slate-400 hover:text-blue-500 font-semibold transition-colors">Reply</button>
                             ${canDelete ? `<button onclick="deleteComment('${pid}','${ctx}','${commentId}')" class="text-[10px] text-slate-400 hover:text-red-500 font-semibold transition-colors">Delete</button>` : ''}
                         </div>
