@@ -162,11 +162,30 @@
         
         body { background-color: #fafafa; background-image: none; background-attachment: fixed; }
         
-        video::-webkit-media-controls-panel { background: linear-gradient(transparent, rgba(0,0,0,0.6)); }
-        video::-webkit-media-controls-play-button { filter: brightness(1.2); }
-        video::-webkit-media-controls-timeline { filter: brightness(1.1); }
         .post-video-wrapper { position: relative; background: #000; border-radius: 0; overflow: hidden; }
-        .post-video-wrapper video { display: block; }
+        .post-video-wrapper video { display: block; width: 100%; cursor: pointer; }
+        .post-video-wrapper video::-webkit-media-controls { display: none !important; }
+        .post-video-wrapper video::-webkit-media-controls-enclosure { display: none !important; }
+        .post-video-controls { position: absolute; bottom: 0; left: 0; right: 0; padding: 48px 14px 12px 14px; background: linear-gradient(0deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.35) 60%, transparent 100%); display: flex; flex-direction: column; gap: 8px; opacity: 0; transition: opacity 0.25s ease; pointer-events: none; z-index: 5; }
+        .post-video-wrapper.pv-show-controls .post-video-controls { opacity: 1; pointer-events: auto; }
+        .post-video-controls .pv-row { display: flex; align-items: center; gap: 10px; }
+        .post-video-controls .pv-play-btn { background: none; border: none; color: #fff; font-size: 17px; cursor: pointer; padding: 6px; display: flex; align-items: center; justify-content: center; opacity: 0.9; transition: opacity 0.15s, transform 0.15s; flex-shrink: 0; }
+        .post-video-controls .pv-play-btn:hover { opacity: 1; transform: scale(1.15); }
+        .post-video-controls .pv-time { color: rgba(255,255,255,0.8); font-size: 11px; font-weight: 500; min-width: 78px; text-align: center; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+        .post-video-controls .pv-progress-track { flex: 1; height: 6px; background: rgba(255,255,255,0.2); border-radius: 6px; cursor: pointer; position: relative; overflow: visible; }
+        .post-video-controls .pv-progress-track:hover { height: 8px; }
+        .post-video-controls .pv-progress-fill { height: 100%; background: #fff; border-radius: 6px; pointer-events: none; width: 0%; }
+        .post-video-controls .pv-progress-thumb { position: absolute; top: 50%; right: 0; width: 14px; height: 14px; background: #fff; border-radius: 50%; transform: translate(50%, -50%) scale(0); transition: transform 0.15s ease; box-shadow: 0 0 6px rgba(0,0,0,0.4); pointer-events: none; }
+        .post-video-controls .pv-progress-track:hover .pv-progress-thumb,
+        .post-video-wrapper.pv-scrubbing .pv-progress-thumb { transform: translate(50%, -50%) scale(1); }
+        .post-video-controls .pv-vol-btn { background: none; border: none; color: #fff; font-size: 15px; cursor: pointer; padding: 6px; opacity: 0.85; transition: opacity 0.15s, transform 0.15s; flex-shrink: 0; }
+        .post-video-controls .pv-vol-btn:hover { opacity: 1; transform: scale(1.15); }
+        .post-video-controls .pv-fs-btn { background: none; border: none; color: #fff; font-size: 15px; cursor: pointer; padding: 6px; opacity: 0.85; transition: opacity 0.15s, transform 0.15s; margin-left: auto; flex-shrink: 0; }
+        .post-video-controls .pv-fs-btn:hover { opacity: 1; transform: scale(1.15); }
+        .post-video-big-play { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 60px; background: rgba(0,0,0,0.45); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 22px; cursor: pointer; border: 2px solid rgba(255,255,255,0.15); opacity: 0; transition: opacity 0.2s ease, transform 0.2s ease; pointer-events: none; z-index: 4; }
+        .post-video-wrapper.paused .post-video-big-play { opacity: 1; pointer-events: auto; }
+        .post-video-big-play:hover { background: rgba(0,0,0,0.6); transform: translate(-50%, -50%) scale(1.1); }
+        .post-video-wrapper.pv-scrubbing .post-video-controls { opacity: 1; pointer-events: auto; }
         
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
@@ -5156,7 +5175,7 @@ ${mediaHtml}
                     <p class="text-slate-700 text-sm whitespace-pre-line leading-relaxed">${post.text}</p>
                     <div class="mt-2 flex flex-wrap gap-2">${tags}</div>
                 </div>
-                ${post.attachment ? `<div class="mt-2 overflow-hidden bg-slate-100 flex items-center justify-center">${(post.attachmentType === 'video' || post.attachment.match(/\.(mp4|webm|mov|ogg)($|\?)/i) || post.attachment.includes('/video/upload/')) ? `<div class="w-full relative group bg-black"><video src="${post.attachment}" class="w-full max-h-[500px] object-contain" controls preload="metadata" controlsList="nodownload" playsinline></video></div>` : `<img src="${post.attachment}" class="w-full max-h-[500px] object-contain hover:scale-[1.01] transition-transform duration-500 cursor-pointer" onclick="openLightbox(this.src)">`}</div>` : ''}
+                ${post.attachment ? `<div class="mt-2 overflow-hidden bg-slate-100 flex items-center justify-center">${(post.attachmentType === 'video' || post.attachment.match(/\.(mp4|webm|mov|ogg)($|\?)/i) || post.attachment.includes('/video/upload/')) ? `<div class="post-video-wrapper paused pv-show-controls"><video src="${post.attachment}" class="w-full max-h-[500px] object-contain" preload="metadata" playsinline></video><button class="post-video-big-play"><i class="fa-solid fa-play" style="margin-left:3px"></i></button><div class="post-video-controls"><div class="pv-row"><button class="pv-play-btn"><i class="fa-solid fa-play"></i></button><div class="pv-progress-track"><div class="pv-progress-fill" style="width:0%"></div><div class="pv-progress-thumb" style="left:0%"></div></div><span class="pv-time">0:00 / 0:00</span><button class="pv-vol-btn"><i class="fa-solid fa-volume-high"></i></button><button class="pv-fs-btn"><i class="fa-solid fa-expand"></i></button></div></div></div>` : `<img src="${post.attachment}" class="w-full max-h-[500px] object-contain hover:scale-[1.01] transition-transform duration-500 cursor-pointer" onclick="openLightbox(this.src)">`}</div>` : ''}
                 <div class="px-4 py-3 border-t border-slate-100 flex gap-1">
                     <button onclick="toggleLike('${post.id}')" class="flex-1 py-2 rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 text-slate-500 font-medium text-sm btn-bounce group"><i class="${likeIconClass} fa-heart text-lg transition-transform group-hover:scale-125"></i> <span class="${hasLiked ? 'text-blue-600' : ''}">${post.likes || 0}</span></button>
                     <button onclick="toggleCommentSection('${post.id}', '${context}')" class="flex-1 py-2 rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 text-slate-500 font-medium text-sm btn-bounce group"><i class="fa-regular fa-comment text-lg transition-transform group-hover:scale-125"></i> <span id="comment-count-${post.id}-${context}" class="comment-count-bubble ${(post.commentCount || 0) > 0 ? 'has-comments' : ''}">${post.commentCount || 0}</span></button>
@@ -5173,6 +5192,127 @@ ${mediaHtml}
                     </div>
                 </div>
             </div>`;
+        }
+
+        function pvFmtTime(s) { if(isNaN(s)||!isFinite(s)) return '0:00'; const m = Math.floor(s/60); return m + ':' + String(Math.floor(s%60)).padStart(2,'0'); }
+
+        function pvTogglePlay(wrapper) {
+            const v = wrapper.querySelector('video');
+            if(!v) return;
+            if(v.paused) { v.play().catch(()=>{}); } else { v.pause(); }
+        }
+
+        function pvSyncUI(wrapper) {
+            const v = wrapper.querySelector('video');
+            if(!v) return;
+            const paused = v.paused;
+            if(paused) wrapper.classList.add('paused'); else wrapper.classList.remove('paused');
+            const icon = paused ? 'fa-play' : 'fa-pause';
+            const btn = wrapper.querySelector('.pv-play-btn i');
+            if(btn) btn.className = 'fa-solid ' + icon;
+            const big = wrapper.querySelector('.post-video-big-play i');
+            if(big) { big.className = 'fa-solid ' + (paused ? 'fa-play' : 'fa-pause'); big.style.marginLeft = paused ? '3px' : '0'; }
+        }
+
+        function pvUpdateProgress(wrapper) {
+            const v = wrapper.querySelector('video');
+            if(!v || !v.duration || wrapper.classList.contains('pv-scrubbing')) return;
+            const pct = (v.currentTime / v.duration * 100);
+            const fill = wrapper.querySelector('.pv-progress-fill');
+            const thumb = wrapper.querySelector('.pv-progress-thumb');
+            const time = wrapper.querySelector('.pv-time');
+            if(fill) fill.style.width = pct + '%';
+            if(thumb) thumb.style.left = pct + '%';
+            if(time) time.textContent = pvFmtTime(v.currentTime) + ' / ' + pvFmtTime(v.duration);
+        }
+
+        function pvSeekTo(wrapper, track, clientX) {
+            const v = wrapper.querySelector('video');
+            if(!v || !v.duration) return;
+            const rect = track.getBoundingClientRect();
+            const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+            v.currentTime = pct * v.duration;
+            const fill = wrapper.querySelector('.pv-progress-fill');
+            const thumb = wrapper.querySelector('.pv-progress-thumb');
+            if(fill) fill.style.width = (pct*100) + '%';
+            if(thumb) thumb.style.left = (pct*100) + '%';
+        }
+
+        let _pvDragCtx = null;
+        function pvStartScrub(e, track) {
+            e.preventDefault(); e.stopPropagation();
+            const wrapper = track.closest('.post-video-wrapper');
+            wrapper.classList.add('pv-scrubbing');
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            pvSeekTo(wrapper, track, clientX);
+            _pvDragCtx = { wrapper, track };
+        }
+        document.addEventListener('mousemove', e => { if(_pvDragCtx) { e.preventDefault(); pvSeekTo(_pvDragCtx.wrapper, _pvDragCtx.track, e.clientX); } });
+        document.addEventListener('touchmove', e => { if(_pvDragCtx && e.touches[0]) { pvSeekTo(_pvDragCtx.wrapper, _pvDragCtx.track, e.touches[0].clientX); } }, {passive:true});
+        function pvEndScrub() { if(_pvDragCtx) { _pvDragCtx.wrapper.classList.remove('pv-scrubbing'); _pvDragCtx = null; } }
+        document.addEventListener('mouseup', pvEndScrub);
+        document.addEventListener('touchend', pvEndScrub);
+        document.addEventListener('touchcancel', pvEndScrub);
+
+        function pvToggleMute(wrapper) {
+            const v = wrapper.querySelector('video');
+            if(!v) return;
+            v.muted = !v.muted;
+            const btn = wrapper.querySelector('.pv-vol-btn i');
+            if(btn) btn.className = 'fa-solid ' + (v.muted ? 'fa-volume-xmark' : 'fa-volume-high');
+        }
+        function pvFullscreen(wrapper) {
+            const v = wrapper.querySelector('video');
+            if(!v) return;
+            if(v.requestFullscreen) v.requestFullscreen(); else if(v.webkitEnterFullscreen) v.webkitEnterFullscreen();
+        }
+
+        function pvInitVideos(container) {
+            (container || document).querySelectorAll('.post-video-wrapper').forEach(wrapper => {
+                const v = wrapper.querySelector('video');
+                if(!v || v._pvInit) return;
+                v._pvInit = true;
+                let _hideTimer = null;
+                const showControls = () => { wrapper.classList.add('pv-show-controls'); clearTimeout(_hideTimer); };
+                const hideControlsDelayed = () => { clearTimeout(_hideTimer); _hideTimer = setTimeout(() => { if(!v.paused && !wrapper.classList.contains('pv-scrubbing')) wrapper.classList.remove('pv-show-controls'); }, 2500); };
+                const flashControls = () => { showControls(); hideControlsDelayed(); };
+
+                v.addEventListener('timeupdate', () => pvUpdateProgress(wrapper));
+                v.addEventListener('loadedmetadata', () => {
+                    const time = wrapper.querySelector('.pv-time');
+                    if(time) time.textContent = '0:00 / ' + pvFmtTime(v.duration);
+                });
+                v.addEventListener('play', () => { pvSyncUI(wrapper); flashControls(); });
+                v.addEventListener('pause', () => { pvSyncUI(wrapper); showControls(); });
+                v.addEventListener('ended', () => { pvSyncUI(wrapper); showControls(); });
+
+                v.addEventListener('click', (e) => { e.stopPropagation(); pvTogglePlay(wrapper); flashControls(); });
+
+                const bigPlay = wrapper.querySelector('.post-video-big-play');
+                if(bigPlay) bigPlay.addEventListener('click', (e) => { e.stopPropagation(); pvTogglePlay(wrapper); });
+
+                const playBtn = wrapper.querySelector('.pv-play-btn');
+                if(playBtn) playBtn.addEventListener('click', (e) => { e.stopPropagation(); pvTogglePlay(wrapper); });
+
+                const volBtn = wrapper.querySelector('.pv-vol-btn');
+                if(volBtn) volBtn.addEventListener('click', (e) => { e.stopPropagation(); pvToggleMute(wrapper); });
+
+                const fsBtn = wrapper.querySelector('.pv-fs-btn');
+                if(fsBtn) fsBtn.addEventListener('click', (e) => { e.stopPropagation(); pvFullscreen(wrapper); });
+
+                const track = wrapper.querySelector('.pv-progress-track');
+                if(track) {
+                    track.addEventListener('mousedown', (e) => pvStartScrub(e, track));
+                    track.addEventListener('touchstart', (e) => pvStartScrub(e, track), {passive:false});
+                    track.addEventListener('click', (e) => { e.stopPropagation(); pvSeekTo(wrapper, track, e.clientX); });
+                }
+
+                wrapper.addEventListener('mouseenter', flashControls);
+                wrapper.addEventListener('mouseleave', () => { if(!v.paused && !wrapper.classList.contains('pv-scrubbing')) { clearTimeout(_hideTimer); _hideTimer = setTimeout(() => wrapper.classList.remove('pv-show-controls'), 400); } });
+                wrapper.addEventListener('touchstart', () => { if(wrapper.classList.contains('pv-show-controls') && !v.paused) { wrapper.classList.remove('pv-show-controls'); } else { flashControls(); } }, {passive:true});
+
+                showControls();
+            });
         }
 
         function saveVideoStates(container) {
@@ -5203,6 +5343,7 @@ ${mediaHtml}
              const vs = saveVideoStates(container);
              container.innerHTML = posts.map(p => createPostHTML(p, 'feed')).join('');
              restoreVideoStates(container, vs);
+             pvInitVideos(container);
         };
         
         window.renderSavedPosts = () => {
@@ -5238,6 +5379,7 @@ ${mediaHtml}
              const vs = saveVideoStates(container);
              container.innerHTML = saved.map(p => createPostHTML(p, 'saved')).join('');
              restoreVideoStates(container, vs);
+             pvInitVideos(container);
         };
 
         window.renderCollaborate = () => {
@@ -6149,6 +6291,7 @@ ${mediaHtml}
              const pvs = saveVideoStates(profilePostsContainer);
              profilePostsContainer.innerHTML = userPosts.length ? userPosts.map(p => createPostHTML(p, 'profile')).join('') : '<p class="text-center text-slate-400 py-8 animate-fade-in">No posts yet.</p>';
              restoreVideoStates(profilePostsContainer, pvs);
+             pvInitVideos(profilePostsContainer);
              
              router('profile');
         };
