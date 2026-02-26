@@ -89,8 +89,8 @@
     </script>
 
     <style>
-        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255, 255, 255, 0.3); }
-        .glass-card { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.6); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid rgba(226, 232, 240, 0.4); }
+        .glass-card { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(226, 232, 240, 0.5); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); transition: transform 0.2s ease, box-shadow 0.2s ease; }
         .glass-card:hover { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025); }
         
         /* Collapsible Section Styles - Hover to expand */
@@ -151,7 +151,8 @@
         }
 
         html.dark .sidebar-overlay { background: rgba(15, 23, 42, 0.95); }
-        .sidebar-overlay { background: rgba(248, 250, 252, 0.97); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 8px 32px rgba(0,0,0,0.1); }
+        .sidebar-overlay { background: rgba(248, 250, 252, 0.97); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 8px 32px rgba(0,0,0,0.08); border-right: 1px solid rgba(226, 232, 240, 0.5); }
+        .sidebar-overlay.right-panel { border-right: none; border-left: 1px solid rgba(226, 232, 240, 0.5); }
 
         .sidebar-link { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; font-weight: 500; font-size: 0.95rem; color: #64748b; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; position: relative; overflow: hidden; }
         .sidebar-link:hover { background-color: rgba(255, 255, 255, 0.6); color: #1e293b; transform: translateX(3px); }
@@ -217,7 +218,7 @@
         .msg-them { 
             background: #ffffff; color: #1e293b; 
             border-bottom-left-radius: 6px; margin-right: auto; 
-            border: 1px solid #f1f5f9;
+            border: 1px solid #e2e8f0;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
             transform-origin: bottom left;
         }
@@ -255,15 +256,16 @@
 
 
         /* Typing indicator */
+        #typing-indicator-container { max-width: fit-content; }
         .typing-indicator {
-            display: inline-flex; align-items: center; gap: 4px; padding: 12px 18px;
-            background: #ffffff; border: 1px solid #f1f5f9; border-radius: 20px; 
+            display: inline-flex; align-items: center; gap: 3px; padding: 8px 14px;
+            background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; 
             border-bottom-left-radius: 6px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
             animation: msgMorphIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
         }
         .typing-dot {
-            width: 6px; height: 6px; border-radius: 50%; background: #94a3b8;
+            width: 5px; height: 5px; border-radius: 50%; background: #94a3b8;
             animation: typingBounce 1.4s ease-in-out infinite;
         }
         .typing-dot:nth-child(2) { animation-delay: 0.15s; }
@@ -955,6 +957,15 @@
         /* Collapsible section headers */
         html.dark .collapsible-header h4 { color: #5a6d8a; }
         html.dark .collapsible-chevron { color: #5a6d8a; }
+
+        /* Video player theme matching */
+        html.dark .post-video-wrapper { background: #0a0a0a; }
+        html.dark .post-video-controls .pv-progress-fill { background: #6366f1; }
+        html.dark .post-video-controls .pv-progress-thumb { background: #a5b4fc; }
+        html.dark .post-video-big-play { background: rgba(99,102,241,0.3); border-color: rgba(99,102,241,0.3); }
+        html.dark .post-video-controls .pv-play-btn,
+        html.dark .post-video-controls .pv-vol-btn,
+        html.dark .post-video-controls .pv-fs-btn { color: #e0e7ff; }
     </style>
 </head>
 <body class="text-slate-800 font-sans antialiased overflow-x-hidden selection:bg-blue-100 selection:text-blue-900">
@@ -1222,6 +1233,7 @@
                             <div onclick="router('collaborate')" class="sidebar-link" id="nav-link-collaborate"><i class="fa-solid fa-rocket text-slate-500"></i> <span>Collaborate</span></div>
                             <div onclick="router('messaging')" class="sidebar-link" id="nav-link-messaging"><i class="fa-solid fa-comment-dots text-slate-500"></i> <span>Messages</span></div>
                             <div onclick="router('saved')" class="sidebar-link" id="nav-link-saved"><i class="fa-solid fa-bookmark text-slate-500"></i> <span>Saved</span></div>
+                            <div onclick="router('feedback')" class="sidebar-link" id="nav-link-feedback"><i class="fa-solid fa-bullhorn text-slate-500"></i> <span>Feedback</span></div>
                         </div>
                     </div>
                     
@@ -1315,6 +1327,24 @@
                             </button>
                         </div>
                         <div id="saved-posts-stream" class="space-y-5 pb-20"></div>
+                    </div>
+
+                    <!-- View: Feedback -->
+                    <div id="view-feedback" class="view-section hidden space-y-6">
+                        <div class="glass-card page-hero bg-white/90">
+                            <div class="flex items-start justify-between gap-4">
+                                <div>
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white text-xl shadow-lg shadow-amber-200">
+                                            <i class="fa-solid fa-bullhorn"></i>
+                                        </div>
+                                        <h2 class="font-heading font-bold text-3xl text-slate-800">Feedback</h2>
+                                    </div>
+                                    <p class="text-slate-500 text-sm mt-2 ml-1">Share your thoughts, suggestions, and ideas to help improve Lumini.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="feedback-stream" class="space-y-4 pb-20"><div class="text-center py-12"><i class="fa-solid fa-circle-notch fa-spin text-slate-400 text-xl"></i></div></div>
                     </div>
 
                     <!-- View: Network -->
@@ -1501,6 +1531,9 @@
                                     </div>
                                 </div>
                                 <div class="flex gap-1">
+                                    <button id="group-settings-btn" onclick="openGroupEditModal()" class="hidden text-slate-400 hover:text-slate-700 w-10 h-10 rounded-full hover:bg-slate-50 flex items-center justify-center transition-all duration-200 btn-bounce" title="Group Settings">
+                                        <i class="fa-solid fa-gear"></i>
+                                    </button>
                                     <button id="start-audio-call-btn" onclick="initiateCall('audio')" class="hidden text-slate-400 hover:text-slate-700 w-10 h-10 rounded-full hover:bg-slate-50 flex items-center justify-center transition-all duration-200 btn-bounce" title="Audio Call">
                                         <i class="fa-solid fa-phone"></i>
                                     </button>
@@ -2027,6 +2060,46 @@
                 <div id="group-member-list" class="flex-1 overflow-y-auto custom-scrollbar p-2"></div>
                 <div class="p-4 border-t border-slate-100">
                     <button onclick="createGroupChat()" class="w-full py-3 rounded-xl font-bold text-sm bg-slate-900 text-white hover:bg-slate-800 transition-all btn-bounce shadow-md disabled:opacity-40" id="create-group-btn" disabled>Create Group</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- EDIT GROUP CHAT MODAL -->
+        <div id="edit-group-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] hidden flex items-center justify-center p-4 transition-all duration-300">
+            <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-pop-in h-[600px] flex flex-col">
+                <div class="flex justify-between items-center p-4 border-b border-slate-100">
+                    <h3 class="font-heading font-bold text-lg text-slate-800"><i class="fa-solid fa-gear text-blue-500 mr-2"></i>Group Settings</h3>
+                    <button onclick="document.getElementById('edit-group-modal').classList.add('hidden')" class="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center transition-colors btn-bounce"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Group Name</label>
+                        <input id="edit-group-name" type="text" class="w-full bg-slate-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:bg-white focus:ring-2 focus:ring-blue-200 border border-transparent focus:border-blue-300 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Group Photo URL</label>
+                        <input id="edit-group-photo" type="url" placeholder="https://..." class="w-full bg-slate-100 rounded-xl px-4 py-2.5 text-sm outline-none focus:bg-white focus:ring-2 focus:ring-blue-200 border border-transparent focus:border-blue-300 transition-all" oninput="if(this.value){document.getElementById('edit-group-photo-img').src=this.value;document.getElementById('edit-group-photo-preview').classList.remove('hidden');}else{document.getElementById('edit-group-photo-preview').classList.add('hidden');}">
+                        <div id="edit-group-photo-preview" class="hidden mt-2 flex justify-center"><img id="edit-group-photo-img" class="w-16 h-16 rounded-full object-cover border-2 border-slate-200"></div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Admin</label>
+                        <select id="edit-group-admin" class="w-full bg-slate-100 rounded-xl px-4 py-2.5 text-sm outline-none border border-transparent focus:border-blue-300 transition-all"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Members (<span id="edit-group-member-count">0</span>)</label>
+                        <div id="edit-group-members-list" class="space-y-1 max-h-40 overflow-y-auto custom-scrollbar"></div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Add Members</label>
+                        <input type="text" placeholder="Search users..." class="w-full bg-slate-50 rounded-lg px-3 py-2 text-sm outline-none mb-2" oninput="filterAddGroupMembers(this.value)">
+                        <div id="edit-group-add-list" class="space-y-1 max-h-32 overflow-y-auto custom-scrollbar"></div>
+                    </div>
+                    <button onclick="leaveGroup()" class="w-full py-2.5 rounded-xl font-bold text-sm bg-red-50 text-red-600 hover:bg-red-100 transition-all btn-bounce flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-right-from-bracket"></i> Leave Group
+                    </button>
+                </div>
+                <div class="p-4 border-t border-slate-100">
+                    <button onclick="saveGroupSettings()" class="w-full py-3 rounded-xl font-bold text-sm bg-slate-900 text-white hover:bg-slate-800 transition-all btn-bounce shadow-md">Save Changes</button>
                 </div>
             </div>
         </div>
@@ -2837,6 +2910,21 @@
 
                 startPresence();
                 loadData();
+
+                onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'users_directory', user.uid), (snap) => {
+                    if (snap.exists() && snap.data().isBanned && currentUser) {
+                        showToast('Your account has been banned by an admin.');
+                        setTimeout(async () => {
+                            try {
+                                if (currentUser) {
+                                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users_directory', currentUser.uid), { isOnline: false, lastSeen: serverTimestamp() }, { merge: true });
+                                }
+                            } catch(e) {}
+                            stopPresence();
+                            signOut(auth);
+                        }, 2000);
+                    }
+                });
             } else {
                 stopPresence();
                 currentUser = null;
@@ -3278,9 +3366,11 @@
                 const changes = snap.docChanges();
                 const hasStructuralChange = isFirstPostLoad || changes.some(c => c.type === 'added' || c.type === 'removed');
                 isFirstPostLoad = false;
-                if(hasStructuralChange) {
+                const hasCategoryChange = changes.some(c => c.type === 'modified' && c.doc.data().category !== undefined);
+                if(hasStructuralChange || hasCategoryChange) {
                     if(!document.getElementById('view-feed').classList.contains('hidden')) renderFeed(posts);
                     if(!document.getElementById('view-collaborate').classList.contains('hidden')) renderCollaborate();
+                    if(!document.getElementById('view-feedback').classList.contains('hidden')) renderFeedback();
                 } else {
                     changes.forEach(c => {
                         if(c.type === 'modified') {
@@ -3325,7 +3415,25 @@
             monitorChats();
             monitorIncomingCalls();
             monitorStories(); 
-            monitorHighlights(); 
+            monitorHighlights();
+            cleanupExpiredStories();
+        }
+
+        async function cleanupExpiredStories() {
+            try {
+                const snap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'stories'));
+                const now = Date.now();
+                snap.forEach(async (d) => {
+                    const data = d.data();
+                    const expires = data.expiresAt ? (data.expiresAt.toMillis ? data.expiresAt.toMillis() : data.expiresAt.seconds * 1000) : 0;
+                    if (expires > 0 && expires < now) {
+                        if (data.cloudinaryPublicId) {
+                            deleteFromCloudinary(data.cloudinaryPublicId, data.cloudinaryResourceType || 'image');
+                        }
+                        await deleteDoc(d.ref);
+                    }
+                });
+            } catch(e) { console.log('Story cleanup error:', e); }
         }
 
         function monitorHighlights() {
@@ -3557,7 +3665,11 @@
                         if ((change.type === 'added' || change.type === 'modified') &&
                             data.participants && data.participants.includes(currentUser.uid) &&
                             isUnread && hasNewMessage) {
-                             window.playNotificationSound();
+                             const mainChatOpen = currentChatId === chatId && !document.getElementById('view-messaging').classList.contains('hidden');
+                             const floatingChatOpen = window.currentFloatingChatId === chatId && window.isFloatingWidgetOpen;
+                             if (!mainChatOpen && !floatingChatOpen) {
+                                 window.playNotificationSound();
+                             }
                         }
 
                         if (lastUpdatedMillis > previousMillis) {
@@ -3586,8 +3698,9 @@
                     const groupName = c.groupName || 'Group Chat';
                     const memberCount = (c.participants || []).length;
                     const escapedName = groupName.replace(/'/g, "\\'");
+                    const groupPhotoHtml = c.groupPhoto ? `<img src="${c.groupPhoto}" class="w-10 h-10 rounded-full object-cover">` : `<div class="group-avatar">${groupName.charAt(0).toUpperCase()}</div>`;
                     return `<div onclick="openChat('${c.id}', '${escapedName}')" class="flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all duration-200 ${c.id === currentChatId ? 'bg-white shadow-md ring-1 ring-slate-100 scale-[1.02]' : 'hover:bg-white hover:shadow-sm'} ${isUnread ? 'bg-blue-50/50' : ''}">
-                        <div class="group-avatar">${groupName.charAt(0).toUpperCase()}</div>
+                        ${groupPhotoHtml}
                         <div class="truncate flex-grow">
                             <h4 class="font-bold text-sm text-slate-800 ${isUnread ? 'text-black' : ''}">${groupName}</h4>
                             <p class="text-[10px] text-slate-400">${memberCount} members</p>
@@ -3633,6 +3746,7 @@
                 statusEl.className = 'text-[10px] text-slate-400';
                 document.getElementById('start-video-call-btn').classList.add('hidden');
                 document.getElementById('start-audio-call-btn').classList.add('hidden');
+                document.getElementById('group-settings-btn').classList.remove('hidden');
             } else {
                 const chatParts = chatId.split('_');
                 const chatOtherUid = chatParts[0] === currentUser.uid ? chatParts[1] : chatParts[0];
@@ -3650,6 +3764,7 @@
                 }
                 document.getElementById('start-video-call-btn').classList.remove('hidden');
                 document.getElementById('start-audio-call-btn').classList.remove('hidden');
+                document.getElementById('group-settings-btn').classList.add('hidden');
             }
             document.getElementById('delete-chat-btn').classList.remove('hidden');
 
@@ -4334,6 +4449,128 @@ ${mediaHtml}
             openChat(chatRef.id, groupName);
         };
 
+        // --- GROUP CHAT EDIT FUNCTIONS ---
+        window.openGroupEditModal = async () => {
+            if (!currentChatId) return;
+            const chatDoc = window.allChats ? window.allChats.find(ch => ch.id === currentChatId) : null;
+            if (!chatDoc || !chatDoc.isGroup) return;
+            document.getElementById('edit-group-name').value = chatDoc.groupName || '';
+            document.getElementById('edit-group-photo').value = chatDoc.groupPhoto || '';
+            if (chatDoc.groupPhoto) {
+                document.getElementById('edit-group-photo-img').src = chatDoc.groupPhoto;
+                document.getElementById('edit-group-photo-preview').classList.remove('hidden');
+            } else {
+                document.getElementById('edit-group-photo-preview').classList.add('hidden');
+            }
+            const participants = chatDoc.participants || [];
+            const adminUid = chatDoc.createdBy || participants[0];
+            document.getElementById('edit-group-member-count').textContent = participants.length;
+            const adminSelect = document.getElementById('edit-group-admin');
+            adminSelect.innerHTML = participants.map(uid => {
+                const u = allUsersCache.find(x => x.id === uid);
+                const name = u ? u.name : uid;
+                return `<option value="${uid}" ${uid === adminUid ? 'selected' : ''}>${name}</option>`;
+            }).join('');
+            const membersList = document.getElementById('edit-group-members-list');
+            membersList.innerHTML = participants.map(uid => {
+                const u = allUsersCache.find(x => x.id === uid);
+                const name = u ? u.name : 'Unknown';
+                const photo = u ? u.photoURL : 'https://placehold.co/100x100';
+                const isAdmin = uid === adminUid;
+                return `<div class="flex items-center gap-3 p-2 rounded-xl ${isAdmin ? 'bg-blue-50' : 'hover:bg-slate-50'} transition-all">
+                    <img src="${photo}" class="w-8 h-8 rounded-full object-cover">
+                    <span class="text-sm font-semibold text-slate-700 flex-grow">${name} ${isAdmin ? '<span class="text-[10px] text-blue-500 font-bold ml-1">ADMIN</span>' : ''}</span>
+                    ${!isAdmin && (currentUser.uid === adminUid) ? `<button onclick="removeGroupMember('${uid}')" class="text-red-400 hover:text-red-600 text-xs btn-bounce"><i class="fa-solid fa-xmark"></i></button>` : ''}
+                </div>`;
+            }).join('');
+            filterAddGroupMembers('');
+            document.getElementById('edit-group-modal').classList.remove('hidden');
+        };
+
+        window.filterAddGroupMembers = (val) => {
+            const chatDoc = window.allChats ? window.allChats.find(ch => ch.id === currentChatId) : null;
+            if (!chatDoc) return;
+            const participants = chatDoc.participants || [];
+            const available = allUsersCache.filter(u => !participants.includes(u.id) && u.name.toLowerCase().includes(val.toLowerCase()));
+            const list = document.getElementById('edit-group-add-list');
+            list.innerHTML = available.slice(0, 10).map(u => `<div onclick="addGroupMember('${u.id}')" class="flex items-center gap-3 p-2 rounded-xl hover:bg-green-50 cursor-pointer transition-all">
+                <img src="${u.photoURL}" class="w-7 h-7 rounded-full object-cover">
+                <span class="text-sm font-medium text-slate-700">${u.name}</span>
+                <i class="fa-solid fa-plus text-green-500 ml-auto text-xs"></i>
+            </div>`).join('') || '<p class="text-xs text-slate-400 text-center py-2">No users to add</p>';
+        };
+
+        window.addGroupMember = async (uid) => {
+            if (!currentChatId) return;
+            const u = allUsersCache.find(x => x.id === uid);
+            const name = u ? u.name : 'Someone';
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'chats', currentChatId), { participants: arrayUnion(uid) });
+            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'chats', currentChatId, 'messages'), {
+                text: `${currentUser.displayName} added ${name} to the group`, type: 'system', senderId: 'system', createdAt: serverTimestamp()
+            });
+            showToast(`${name} added`);
+            setTimeout(() => openGroupEditModal(), 500);
+        };
+
+        window.removeGroupMember = async (uid) => {
+            if (!currentChatId) return;
+            const u = allUsersCache.find(x => x.id === uid);
+            const name = u ? u.name : 'Someone';
+            const confirmed = await showConfirm(`Remove ${name} from the group?`, 'Remove member');
+            if (!confirmed) return;
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'chats', currentChatId), { participants: arrayRemove(uid) });
+            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'chats', currentChatId, 'messages'), {
+                text: `${currentUser.displayName} removed ${name} from the group`, type: 'system', senderId: 'system', createdAt: serverTimestamp()
+            });
+            showToast(`${name} removed`);
+            setTimeout(() => openGroupEditModal(), 500);
+        };
+
+        window.leaveGroup = async () => {
+            if (!currentChatId) return;
+            const confirmed = await showConfirm('Leave this group chat?', 'Leave group');
+            if (!confirmed) return;
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'chats', currentChatId), { participants: arrayRemove(currentUser.uid) });
+            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'chats', currentChatId, 'messages'), {
+                text: `${currentUser.displayName} left the group`, type: 'system', senderId: 'system', createdAt: serverTimestamp()
+            });
+            document.getElementById('edit-group-modal').classList.add('hidden');
+            backToChatList();
+            showToast('You left the group');
+        };
+
+        window.saveGroupSettings = async () => {
+            if (!currentChatId) return;
+            const newName = document.getElementById('edit-group-name').value.trim();
+            const newPhoto = document.getElementById('edit-group-photo').value.trim();
+            const newAdmin = document.getElementById('edit-group-admin').value;
+            if (!newName) { showToast('Group name is required'); return; }
+            const updates = { groupName: newName };
+            if (newPhoto) updates.groupPhoto = newPhoto;
+            else updates.groupPhoto = null;
+            if (newAdmin) updates.createdBy = newAdmin;
+            const chatDoc = window.allChats ? window.allChats.find(ch => ch.id === currentChatId) : null;
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'chats', currentChatId), updates);
+            if (chatDoc && chatDoc.groupName !== newName) {
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'chats', currentChatId, 'messages'), {
+                    text: `${currentUser.displayName} renamed the group to "${newName}"`, type: 'system', senderId: 'system', createdAt: serverTimestamp()
+                });
+            }
+            document.getElementById('edit-group-modal').classList.add('hidden');
+            document.getElementById('chat-header-name').innerText = newName;
+            if(window.allChats) {
+                const chatObj = window.allChats.find(ch => ch.id === currentChatId);
+                if(chatObj) {
+                    chatObj.groupName = newName;
+                    if(newPhoto) chatObj.groupPhoto = newPhoto;
+                    else chatObj.groupPhoto = null;
+                    renderChatList(window.allChats);
+                    if(window.isFloatingWidgetOpen) renderFloatingChatList();
+                }
+            }
+            showToast('Group updated');
+        };
+
         // --- TYPING INDICATOR LOGIC ---
         let typingTimeout = null;
         let isTyping = false;
@@ -4345,21 +4582,35 @@ ${mediaHtml}
         // --- ONLINE PRESENCE SYSTEM ---
         let presenceInterval = null;
 
+        let _lastActivityTime = Date.now();
+        let _inactivityInterval = null;
+        function _trackActivity() { _lastActivityTime = Date.now(); }
+
         function startPresence() {
             if (!currentUser) return;
             const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users_directory', currentUser.uid);
             
-            // Set online immediately
             setDoc(userRef, { isOnline: true, lastSeen: serverTimestamp() }, { merge: true });
+            _lastActivityTime = Date.now();
 
-            // Heartbeat every 60 seconds
+            ['mousemove','mousedown','keydown','touchstart','scroll','click'].forEach(evt => {
+                document.addEventListener(evt, _trackActivity, { passive: true });
+            });
+
             presenceInterval = setInterval(() => {
                 if (currentUser) {
                     setDoc(userRef, { isOnline: true, lastSeen: serverTimestamp() }, { merge: true });
                 }
-            }, 60000);
+            }, 30000);
 
-            // Helper: set offline via sendBeacon (works during page close)
+            _inactivityInterval = setInterval(() => {
+                if (!currentUser) return;
+                const inactiveMs = Date.now() - _lastActivityTime;
+                if (inactiveMs > 10 * 60 * 1000 && document.visibilityState === 'hidden') {
+                    setDoc(userRef, { isOnline: false, lastSeen: serverTimestamp() }, { merge: true }).catch(() => {});
+                }
+            }, 30000);
+
             function sendOfflineBeacon() {
                 if (!currentUser) return;
                 const uid = currentUser.uid;
@@ -4372,38 +4623,37 @@ ${mediaHtml}
                 });
                 if (navigator.sendBeacon) {
                     navigator.sendBeacon(firestoreUrl + '&currentDocument.exists=true', new Blob([body], { type: 'application/json' }));
-                } else {
-                    // Fallback: sync XHR (last resort)
+                }
+                try {
                     const xhr = new XMLHttpRequest();
                     xhr.open('PATCH', firestoreUrl, false);
                     xhr.setRequestHeader('Content-Type', 'application/json');
                     xhr.send(body);
-                }
+                } catch(e) {}
             }
 
-            // Go offline on page close
             window.addEventListener('beforeunload', sendOfflineBeacon);
-
-            // Also handle pagehide (more reliable on mobile and some browsers)
             window.addEventListener('pagehide', sendOfflineBeacon);
+            window.addEventListener('unload', sendOfflineBeacon);
 
-            // Also handle visibilitychange
             document.addEventListener('visibilitychange', () => {
                 if (!currentUser) return;
                 if (document.visibilityState === 'hidden') {
                     sendOfflineBeacon();
                     setDoc(userRef, { isOnline: false, lastSeen: serverTimestamp() }, { merge: true }).catch(() => {});
                 } else {
+                    _lastActivityTime = Date.now();
                     setDoc(userRef, { isOnline: true, lastSeen: serverTimestamp() }, { merge: true });
                 }
             });
         }
 
         function stopPresence() {
-            if (presenceInterval) {
-                clearInterval(presenceInterval);
-                presenceInterval = null;
-            }
+            if (presenceInterval) { clearInterval(presenceInterval); presenceInterval = null; }
+            if (_inactivityInterval) { clearInterval(_inactivityInterval); _inactivityInterval = null; }
+            ['mousemove','mousedown','keydown','touchstart','scroll','click'].forEach(evt => {
+                document.removeEventListener(evt, _trackActivity);
+            });
         }
 
         window.handleTypingIndicator = () => {
@@ -5153,6 +5403,7 @@ ${mediaHtml}
             
             if(view === 'saved') renderSavedPosts();
             if(view === 'collaborate') renderCollaborate();
+            if(view === 'feedback') renderFeedback();
             
             if(view === 'messaging' && window.innerWidth < 768 && !currentChatId) {
                  backToChatList();
@@ -5481,7 +5732,7 @@ ${mediaHtml}
             const adminBadge = postAuthorIsAdmin ? `<span class="admin-badge">Admin 🛡️</span>` : '';
             const verifiedBadge = postAuthor?.isVerified ? `<span class="verified-badge" title="Verified"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#2563eb"/><path d="M9 12l2 2 4-4" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>` : '';
 
-            return `<div id="post-${post.id}-${context}" class="glass-card rounded-2xl bg-white p-0 overflow-hidden animate-slide-up mb-4 hover:shadow-lg transition-shadow duration-300">
+            return `<div id="post-${post.id}-${context}" class="glass-card rounded-2xl bg-white p-0 animate-slide-up mb-4 hover:shadow-lg transition-shadow duration-300">
                 <div class="p-4 flex gap-3">
                     <img src="${post.photoURL}" class="w-10 h-10 rounded-full bg-slate-100 object-cover cursor-pointer hover:scale-105 transition-transform" onclick="viewProfile('${post.uid}')">
                     <div class="flex-grow">
@@ -5494,10 +5745,12 @@ ${mediaHtml}
                             </div>
                             <div class="relative">
                                 <button onclick="toggleMenu('${post.id}', '${context}')" class="text-slate-400 hover:bg-slate-100 w-8 h-8 rounded-full transition-colors btn-bounce"><i class="fa-solid fa-ellipsis"></i></button>
-                                <div id="menu-${post.id}-${context}" class="hidden absolute right-0 top-8 bg-white shadow-xl border border-slate-100 rounded-xl py-2 w-32 z-10 animate-pop-in origin-top-right">
+                                <div id="menu-${post.id}-${context}" class="hidden absolute right-0 top-8 bg-white shadow-xl border border-slate-100 rounded-xl py-2 w-40 z-50 animate-pop-in origin-top-right">
                                     <button onclick="savePost('${post.id}')" class="w-full text-left px-4 py-2 text-slate-600 hover:bg-slate-50 text-sm font-medium transition-colors">${saveText}</button>
                                     ${canEdit ? `<button onclick="editPost('${post.id}')" class="w-full text-left px-4 py-2 text-slate-600 hover:bg-slate-50 text-sm font-medium transition-colors">Edit</button>` : ''}
                                     ${canDelete ? `<button onclick="initiateDelete('${post.id}', '${post.uid}')" class="w-full text-left px-4 py-2 text-red-500 hover:bg-red-50 text-sm font-bold transition-colors">Delete</button>` : ''}
+                                    ${isAdmin && post.category !== 'feedback' ? `<button onclick="movePostToFeedback('${post.id}')" class="w-full text-left px-4 py-2 text-amber-600 hover:bg-amber-50 text-sm font-medium transition-colors">Move to Feedback</button>` : ''}
+                                    ${isAdmin && post.category === 'feedback' ? `<button onclick="movePostToMain('${post.id}')" class="w-full text-left px-4 py-2 text-blue-600 hover:bg-blue-50 text-sm font-medium transition-colors">Move to Main</button>` : ''}
                                     <button onclick="reportPost('${post.id}', '${post.uid}')" class="w-full text-left px-4 py-2 text-orange-500 hover:bg-orange-50 text-sm font-medium transition-colors">Report</button>
                                 </div>
                             </div>
@@ -5510,8 +5763,8 @@ ${mediaHtml}
                     ${post.text && post.text.length > 300 ? `<span class="see-more-btn" onclick="toggleSeeMore('post-text-${post.id}-${context}', this)">See more</span>` : ''}
                     <div class="mt-2 flex flex-wrap gap-2">${tags}</div>
                 </div>
-                ${post.attachment ? `<div class="mt-2 overflow-hidden bg-slate-100 flex items-center justify-center">${(post.attachmentType === 'video' || post.attachment.match(/\.(mp4|webm|mov|ogg)($|\?)/i) || post.attachment.includes('/video/upload/')) ? `<div class="post-video-wrapper paused pv-show-controls"><video src="${post.attachment}" class="w-full max-h-[500px] object-contain" preload="metadata" playsinline></video><button class="post-video-big-play"><i class="fa-solid fa-play" style="margin-left:3px"></i></button><div class="post-video-controls"><div class="pv-row"><button class="pv-play-btn"><i class="fa-solid fa-play"></i></button><div class="pv-progress-track"><div class="pv-progress-fill" style="width:0%"></div><div class="pv-progress-thumb" style="left:0%"></div></div><span class="pv-time">0:00 / 0:00</span><button class="pv-vol-btn"><i class="fa-solid fa-volume-high"></i></button><button class="pv-fs-btn"><i class="fa-solid fa-expand"></i></button></div></div></div>` : `<img src="${post.attachment}" class="w-full max-h-[500px] object-contain hover:scale-[1.01] transition-transform duration-500 cursor-pointer" onclick="openLightbox(this.src)">`}</div>` : ''}
-                <div class="px-4 py-3 border-t border-slate-100 flex gap-1">
+                ${post.attachment ? `<div class="mt-2 overflow-hidden rounded-none bg-slate-100 flex items-center justify-center">${(post.attachmentType === 'video' || post.attachment.match(/\.(mp4|webm|mov|ogg)($|\?)/i) || post.attachment.includes('/video/upload/')) ? `<div class="post-video-wrapper paused pv-show-controls"><video src="${post.attachment}" class="w-full max-h-[500px] object-contain" preload="metadata" playsinline></video><button class="post-video-big-play"><i class="fa-solid fa-play" style="margin-left:3px"></i></button><div class="post-video-controls"><div class="pv-row"><button class="pv-play-btn"><i class="fa-solid fa-play"></i></button><div class="pv-progress-track"><div class="pv-progress-fill" style="width:0%"></div><div class="pv-progress-thumb" style="left:0%"></div></div><span class="pv-time">0:00 / 0:00</span><button class="pv-vol-btn"><i class="fa-solid fa-volume-high"></i></button><button class="pv-fs-btn"><i class="fa-solid fa-expand"></i></button></div></div></div>` : `<img src="${post.attachment}" class="w-full max-h-[500px] object-contain hover:scale-[1.01] transition-transform duration-500 cursor-pointer" onclick="openLightbox(this.src)">`}</div>` : ''}
+                <div class="px-4 py-3 border-t border-slate-200/60 flex gap-1">
                     <button onclick="toggleLike('${post.id}')" class="flex-1 py-2 rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 text-slate-500 font-medium text-sm btn-bounce group"><i class="${likeIconClass} fa-heart text-lg transition-transform group-hover:scale-125"></i> <span class="${hasLiked ? 'text-blue-600' : ''}">${post.likes || 0}</span></button>
                     <button onclick="toggleCommentSection('${post.id}', '${context}')" class="flex-1 py-2 rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 text-slate-500 font-medium text-sm btn-bounce group"><i class="fa-regular fa-comment text-lg transition-transform group-hover:scale-125"></i> <span id="comment-count-${post.id}-${context}" class="comment-count-bubble ${(post.commentCount || 0) > 0 ? 'has-comments' : ''}">${post.commentCount || 0}</span></button>
                     <button onclick="if(window._saveLongPressTriggered){window._saveLongPressTriggered=false;return;}savePost('${post.id}')" onmousedown="startSaveLongPress('${post.id}', event)" onmouseup="cancelSaveLongPress()" onmouseleave="cancelSaveLongPress()" ontouchstart="startSaveLongPress('${post.id}', event)" ontouchend="cancelSaveLongPress()" ontouchcancel="cancelSaveLongPress()" class="flex-1 py-2 rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 text-slate-500 font-medium text-sm btn-bounce group"><i class="${saveIconClass} fa-bookmark text-lg transition-transform group-hover:scale-125"></i></button>
@@ -5674,6 +5927,7 @@ ${mediaHtml}
 
         window.renderFeed = (posts) => {
              const container = document.getElementById('feed-stream');
+             posts = posts.filter(p => p.category !== 'feedback');
              if(!posts.length) { container.innerHTML = `<div class="text-center py-12 text-slate-400 animate-fade-in">No posts yet.</div>`; return; }
              const vs = saveVideoStates(container);
              container.innerHTML = posts.map(p => createPostHTML(p, 'feed')).join('');
@@ -5736,6 +5990,40 @@ ${mediaHtml}
             }
 
             container.innerHTML = projects.map(p => createPostHTML(p, 'collaborate')).join('');
+        };
+
+        window.renderFeedback = () => {
+            const container = document.getElementById('feedback-stream');
+            if(!container) return;
+            const feedbackPosts = allPostsCache.filter(p => p.category === 'feedback');
+            if(!feedbackPosts.length) {
+                container.innerHTML = `<div class="text-center py-16 animate-fade-in">
+                    <div class="w-20 h-20 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-100">
+                        <i class="fa-solid fa-bullhorn text-3xl text-amber-400"></i>
+                    </div>
+                    <h3 class="font-heading font-bold text-lg text-slate-600 mb-2">No feedback yet</h3>
+                    <p class="text-sm text-slate-400 max-w-xs mx-auto">Feedback posts moved here by admins will appear in this section.</p>
+                </div>`;
+                return;
+            }
+            const vs = saveVideoStates(container);
+            container.innerHTML = feedbackPosts.map(p => createPostHTML(p, 'feedback')).join('');
+            restoreVideoStates(container, vs);
+            pvInitVideos(container);
+        };
+
+        window.movePostToFeedback = async (postId) => {
+            const confirmed = await showConfirm('Move this post to the Feedback page?', 'Move to Feedback');
+            if(!confirmed) return;
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'posts', postId), { category: 'feedback' });
+            showToast('Post moved to Feedback');
+        };
+
+        window.movePostToMain = async (postId) => {
+            const confirmed = await showConfirm('Move this post back to the main feed?', 'Move to Main');
+            if(!confirmed) return;
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'posts', postId), { category: null });
+            showToast('Post moved to Main Feed');
         };
 
         window.filterCollaborate = (filter) => {
@@ -5852,7 +6140,7 @@ ${mediaHtml}
         };
 
         function updatePostInPlace(post) {
-            const contexts = ['feed', 'profile', 'saved', 'collaborate'];
+            const contexts = ['feed', 'profile', 'saved', 'collaborate', 'feedback'];
             contexts.forEach(ctx => {
                 const el = document.getElementById(`post-${post.id}-${ctx}`);
                 if(!el) return;
@@ -7078,10 +7366,26 @@ ${mediaHtml}
                  return;
             }
             container.innerHTML = window.allChats.map((c, i) => {
+                const isGroup = c.isGroup === true;
+                const isUnread = c.readBy && !c.readBy.includes(currentUser.uid);
+
+                if (isGroup) {
+                    const groupName = c.groupName || 'Group Chat';
+                    const escapedName = groupName.replace(/'/g, "\\'");
+                    const memberCount = (c.participants || []).length;
+                    return `
+                    <div onclick="openFloatingChat('${c.id}', '${escapedName}')" class="flex items-center gap-3 p-2.5 hover:bg-white rounded-xl cursor-pointer transition-all duration-200 mb-0.5 ${isUnread ? 'bg-blue-50/60' : ''}" style="animation: msgMorphIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; animation-delay: ${i * 0.05}s; writing-mode: horizontal-tb;">
+                        ${c.groupPhoto ? `<img src="${c.groupPhoto}" class="w-9 h-9 rounded-full object-cover" style="min-width:36px;">` : `<div class="group-avatar" style="width:36px;height:36px;min-width:36px;font-size:0.75rem;">${groupName.charAt(0).toUpperCase()}</div>`}
+                        <div class="truncate flex-grow" style="min-width:0;">
+                            <p class="font-semibold text-xs text-slate-800 truncate" style="writing-mode: horizontal-tb;">${groupName}</p>
+                            <p class="text-[10px] text-slate-400">${memberCount} members</p>
+                        </div>
+                    </div>`;
+                }
+
                 const parts = c.id.split('_');
                 const otherUid = parts[0] === currentUser.uid ? parts[1] : parts[0];
                 const otherUser = allUsersCache.find(u => u.id === otherUid) || { name: "User", photoURL: "https://placehold.co/100x100" };
-                const isUnread = c.readBy && !c.readBy.includes(currentUser.uid);
                 const isOnline = otherUser.isOnline === true;
                 
                 return `
@@ -7126,12 +7430,20 @@ ${mediaHtml}
                 const parts = chatId.split('_');
                 const otherUid = parts[0] === currentUser.uid ? parts[1] : parts[0];
                 
+                const _floatingChatDoc = window.allChats ? window.allChats.find(ch => ch.id === chatId) : null;
+                const _isFloatingGroup = _floatingChatDoc && _floatingChatDoc.isGroup === true;
+
                 messages.forEach((m, idx) => {
                     if(m.type === 'system') {
                          container.innerHTML += `<div class="text-[10px] text-center text-slate-400 my-2 font-medium">${m.text}</div>`;
                          return;
                     }
                     const isMe = m.senderId === currentUser.uid;
+                    let senderLabel = '';
+                    if (_isFloatingGroup && !isMe) {
+                        const su = allUsersCache.find(u => u.id === m.senderId);
+                        senderLabel = `<p class="text-[9px] font-bold mb-0.5" style="color:${getGroupColor(m.senderId)}">${su ? su.name : m.senderName || 'Unknown'}</p>`;
+                    }
                     let timeStr = '';
                     let showTime = false;
                     if(m.createdAt) {
@@ -7151,24 +7463,32 @@ ${mediaHtml}
                             timeStr = dt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
                         }
                     }
+                    let miniMediaHtml = '';
+                    if(m.media) {
+                        if(m.media.type === 'image') miniMediaHtml = `<img src="${m.media.data}" class="max-w-full max-h-32 rounded-lg mb-1 cursor-pointer" onclick="openLightbox(this.src)">`;
+                        else if(m.media.type === 'video') miniMediaHtml = `<video src="${m.media.data}" class="max-w-full max-h-32 rounded-lg mb-1" controls preload="metadata"></video>`;
+                        else if(m.media.type === 'voice') miniMediaHtml = `<div class="flex items-center gap-1 text-[10px] opacity-70"><i class="fa-solid fa-microphone"></i> Voice message</div>`;
+                        else if(m.media.type === 'file') miniMediaHtml = `<div class="flex items-center gap-1 text-[10px] opacity-70"><i class="fa-solid fa-file"></i> ${m.media.name || 'File'}</div>`;
+                    }
+                    const textContent = m.text ? (m.text.length > 200 ? m.text.substring(0, 200) + '...' : m.text) : '';
                     
                     container.innerHTML += `
                     <div class="flex w-full mb-1 ${isMe?'justify-end':'justify-start'}" style="animation: msgMorphIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;">
                         <div style="max-width: 85%; writing-mode: horizontal-tb;">
                             <div class="px-3 py-2 text-xs leading-relaxed ${isMe ? 'bg-slate-800 text-white rounded-2xl rounded-br-sm' : 'bg-white text-slate-800 rounded-2xl rounded-bl-sm border border-slate-100'}" style="box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
-                                ${m.text}
+                                ${senderLabel}${miniMediaHtml}${textContent}
                             </div>
                             ${timeStr ? `<div class="text-[9px] mt-0.5 ${isMe ? 'text-right' : 'text-left'}" style="color: rgba(148,163,184,0.6);">${timeStr}</div>` : ''}
                         </div>
                     </div>`;
                 });
                 
-                // Typing indicator
-                container.innerHTML += `<div id="floating-typing-indicator" class="hidden flex justify-start mb-1">
-                    <div class="typing-indicator" style="padding:8px 14px;">
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
+                container.innerHTML += `<div id="floating-typing-indicator" class="hidden flex items-center gap-2 mb-1 px-1">
+                    <div class="floating-typing-label text-[9px] text-slate-400 italic"></div>
+                    <div class="typing-indicator" style="padding:5px 10px;">
+                        <div class="typing-dot" style="width:4px;height:4px;"></div>
+                        <div class="typing-dot" style="width:4px;height:4px;"></div>
+                        <div class="typing-dot" style="width:4px;height:4px;"></div>
                     </div>
                 </div>`;
                 
@@ -7180,16 +7500,46 @@ ${mediaHtml}
             window.unsubFloatingTyping = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'chats', chatId), (snap) => {
                 if(!snap.exists()) return;
                 const data = snap.data();
-                const parts = chatId.split('_');
-                const otherUid = parts[0] === currentUser.uid ? parts[1] : parts[0];
-                const otherTyping = data[`typing_${otherUid}`] === true;
+                const isGroup = data.isGroup === true;
+                let anyTyping = false;
+                let typingLabel = '';
+                if (isGroup) {
+                    const typingNames = [];
+                    (data.participants || []).forEach(uid => {
+                        if (uid !== currentUser.uid && data[`typing_${uid}`] === true) {
+                            const u = allUsersCache.find(x => x.id === uid);
+                            typingNames.push(u ? u.name.split(' ')[0] : 'Someone');
+                        }
+                    });
+                    anyTyping = typingNames.length > 0;
+                    typingLabel = typingNames.length === 1 ? `${typingNames[0]} is typing...` : typingNames.length > 1 ? `${typingNames.join(', ')} are typing...` : '';
+                } else {
+                    const parts = chatId.split('_');
+                    const otherUid = parts[0] === currentUser.uid ? parts[1] : parts[0];
+                    anyTyping = data[`typing_${otherUid}`] === true;
+                }
                 if(window.allChats) {
                     const chatObj = window.allChats.find(ch => ch.id === chatId);
                     if(chatObj && data.readBy) chatObj.readBy = data.readBy;
                 }
-                updateLiveReadReceipts(chatId, data.readBy || []);
                 const indicator = document.getElementById('floating-typing-indicator');
-                if(indicator) indicator.classList.toggle('hidden', !otherTyping);
+                if(indicator) {
+                    indicator.classList.toggle('hidden', !anyTyping);
+                    const labelEl = indicator.querySelector('.floating-typing-label');
+                    if (labelEl) {
+                        if (isGroup && typingLabel) {
+                            labelEl.textContent = typingLabel;
+                        } else if (!isGroup && anyTyping) {
+                            labelEl.textContent = 'typing...';
+                        } else {
+                            labelEl.textContent = '';
+                        }
+                    }
+                    if(anyTyping) {
+                        const msgContainer = document.getElementById('floating-messages');
+                        if(msgContainer) msgContainer.scrollTop = msgContainer.scrollHeight;
+                    }
+                }
             });
         };
 
