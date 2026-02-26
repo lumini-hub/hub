@@ -437,6 +437,26 @@
         html.dark .collection-pick-item:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
         html.dark .collection-pick-item.selected { background: rgba(99,102,241,0.15); border-color: #6366f1; }
 
+        /* Audio wave animation for voice calls */
+        @keyframes audioWave {
+            0%, 100% { transform: scaleY(0.5); opacity: 0.4; }
+            50% { transform: scaleY(1.3); opacity: 1; }
+        }
+
+        /* Call timer pill */
+        .call-timer-pill {
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Comment highlight animation */
+        .comment-highlight-flash {
+            animation: commentFlash 2s ease both;
+        }
+        @keyframes commentFlash {
+            0% { background: rgba(59,130,246,0.2); transform: scale(1.02); }
+            100% { background: transparent; transform: scale(1); }
+        }
+
         /* Comment count bubble revamp */
         .comment-count-bubble {
             display: inline-flex; align-items: center; justify-content: center;
@@ -2164,29 +2184,46 @@
         </div>
 
         <!-- INCOMING CALL MODAL -->
-        <div id="incoming-call-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[100] hidden flex items-center justify-center p-4 transition-all duration-300">
-            <div class="bg-white/10 border border-white/20 p-8 rounded-3xl shadow-2xl backdrop-blur-xl text-center max-w-sm w-full animate-pop-in">
-                <div class="w-24 h-24 bg-white/20 rounded-full mx-auto flex items-center justify-center mb-6 animate-pulse-slow">
-                    <i class="fa-solid fa-phone-volume text-4xl text-white"></i>
+        <div id="incoming-call-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 transition-all duration-300" style="background: radial-gradient(ellipse at center, rgba(15,23,42,0.92) 0%, rgba(0,0,0,0.97) 100%); backdrop-filter: blur(20px);">
+            <div class="text-center max-w-sm w-full animate-pop-in relative">
+                <!-- Animated rings -->
+                <div class="relative w-36 h-36 mx-auto mb-8">
+                    <div class="absolute inset-0 rounded-full border-2 border-green-400/30 animate-ping" style="animation-duration: 2s;"></div>
+                    <div class="absolute inset-2 rounded-full border-2 border-green-400/20 animate-ping" style="animation-duration: 2.5s;"></div>
+                    <div class="absolute inset-4 rounded-full border border-green-400/10 animate-ping" style="animation-duration: 3s;"></div>
+                    <img id="caller-avatar-display" src="https://placehold.co/100x100?text=User" class="absolute inset-6 w-24 h-24 rounded-full object-cover border-4 border-white/20 shadow-2xl" style="left:50%;top:50%;transform:translate(-50%,-50%);width:96px;height:96px;">
                 </div>
-                <h3 id="caller-name-display" class="text-2xl font-bold text-white mb-2">Incoming Call...</h3>
-                <p class="text-blue-100 text-sm mb-8">Someone is trying to reach you.</p>
-                <div class="flex gap-4 justify-center">
-                    <button onclick="declineCall()" class="w-14 h-14 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-all shadow-lg shadow-red-500/30 transform hover:scale-110 btn-bounce"><i class="fa-solid fa-phone-slash text-xl"></i></button>
-                    <button onclick="answerCall()" class="w-14 h-14 rounded-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center transition-all shadow-lg shadow-green-500/30 transform hover:scale-110 animate-bounce-short btn-bounce"><i class="fa-solid fa-phone text-xl"></i></button>
+                <h3 id="caller-name-display" class="text-3xl font-bold text-white mb-2 tracking-tight">Incoming Call...</h3>
+                <p id="caller-call-type-label" class="text-white/50 text-sm mb-1 font-medium uppercase tracking-widest">Video Call</p>
+                <p class="text-white/30 text-xs mb-10">Lumini</p>
+                <div class="flex gap-8 justify-center items-center">
+                    <div class="flex flex-col items-center gap-2">
+                        <button onclick="declineCall()" class="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-all shadow-lg shadow-red-500/40 transform hover:scale-110 btn-bounce" style="animation: pulse 2s infinite;"><i class="fa-solid fa-phone-slash text-xl"></i></button>
+                        <span class="text-white/40 text-[11px] font-medium">Decline</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-2">
+                        <button onclick="answerCall()" class="w-16 h-16 rounded-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center transition-all shadow-lg shadow-green-500/40 transform hover:scale-110 btn-bounce" style="animation: bounceShort 1.5s ease-in-out infinite;"><i class="fa-solid fa-phone text-xl"></i></button>
+                        <span class="text-white/40 text-[11px] font-medium">Accept</span>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- ACTIVE CALL INTERFACE -->
-        <div id="call-interface" class="fixed inset-0 bg-slate-900 z-[100] hidden flex flex-col animate-fade-in">
+        <div id="call-interface" class="fixed inset-0 z-[100] hidden flex flex-col animate-fade-in" style="background: linear-gradient(180deg, #0a0a0a 0%, #111827 50%, #0a0a0a 100%);">
             <!-- Header -->
-            <div class="absolute top-0 left-0 w-full p-4 z-20 flex justify-between items-center bg-gradient-to-b from-black/50 to-transparent transition-opacity duration-300">
+            <div class="absolute top-0 left-0 w-full p-5 z-20 flex justify-between items-center" style="background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);">
                 <div class="flex items-center gap-3">
-                    <div class="w-3 h-3 rounded-full bg-red-500 animate-pulse"></div>
-                    <span id="call-status-text" class="text-white font-medium text-sm shadow-black drop-shadow-md">Connecting...</span>
+                    <div class="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-3 py-1.5 border border-white/10">
+                        <div class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></div>
+                        <span id="call-status-text" class="text-white font-semibold text-xs tracking-wide">Connecting...</span>
+                    </div>
+                    <span id="call-timer-display" class="text-white/40 text-xs font-mono hidden">00:00</span>
                 </div>
-                <i id="call-icon-indicator" class="fa-solid fa-video text-white/50"></i>
+                <div class="flex items-center gap-3">
+                    <i id="call-icon-indicator" class="fa-solid fa-video text-white/30"></i>
+                    <span id="call-quality-indicator" class="text-[10px] text-green-400 font-bold hidden">HD</span>
+                </div>
             </div>
             
             <!-- Video Container -->
@@ -2194,27 +2231,41 @@
                 <!-- Remote Video (Full) -->
                 <video id="remoteVideo" autoplay playsinline class="w-full h-full object-cover transition-opacity duration-500"></video>
                 
-                <!-- Audio Placeholder -->
-                <div id="audio-call-placeholder" class="absolute inset-0 flex items-center justify-center bg-slate-800 hidden">
+                <!-- Audio Call Placeholder -->
+                <div id="audio-call-placeholder" class="absolute inset-0 flex items-center justify-center hidden" style="background: radial-gradient(ellipse at center, #1e293b 0%, #0f172a 60%, #000 100%);">
                     <div class="text-center">
-                        <div class="w-32 h-32 bg-slate-700 rounded-full flex items-center justify-center mb-4 mx-auto animate-pulse">
-                            <i class="fa-solid fa-user text-5xl text-slate-400"></i>
+                        <!-- Sound wave animation -->
+                        <div class="flex items-center justify-center gap-1 mb-6" id="audio-wave-bars">
+                            <div class="w-1 bg-blue-400/60 rounded-full" style="height:16px;animation:audioWave 1.2s ease-in-out infinite;"></div>
+                            <div class="w-1 bg-blue-400/60 rounded-full" style="height:24px;animation:audioWave 1.2s ease-in-out 0.1s infinite;"></div>
+                            <div class="w-1 bg-blue-400/60 rounded-full" style="height:32px;animation:audioWave 1.2s ease-in-out 0.2s infinite;"></div>
+                            <div class="w-1 bg-blue-400/60 rounded-full" style="height:40px;animation:audioWave 1.2s ease-in-out 0.3s infinite;"></div>
+                            <div class="w-1 bg-blue-400/60 rounded-full" style="height:32px;animation:audioWave 1.2s ease-in-out 0.4s infinite;"></div>
+                            <div class="w-1 bg-blue-400/60 rounded-full" style="height:24px;animation:audioWave 1.2s ease-in-out 0.5s infinite;"></div>
+                            <div class="w-1 bg-blue-400/60 rounded-full" style="height:16px;animation:audioWave 1.2s ease-in-out 0.6s infinite;"></div>
                         </div>
-                        <h3 class="text-2xl font-bold text-white">Voice Call</h3>
+                        <div class="relative w-28 h-28 mx-auto mb-6">
+                            <div class="absolute inset-0 rounded-full border-2 border-blue-400/20 animate-ping" style="animation-duration:3s;"></div>
+                            <img id="audio-call-avatar" src="https://placehold.co/100x100?text=User" class="w-28 h-28 rounded-full object-cover border-4 border-white/10 shadow-2xl">
+                        </div>
+                        <h3 id="audio-call-name" class="text-2xl font-bold text-white mb-1">Voice Call</h3>
+                        <p id="audio-call-subtitle" class="text-white/40 text-sm">Connected</p>
                     </div>
                 </div>
 
                 <!-- Local Video (PIP) -->
-                <div class="absolute bottom-24 right-4 w-32 h-48 bg-slate-800 rounded-xl overflow-hidden shadow-2xl border-2 border-white/20 hover:scale-105 transition-transform duration-300">
+                <div class="absolute bottom-28 right-4 w-32 h-44 bg-slate-900 rounded-2xl overflow-hidden shadow-2xl border border-white/10 hover:scale-105 transition-transform duration-300" style="box-shadow: 0 8px 32px rgba(0,0,0,0.5);">
                     <video id="localVideo" autoplay playsinline muted class="w-full h-full object-cover"></video>
                 </div>
             </div>
             
             <!-- Controls -->
-            <div class="h-24 bg-slate-900/80 backdrop-blur flex items-center justify-center gap-6 pb-safe">
-                <button id="btn-toggle-mic" onclick="toggleAudio()" class="w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-600 text-white transition-all flex items-center justify-center btn-bounce"><i class="fa-solid fa-microphone"></i></button>
-                <button onclick="endCall()" class="w-16 h-16 rounded-full bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/30 transition-all flex items-center justify-center transform hover:scale-105 btn-bounce"><i class="fa-solid fa-phone-slash text-2xl"></i></button>
-                <button id="btn-toggle-cam" onclick="toggleVideo()" class="w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-600 text-white transition-all flex items-center justify-center btn-bounce"><i class="fa-solid fa-video"></i></button>
+            <div class="pb-safe" style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); position:absolute; bottom:0; left:0; right:0; z-index:20;">
+                <div class="flex items-center justify-center gap-5 py-6 px-4">
+                    <button id="btn-toggle-mic" onclick="toggleAudio()" class="w-14 h-14 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all flex items-center justify-center btn-bounce backdrop-blur-sm border border-white/10" title="Toggle Mic"><i class="fa-solid fa-microphone text-lg"></i></button>
+                    <button onclick="endCall()" class="w-[72px] h-[72px] rounded-full bg-red-500 hover:bg-red-600 text-white shadow-xl shadow-red-600/40 transition-all flex items-center justify-center transform hover:scale-105 btn-bounce" title="End Call"><i class="fa-solid fa-phone-slash text-2xl"></i></button>
+                    <button id="btn-toggle-cam" onclick="toggleVideo()" class="w-14 h-14 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all flex items-center justify-center btn-bounce backdrop-blur-sm border border-white/10" title="Toggle Camera"><i class="fa-solid fa-video text-lg"></i></button>
+                </div>
             </div>
         </div>
 
@@ -2852,7 +2903,12 @@
             incomingCallData = data;
             const type = data.callType || 'video';
             callType = type;
-            document.getElementById('caller-name-display').innerText = (data.callerName || "Someone") + ` is calling (${type})...`;
+            document.getElementById('caller-name-display').innerText = data.callerName || 'Someone';
+            document.getElementById('caller-call-type-label').innerText = type === 'audio' ? 'Voice Call' : 'Video Call';
+            const callerUser = allUsersCache.find(u => u.id === data.caller);
+            if(callerUser) {
+                document.getElementById('caller-avatar-display').src = callerUser.photoURL;
+            }
             document.getElementById('incoming-call-modal').classList.remove('hidden');
             
             const r = document.getElementById('call-ringtone');
@@ -2926,6 +2982,10 @@
                 onSnapshot(callDoc, (snap) => {
                     if(snap.exists() && snap.data().status === 'ended') endCallCleanup();
                 });
+                document.getElementById('call-status-text').innerText = "Connected";
+                startCallTimer();
+                if(callType === 'audio') document.getElementById('audio-call-subtitle').textContent = 'Connected';
+                document.getElementById('call-quality-indicator').classList.remove('hidden');
             } catch (err) {
                 console.error("Error answering call:", err);
                 await showAlert("Call Failed: Could not access camera/microphone or connect. Check permissions.", "Call failed");
@@ -2996,6 +3056,9 @@
                         const answer = new RTCSessionDescription(data.answer);
                         peerConnection.setRemoteDescription(answer).then(() => {});
                         document.getElementById('call-status-text').innerText = "Connected";
+                        startCallTimer();
+                        if(callType === 'audio') document.getElementById('audio-call-subtitle').textContent = 'Connected';
+                        document.getElementById('call-quality-indicator').classList.remove('hidden');
                     }
                     
                     if(data.status === 'ended') endCallCleanup();
@@ -3023,20 +3086,52 @@
             }
         };
         
+        let callTimerInterval = null;
+        let callStartTime = null;
+
         function setupCallInterface(type) {
             document.getElementById('call-interface').classList.remove('hidden');
             const icon = document.getElementById('call-icon-indicator');
             const placeholder = document.getElementById('audio-call-placeholder');
+            const timerEl = document.getElementById('call-timer-display');
+            timerEl.classList.add('hidden');
+            timerEl.textContent = '00:00';
+            
+            const parts = currentChatId ? currentChatId.split('_') : [];
+            const otherUid = parts.find(id => id !== currentUser.uid);
+            const otherUser = otherUid ? allUsersCache.find(u => u.id === otherUid) : null;
             
             if(type === 'audio') {
-                icon.className = "fa-solid fa-phone text-green-500 animate-pulse";
+                icon.className = "fa-solid fa-phone text-green-400";
                 placeholder.classList.remove('hidden');
                 document.getElementById('btn-toggle-cam').classList.add('hidden');
+                if(otherUser) {
+                    document.getElementById('audio-call-avatar').src = otherUser.photoURL;
+                    document.getElementById('audio-call-name').textContent = otherUser.name;
+                }
+                document.getElementById('audio-call-subtitle').textContent = 'Connecting...';
             } else {
-                icon.className = "fa-solid fa-video text-red-500 animate-pulse";
+                icon.className = "fa-solid fa-video text-red-400";
                 placeholder.classList.add('hidden');
                 document.getElementById('btn-toggle-cam').classList.remove('hidden');
             }
+        }
+
+        function startCallTimer() {
+            callStartTime = Date.now();
+            const timerEl = document.getElementById('call-timer-display');
+            timerEl.classList.remove('hidden');
+            callTimerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - callStartTime) / 1000);
+                const m = Math.floor(elapsed / 60);
+                const s = elapsed % 60;
+                timerEl.textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+            }, 1000);
+        }
+
+        function stopCallTimer() {
+            if(callTimerInterval) { clearInterval(callTimerInterval); callTimerInterval = null; }
+            callStartTime = null;
         }
 
         window.endCall = async () => {
@@ -3052,6 +3147,8 @@
         function endCallCleanup() {
             document.getElementById('call-interface').classList.add('hidden');
             document.getElementById('call-ringtone').pause();
+            document.getElementById('call-quality-indicator').classList.add('hidden');
+            stopCallTimer();
             if(peerConnection) {
                 peerConnection.close();
                 peerConnection = null;
@@ -3108,13 +3205,26 @@
             
             if (unsubscribePosts) unsubscribePosts();
             const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'posts'));
+            let isFirstPostLoad = true;
             unsubscribePosts = onSnapshot(q, (snap) => {
                 const posts = [];
                 snap.forEach(d => posts.push({id: d.id, ...d.data()}));
                 posts.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
                 allPostsCache = posts;
-                if(!document.getElementById('view-feed').classList.contains('hidden')) renderFeed(posts);
-                if(!document.getElementById('view-collaborate').classList.contains('hidden')) renderCollaborate();
+                const changes = snap.docChanges();
+                const hasStructuralChange = isFirstPostLoad || changes.some(c => c.type === 'added' || c.type === 'removed');
+                isFirstPostLoad = false;
+                if(hasStructuralChange) {
+                    if(!document.getElementById('view-feed').classList.contains('hidden')) renderFeed(posts);
+                    if(!document.getElementById('view-collaborate').classList.contains('hidden')) renderCollaborate();
+                } else {
+                    changes.forEach(c => {
+                        if(c.type === 'modified') {
+                            const p = {id: c.doc.id, ...c.doc.data()};
+                            updatePostInPlace(p);
+                        }
+                    });
+                }
             });
 
             if(unsubscribeUsers) unsubscribeUsers();
@@ -3141,7 +3251,6 @@
                         document.getElementById('reset-sound-btn').classList.remove('hidden');
                     }
                     
-                    if(allPostsCache.length) renderFeed(allPostsCache);
                     renderSavedPosts();
                 } else {
                     updateUI({});
@@ -3311,6 +3420,7 @@
                 let iconColor = 'text-blue-500';
                 if(n.type === 'like') { content = `liked your post.`; icon = 'fa-heart'; iconColor = 'text-red-500'; }
                 else if(n.type === 'comment') { content = `commented on your post.`; icon = 'fa-comment'; }
+                else if(n.type === 'comment_reply') { content = `replied to your comment.`; icon = 'fa-reply'; iconColor = 'text-indigo-500'; }
                 else if(n.type === 'follow') { content = `started following you.`; icon = 'fa-user-plus'; }
                 else if(n.type === 'mention') { content = `mentioned you in a post.`; icon = 'fa-at'; iconColor = 'text-purple-500'; }
                 else if(n.type === 'tag') { content = `tagged you in a post.`; icon = 'fa-tag'; iconColor = 'text-green-500'; } 
@@ -3319,7 +3429,7 @@
                 else if(n.type === 'story_reply') { content = `replied to your story: "${n.text || ''}"`; icon = 'fa-reply'; iconColor = 'text-purple-500'; }
 
                 return `
-                <div class="flex items-start gap-3 p-3 hover:bg-slate-50 rounded-xl cursor-pointer transition-colors ${n.read ? 'opacity-70' : 'bg-blue-50/50'}" onclick="handleNotificationClick('${n.id}', '${n.type}', '${n.postId || ''}', '${n.fromUid}')">
+                <div class="flex items-start gap-3 p-3 hover:bg-slate-50 rounded-xl cursor-pointer transition-colors ${n.read ? 'opacity-70' : 'bg-blue-50/50'}" onclick="handleNotificationClick('${n.id}', '${n.type}', '${n.postId || ''}', '${n.fromUid}', '${n.commentId || ''}')">
                     <div class="mt-1"><i class="fa-solid ${icon} ${iconColor}"></i></div>
                     <div>
                         <p class="text-sm text-slate-800"><span class="font-bold">${n.fromName || 'Someone'}</span> ${content}</p>
@@ -3329,9 +3439,9 @@
             }).join('');
         }
         
-        window.handleNotificationClick = async (nid, type, postId, fromUid) => {
+        window.handleNotificationClick = async (nid, type, postId, fromUid, commentId) => {
              await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'notifications', nid), { read: true });
-             if(type === 'like' || type === 'comment' || type === 'mention' || type === 'tag') {
+             if(type === 'like' || type === 'comment' || type === 'comment_reply' || type === 'mention' || type === 'tag') {
                  router('feed');
                  setTimeout(() => {
                      const postElement = document.getElementById(`post-${postId}-feed`);
@@ -3339,6 +3449,11 @@
                          postElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
                          postElement.classList.add('ring-2', 'ring-blue-400', 'ring-offset-2', 'scale-[1.01]', 'transition-transform');
                          setTimeout(() => { postElement.classList.remove('ring-2', 'ring-blue-400', 'ring-offset-2', 'scale-[1.01]'); }, 2000);
+                         
+                         if((type === 'comment' || type === 'comment_reply') && commentId) {
+                             window._pendingCommentHighlight = commentId;
+                             toggleCommentSection(postId, 'feed');
+                         }
                      }
                  }, 400);
              } else if (type === 'follow' || type === 'story_like' || type === 'story_reply') {
@@ -5508,8 +5623,15 @@ ${mediaHtml}
         
         window.toggleCommentSection = (pid, ctx) => {
             const el = document.getElementById(`comments-${pid}-${ctx}`);
-            el.classList.toggle('hidden');
-            if(!el.classList.contains('hidden')) loadComments(pid, ctx);
+            if(window._pendingCommentHighlight) {
+                if(el.classList.contains('hidden')) {
+                    el.classList.remove('hidden');
+                    loadComments(pid, ctx);
+                }
+            } else {
+                el.classList.toggle('hidden');
+                if(!el.classList.contains('hidden')) loadComments(pid, ctx);
+            }
         };
 
         window.loadComments = (pid, ctx) => {
@@ -5519,41 +5641,112 @@ ${mediaHtml}
                 list.innerHTML = '';
                 snap.forEach(d => {
                     const c = d.data();
-                    list.innerHTML += `<div class="flex gap-2 animate-fade-in"><img src="${c.photoURL}" class="w-6 h-6 rounded-full mt-1"><div class="bg-white p-2 rounded-r-xl rounded-bl-xl shadow-sm border border-slate-100 text-sm"><p class="font-bold text-xs text-slate-800">${c.name}</p><p class="text-slate-600">${c.text}</p></div></div>`;
+                    const commentId = d.id;
+                    const isMyComment = c.uid === currentUser.uid;
+                    const isAdmin = checkIsAdmin(currentUser.email);
+                    const canDelete = isMyComment || isAdmin;
+                    const replyToHtml = c.replyToName ? `<p class="text-[10px] text-blue-500 font-semibold mb-0.5"><i class="fa-solid fa-reply text-[8px] mr-1"></i>Replying to ${c.replyToName}</p>` : '';
+                    list.innerHTML += `<div id="comment-${commentId}" class="flex gap-2 animate-fade-in group/comment rounded-lg p-1 transition-all"><img src="${c.photoURL}" class="w-6 h-6 rounded-full mt-1 cursor-pointer" onclick="viewProfile('${c.uid}')">
+                    <div class="flex-1 min-w-0">
+                        <div class="bg-white p-2 rounded-r-xl rounded-bl-xl shadow-sm border border-slate-100 text-sm">
+                            ${replyToHtml}
+                            <p class="font-bold text-xs text-slate-800">${c.name}</p>
+                            <p class="text-slate-600">${c.text}</p>
+                        </div>
+                        <div class="flex items-center gap-3 mt-0.5 ml-1 opacity-0 group-hover/comment:opacity-100 transition-opacity">
+                            <button onclick="replyToComment('${pid}','${ctx}','${commentId}','${c.name.replace(/'/g, "\\'")}')"
+                                class="text-[10px] text-slate-400 hover:text-blue-500 font-semibold transition-colors">Reply</button>
+                            ${canDelete ? `<button onclick="deleteComment('${pid}','${ctx}','${commentId}')" class="text-[10px] text-slate-400 hover:text-red-500 font-semibold transition-colors">Delete</button>` : ''}
+                        </div>
+                    </div></div>`;
                 });
                 list.scrollTop = list.scrollHeight;
-                // Sync the count bubble with the real total from ALL users
                 const realTotal = snap.size;
                 document.querySelectorAll(`[id^="comment-count-${pid}-"]`).forEach(el => {
                     const prev = parseInt(el.textContent) || 0;
                     el.textContent = realTotal;
                     if(realTotal > 0) el.classList.add('has-comments');
                     else el.classList.remove('has-comments');
-                    // Pop animation if count changed
                     if(realTotal !== prev) {
                         el.style.transform = 'scale(1.3)';
                         setTimeout(() => el.style.transform = '', 300);
                     }
                 });
-                // Keep the cached post object in sync too
                 const cached = allPostsCache.find(x => x.id === pid);
                 if(cached) cached.commentCount = realTotal;
+                
+                // Check if we need to highlight a specific comment
+                if(window._pendingCommentHighlight) {
+                    const targetEl = document.getElementById(`comment-${window._pendingCommentHighlight}`);
+                    if(targetEl) {
+                        targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        targetEl.classList.add('comment-highlight-flash');
+                        setTimeout(() => targetEl.classList.remove('comment-highlight-flash'), 2500);
+                        window._pendingCommentHighlight = null;
+                    }
+                }
+            });
+        };
+
+        window._commentReplyState = {};
+
+        window.replyToComment = (pid, ctx, commentId, commentAuthorName) => {
+            window._commentReplyState[pid + '-' + ctx] = { commentId, commentAuthorName };
+            const inp = document.getElementById(`comment-input-${pid}-${ctx}`);
+            if(inp) {
+                inp.placeholder = `Replying to ${commentAuthorName}...`;
+                inp.focus();
+                let cancelBtn = document.getElementById(`cancel-reply-${pid}-${ctx}`);
+                if(!cancelBtn) {
+                    cancelBtn = document.createElement('button');
+                    cancelBtn.id = `cancel-reply-${pid}-${ctx}`;
+                    cancelBtn.className = 'text-slate-400 hover:text-red-500 text-xs ml-1 transition-colors flex-shrink-0';
+                    cancelBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+                    cancelBtn.onclick = () => cancelCommentReply(pid, ctx);
+                    inp.parentElement.insertBefore(cancelBtn, inp.parentElement.querySelector('button'));
+                }
+            }
+        };
+
+        window.cancelCommentReply = (pid, ctx) => {
+            delete window._commentReplyState[pid + '-' + ctx];
+            const inp = document.getElementById(`comment-input-${pid}-${ctx}`);
+            if(inp) inp.placeholder = 'Write a comment...';
+            const cancelBtn = document.getElementById(`cancel-reply-${pid}-${ctx}`);
+            if(cancelBtn) cancelBtn.remove();
+        };
+
+        window.deleteComment = async (pid, ctx, commentId) => {
+            const confirmed = await showConfirm('Delete this comment?', 'Delete comment');
+            if(!confirmed) return;
+            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'posts', pid, 'comments', commentId));
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'posts', pid), { commentCount: increment(-1) });
+            document.querySelectorAll(`[id^="comment-count-${pid}-"]`).forEach(el => {
+                const newCount = Math.max(0, (parseInt(el.textContent) || 0) - 1);
+                el.textContent = newCount;
+                if(newCount === 0) el.classList.remove('has-comments');
             });
         };
 
         window.submitComment = async (pid, ctx) => {
             const inp = document.getElementById(`comment-input-${pid}-${ctx}`);
             if(!inp.value.trim()) return;
-            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'posts', pid, 'comments'), {
-                text: inp.value,
+            const commentText = inp.value;
+            const myName = document.getElementById('menu-name').innerText;
+            const replyState = window._commentReplyState[pid + '-' + ctx];
+            const commentData = {
+                text: commentText,
                 uid: currentUser.uid,
-                name: document.getElementById('menu-name').innerText,
+                name: myName,
                 photoURL: document.getElementById('nav-avatar').src,
                 createdAt: serverTimestamp()
-            });
-            // Increment comment count on the post
+            };
+            if(replyState) {
+                commentData.replyToCommentId = replyState.commentId;
+                commentData.replyToName = replyState.commentAuthorName;
+            }
+            const newCommentRef = await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'posts', pid, 'comments'), commentData);
             await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'posts', pid), { commentCount: increment(1) });
-            // Update comment count in UI
             document.querySelectorAll(`[id^="comment-count-${pid}-"]`).forEach(el => {
                 const newCount = (parseInt(el.textContent) || 0) + 1;
                 el.textContent = newCount;
@@ -5561,11 +5754,25 @@ ${mediaHtml}
                 el.style.transform = 'scale(1.3)';
                 setTimeout(() => el.style.transform = '', 300);
             });
-            const p = allPostsCache.find(x => x.id === pid);
-            if(p && p.uid !== currentUser.uid) {
-                 addDoc(collection(db, 'artifacts', appId, 'users', p.uid, 'notifications'), {
-                      type: 'comment', postId: pid, fromUid: currentUser.uid, fromName: document.getElementById('menu-name').innerText, read: false, createdAt: serverTimestamp()
-                 });
+            if(replyState) {
+                // Notify the comment author that someone replied to their comment
+                const replyCommentDoc = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'posts', pid, 'comments', replyState.commentId));
+                if(replyCommentDoc.exists()) {
+                    const replyCommentData = replyCommentDoc.data();
+                    if(replyCommentData.uid !== currentUser.uid) {
+                        addDoc(collection(db, 'artifacts', appId, 'users', replyCommentData.uid, 'notifications'), {
+                            type: 'comment_reply', postId: pid, commentId: newCommentRef.id, fromUid: currentUser.uid, fromName: myName, read: false, createdAt: serverTimestamp()
+                        });
+                    }
+                }
+                cancelCommentReply(pid, ctx);
+            } else {
+                const p = allPostsCache.find(x => x.id === pid);
+                if(p && p.uid !== currentUser.uid) {
+                    addDoc(collection(db, 'artifacts', appId, 'users', p.uid, 'notifications'), {
+                        type: 'comment', postId: pid, commentId: newCommentRef.id, fromUid: currentUser.uid, fromName: myName, read: false, createdAt: serverTimestamp()
+                    });
+                }
             }
             inp.value = '';
         };
