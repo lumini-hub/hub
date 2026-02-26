@@ -3361,7 +3361,7 @@
             unsubscribePosts = onSnapshot(q, (snap) => {
                 const posts = [];
                 snap.forEach(d => posts.push({id: d.id, ...d.data()}));
-                posts.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+                posts.sort((a,b) => (b.createdAt?.seconds ?? Number.MAX_SAFE_INTEGER) - (a.createdAt?.seconds ?? Number.MAX_SAFE_INTEGER));
                 allPostsCache = posts;
                 const changes = snap.docChanges();
                 const hasStructuralChange = isFirstPostLoad || changes.some(c => c.type === 'added' || c.type === 'removed');
@@ -3372,12 +3372,23 @@
                     if(!document.getElementById('view-collaborate').classList.contains('hidden')) renderCollaborate();
                     if(!document.getElementById('view-feedback').classList.contains('hidden')) renderFeedback();
                 } else {
+                    let sortOrderChanged = false;
                     changes.forEach(c => {
                         if(c.type === 'modified') {
                             const p = {id: c.doc.id, ...c.doc.data()};
+                            const oldPost = allPostsCache.find(op => op.id === p.id);
+                            if(oldPost && !oldPost.createdAt && p.createdAt) {
+                                sortOrderChanged = true;
+                            }
                             updatePostInPlace(p);
                         }
                     });
+                    if(sortOrderChanged) {
+                        allPostsCache.sort((a,b) => (b.createdAt?.seconds ?? Number.MAX_SAFE_INTEGER) - (a.createdAt?.seconds ?? Number.MAX_SAFE_INTEGER));
+                        if(!document.getElementById('view-feed').classList.contains('hidden')) renderFeed(allPostsCache);
+                        if(!document.getElementById('view-collaborate').classList.contains('hidden')) renderCollaborate();
+                        if(!document.getElementById('view-feedback').classList.contains('hidden')) renderFeedback();
+                    }
                 }
             });
 
@@ -3712,7 +3723,11 @@
                 const otherUid = parts[0] === currentUser.uid ? parts[1] : parts[0];
                 const otherUser = allUsersCache.find(u => u.id === otherUid) || { name: "User", photoURL: "https://placehold.co/100x100" };
                 
-                const isOnline = otherUser.isOnline === true;
+                let isOnline = otherUser.isOnline === true;
+                if (isOnline && otherUser.lastSeen) {
+                    const lastSeenMs = otherUser.lastSeen.toMillis ? otherUser.lastSeen.toMillis() : (otherUser.lastSeen.seconds ? otherUser.lastSeen.seconds * 1000 : 0);
+                    if (lastSeenMs > 0 && (Date.now() - lastSeenMs) > 2 * 60 * 1000) isOnline = false;
+                }
                 const lastSeenText = !isOnline && otherUser.lastSeen ? getLastSeenText(otherUser.lastSeen) : '';
                 
                 return `<div onclick="openChat('${c.id}', '${otherUser.name}')" class="flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all duration-200 ${c.id === currentChatId ? 'bg-white shadow-md ring-1 ring-slate-100 scale-[1.02]' : 'hover:bg-white hover:shadow-sm'} ${isUnread ? 'bg-blue-50/50' : ''}">
@@ -3751,7 +3766,12 @@
                 const chatParts = chatId.split('_');
                 const chatOtherUid = chatParts[0] === currentUser.uid ? chatParts[1] : chatParts[0];
                 const chatOtherUser = allUsersCache.find(u => u.id === chatOtherUid);
-                if (chatOtherUser && chatOtherUser.isOnline) {
+                let chatOtherOnline = chatOtherUser && chatOtherUser.isOnline === true;
+                if (chatOtherOnline && chatOtherUser.lastSeen) {
+                    const lsMs = chatOtherUser.lastSeen.toMillis ? chatOtherUser.lastSeen.toMillis() : (chatOtherUser.lastSeen.seconds ? chatOtherUser.lastSeen.seconds * 1000 : 0);
+                    if (lsMs > 0 && (Date.now() - lsMs) > 2 * 60 * 1000) chatOtherOnline = false;
+                }
+                if (chatOtherOnline) {
                     statusEl.innerHTML = '<i class="fa-solid fa-circle text-green-500 mr-1" style="font-size:6px;"></i>Online';
                     statusEl.classList.remove('hidden');
                     statusEl.className = 'text-[10px] text-green-500 font-semibold';
@@ -4598,8 +4618,13 @@ ${mediaHtml}
             });
 
             presenceInterval = setInterval(() => {
-                if (currentUser) {
-                    setDoc(userRef, { isOnline: true, lastSeen: serverTimestamp() }, { merge: true });
+                if (currentUser && document.visibilityState === 'visible') {
+                    const inactiveMs = Date.now() - _lastActivityTime;
+                    if (inactiveMs < 5 * 60 * 1000) {
+                        setDoc(userRef, { isOnline: true, lastSeen: serverTimestamp() }, { merge: true });
+                    } else {
+                        setDoc(userRef, { isOnline: false, lastSeen: serverTimestamp() }, { merge: true }).catch(() => {});
+                    }
                 }
             }, 30000);
 
@@ -7386,7 +7411,11 @@ ${mediaHtml}
                 const parts = c.id.split('_');
                 const otherUid = parts[0] === currentUser.uid ? parts[1] : parts[0];
                 const otherUser = allUsersCache.find(u => u.id === otherUid) || { name: "User", photoURL: "https://placehold.co/100x100" };
-                const isOnline = otherUser.isOnline === true;
+                let isOnline = otherUser.isOnline === true;
+                if (isOnline && otherUser.lastSeen) {
+                    const lsMs2 = otherUser.lastSeen.toMillis ? otherUser.lastSeen.toMillis() : (otherUser.lastSeen.seconds ? otherUser.lastSeen.seconds * 1000 : 0);
+                    if (lsMs2 > 0 && (Date.now() - lsMs2) > 2 * 60 * 1000) isOnline = false;
+                }
                 
                 return `
                 <div onclick="openFloatingChat('${c.id}', '${otherUser.name}')" class="flex items-center gap-3 p-2.5 hover:bg-white rounded-xl cursor-pointer transition-all duration-200 mb-0.5 ${isUnread ? 'bg-blue-50/60' : ''}" style="animation: msgMorphIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; animation-delay: ${i * 0.05}s; writing-mode: horizontal-tb;">
