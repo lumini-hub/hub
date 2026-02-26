@@ -162,6 +162,12 @@
         
         body { background-color: #fafafa; background-image: none; background-attachment: fixed; }
         
+        video::-webkit-media-controls-panel { background: linear-gradient(transparent, rgba(0,0,0,0.6)); }
+        video::-webkit-media-controls-play-button { filter: brightness(1.2); }
+        video::-webkit-media-controls-timeline { filter: brightness(1.1); }
+        .post-video-wrapper { position: relative; background: #000; border-radius: 0; overflow: hidden; }
+        .post-video-wrapper video { display: block; }
+        
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; border: 2px solid transparent; background-clip: content-box; }
@@ -1208,6 +1214,7 @@
                                 </div>
                                 <div class="flex items-center gap-2 pt-2 border-t border-slate-100/60">
                                     <button onclick="openPostModal('image')" class="px-3 py-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 rounded-lg transition-all text-xs font-medium flex items-center gap-1.5 btn-bounce"><i class="fa-solid fa-image text-slate-400"></i> Photo</button>
+                                    <button onclick="openPostModal()" class="px-3 py-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 rounded-lg transition-all text-xs font-medium flex items-center gap-1.5 btn-bounce"><i class="fa-solid fa-video text-red-400"></i> Video</button>
                                     <button onclick="openPostModal('project')" class="px-3 py-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 rounded-lg transition-all text-xs font-medium flex items-center gap-1.5 btn-bounce"><i class="fa-solid fa-rocket text-slate-400"></i> Project</button>
                                 </div>
                             </div>
@@ -1773,16 +1780,29 @@
                     <button onclick="document.getElementById('story-upload-modal').classList.add('hidden')" class="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center transition-colors btn-bounce"><i class="fa-solid fa-xmark"></i></button>
                 </div>
                 <div class="p-6 text-center">
-                    <div class="w-full h-64 bg-slate-100 rounded-xl mb-4 flex items-center justify-center overflow-hidden border-2 border-dashed border-slate-300 relative cursor-pointer hover:bg-slate-50 transition-colors" onclick="document.getElementById('story-file-input').click()">
+                    <div class="flex gap-2 mb-3">
+                        <button onclick="setStorySourceType('upload')" id="btn-story-upload" class="flex-1 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition-all">Upload</button>
+                        <button onclick="setStorySourceType('url')" id="btn-story-url" class="flex-1 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-500 transition-all">Paste URL</button>
+                    </div>
+                    <div id="story-upload-area" class="w-full h-64 bg-slate-100 rounded-xl mb-4 flex items-center justify-center overflow-hidden border-2 border-dashed border-slate-300 relative cursor-pointer hover:bg-slate-50 transition-colors" onclick="document.getElementById('story-file-input').click()">
                         <div id="story-upload-placeholder" class="text-slate-400">
                             <i class="fa-solid fa-cloud-arrow-up text-3xl mb-2"></i>
                             <p class="text-sm">Click to upload photo/video</p>
+                            <p class="text-[10px] text-slate-300 mt-1">No size limit</p>
                         </div>
                         <img id="story-preview-img" class="hidden w-full h-full object-contain">
                         <video id="story-preview-video" class="hidden w-full h-full object-contain" controls></video>
                     </div>
+                    <div id="story-url-area" class="hidden mb-4">
+                        <div class="flex gap-2">
+                            <input id="story-url-input" type="url" placeholder="Paste image or video URL..." class="flex-grow text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all">
+                            <button onclick="handleStoryUrlPaste()" class="px-3 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition-colors">Load</button>
+                        </div>
+                        <div id="story-url-preview" class="hidden mt-3 w-full h-56 bg-slate-100 rounded-xl overflow-hidden border border-slate-200"></div>
+                    </div>
                     <input type="file" id="story-file-input" class="hidden" accept="image/*,video/*" onchange="handleStoryFileSelect(this)">
                     <p class="text-xs text-slate-400 mb-4">Content disappears after 24 hours.</p>
+                    <div id="story-upload-progress" class="hidden mb-3"><div class="w-full bg-slate-200 rounded-full h-2"><div id="story-progress-fill" class="bg-blue-600 h-2 rounded-full transition-all" style="width:0%"></div></div><p class="text-xs text-slate-500 mt-1">Uploading to cloud...</p></div>
                     
                     <div class="flex gap-3">
                         <button onclick="uploadStory('public')" id="btn-upload-story-public" class="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-3 rounded-xl hover:shadow-lg hover:shadow-blue-500/30 transition-all btn-bounce disabled:opacity-50 text-sm" disabled>Your Story</button>
@@ -2065,17 +2085,31 @@
                         <div><h4 id="modal-name" class="font-bold text-slate-800 text-sm">Guest</h4><select id="post-type-select" class="text-xs bg-slate-100 border-none rounded-md px-2 py-1 outline-none mt-0.5 font-medium text-slate-600"><option value="regular">Public</option><option value="project">Project</option></select></div>
                     </div>
                     <textarea id="post-input" rows="4" class="w-full resize-none outline-none text-slate-700 placeholder-slate-400 text-lg" placeholder="What's on your mind?"></textarea>
-                    <div id="attachment-preview" class="hidden mt-2 relative group animate-fade-in"><img id="preview-img" src="" class="max-h-48 rounded-lg border border-slate-200 shadow-sm"><button onclick="clearAttachment()" class="absolute top-2 right-2 bg-black/50 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-black transition-colors"><i class="fa-solid fa-xmark"></i></button></div>
+                    <div id="attachment-preview" class="hidden mt-2 relative group animate-fade-in">
+                        <img id="preview-img" src="" class="max-h-48 rounded-lg border border-slate-200 shadow-sm">
+                        <video id="preview-vid" src="" class="hidden max-h-48 rounded-lg border border-slate-200 shadow-sm" controls></video>
+                        <button onclick="clearAttachment()" class="absolute top-2 right-2 bg-black/50 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-black transition-colors"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
                     <!-- Tagged Users Display -->
                     <div id="tagged-users-display" class="hidden mt-2 flex flex-wrap gap-2 animate-fade-in"></div>
                     
                     <div id="project-tags-input" class="hidden mt-3 pt-3 border-t border-dashed border-slate-200 animate-slide-up"><label class="text-xs font-bold text-slate-500 uppercase mb-1">Tags (Comma separated)</label><input id="tags-input" type="text" class="w-full text-sm bg-slate-50 p-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-100 transition-all" placeholder="e.g. #javascript, #design"></div>
                 </div>
+                <!-- URL Paste Input -->
+                <div id="url-paste-container" class="hidden px-4 pb-2 animate-slide-up">
+                    <div class="flex gap-2 items-center">
+                        <input id="url-paste-input" type="url" placeholder="Paste image or video URL here..." class="flex-grow text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all">
+                        <button onclick="handleUrlPaste()" class="bg-blue-600 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-blue-700 transition-all btn-bounce">Add</button>
+                    </div>
+                    <p class="text-[10px] text-slate-400 mt-1 ml-1">Supports direct image/video URLs — bypasses upload limits</p>
+                </div>
                 <div class="px-4 pb-4 flex justify-between items-center relative">
                     <span class="text-sm font-bold text-slate-700">Add to your post</span>
                     <div class="flex gap-3 text-xl">
-                        <input type="file" id="file-input" class="hidden" accept="image/*" onchange="handleFileSelect(this)">
-                        <i class="fa-solid fa-image text-green-500 cursor-pointer hover:bg-green-50 p-2 rounded-full transition-all hover:scale-110" onclick="document.getElementById('file-input').click()"></i>
+                        <input type="file" id="file-input" class="hidden" accept="image/*,video/*" onchange="handleFileSelect(this)">
+                        <i class="fa-solid fa-image text-green-500 cursor-pointer hover:bg-green-50 p-2 rounded-full transition-all hover:scale-110" onclick="document.getElementById('file-input').click()" title="Photo/Video"></i>
+                        <i class="fa-solid fa-video text-red-500 cursor-pointer hover:bg-red-50 p-2 rounded-full transition-all hover:scale-110" onclick="document.getElementById('file-input').click()" title="Video"></i>
+                        <i class="fa-solid fa-link text-cyan-500 cursor-pointer hover:bg-cyan-50 p-2 rounded-full transition-all hover:scale-110" onclick="toggleUrlPasteInput()" title="Paste URL"></i>
                         <i class="fa-solid fa-user-tag text-purple-500 cursor-pointer hover:bg-purple-50 p-2 rounded-full transition-all hover:scale-110" onclick="toggleTagUserPicker()"></i>
                         <i class="fa-solid fa-tag text-blue-500 cursor-pointer hover:bg-blue-50 p-2 rounded-full transition-all hover:scale-110" onclick="toggleTagPicker()"></i>
                         <i class="fa-solid fa-face-smile text-yellow-500 cursor-pointer hover:bg-yellow-50 p-2 rounded-full transition-all hover:scale-110" onclick="toggleEmojiPicker()"></i>
@@ -2253,8 +2287,70 @@
         let activeStoryUid = null;
         let activeStoryIndex = 0;
         let storyTimer = null;
-        let currentStoryUpload = { file: null, type: null, data: null };
-        
+        let currentStoryUpload = { file: null, type: null, data: null, sourceType: 'upload', urlValue: null };
+        let storySourceType = 'upload';
+
+        // --- CLOUDINARY STATE ---
+        let cloudinaryConfig = null;
+        let currentAttachmentFile = null;
+        let currentAttachmentType = null;
+
+        async function fetchCloudinaryConfig() {
+            try {
+                const cfgDoc = await getDoc(doc(db, 'artifacts', appId, 'config', 'cloudinary'));
+                if (cfgDoc.exists()) {
+                    cloudinaryConfig = cfgDoc.data();
+                } else {
+                    console.warn('Cloudinary config not found');
+                }
+            } catch(e) {
+                console.error('Failed to fetch Cloudinary config:', e);
+            }
+        }
+
+        async function uploadToCloudinary(file, folder = 'lumini_posts') {
+            if (!cloudinaryConfig) return null;
+            const fd = new FormData();
+            fd.append('file', file);
+            fd.append('upload_preset', cloudinaryConfig.uploadPreset);
+            fd.append('folder', folder);
+            const url = `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/auto/upload`;
+            try {
+                const res = await fetch(url, { method: 'POST', body: fd });
+                const data = await res.json();
+                if (data.secure_url) {
+                    return { url: data.secure_url, publicId: data.public_id, resourceType: data.resource_type };
+                } else {
+                    console.error('Cloudinary upload error:', data);
+                    return null;
+                }
+            } catch(e) {
+                console.error('Cloudinary upload failed:', e);
+                return null;
+            }
+        }
+
+        async function deleteFromCloudinary(publicId, resourceType) {
+            if (!cloudinaryConfig || !publicId) return;
+            try {
+                const timestamp = Math.floor(Date.now() / 1000);
+                const toSign = `public_id=${publicId}&timestamp=${timestamp}${cloudinaryConfig.apiSecret}`;
+                const msgBuffer = new TextEncoder().encode(toSign);
+                const hashBuffer = await crypto.subtle.digest('SHA-1', msgBuffer);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                const signature = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                const fd = new FormData();
+                fd.append('public_id', publicId);
+                fd.append('signature', signature);
+                fd.append('api_key', cloudinaryConfig.apiKey);
+                fd.append('timestamp', timestamp);
+                const url = `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/${resourceType || 'image'}/destroy`;
+                await fetch(url, { method: 'POST', body: fd });
+            } catch(e) {
+                console.error('Cloudinary delete failed:', e);
+            }
+        }
+
         // --- FLOATING WIDGET STATE ---
         window.isFloatingWidgetOpen = false;
         window.currentFloatingChatId = null;
@@ -2283,6 +2379,7 @@
 
         // --- HIGHLIGHTS STATE ---
         let currentHighlightImage = null;
+        let currentHighlightFile = null;
         let highlightImageType = 'upload'; // 'upload' or 'url'
 
         // --- CUSTOM TOAST & DIALOG ---
@@ -2988,6 +3085,7 @@
 
         function loadData() {
             if (!currentUser) return;
+            fetchCloudinaryConfig();
             
             if (unsubscribePosts) unsubscribePosts();
             const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'posts'));
@@ -3073,6 +3171,7 @@
              document.getElementById('hl-file-input').value = '';
              document.getElementById('hl-preview').classList.add('hidden');
              currentHighlightImage = null;
+             currentHighlightFile = null;
              setHighlightImageType('upload');
         };
 
@@ -3093,6 +3192,7 @@
 
         window.handleHighlightImageSelect = (input) => {
              if(input.files && input.files[0]) {
+                 currentHighlightFile = input.files[0];
                  const reader = new FileReader();
                  reader.onload = (e) => {
                      currentHighlightImage = e.target.result;
@@ -3107,22 +3207,38 @@
              const title = document.getElementById('highlight-title').value;
              const link = document.getElementById('highlight-link').value;
              let imageUrl = currentHighlightImage;
+             let cldPublicId = null;
+             let cldResourceType = null;
              if(highlightImageType === 'url') {
                  imageUrl = document.getElementById('hl-input-url').value;
              }
-             if(!title || !imageUrl) {
+             if(!title || (!imageUrl && !currentHighlightFile)) {
                  await showAlert("Title and Image are required.", "Missing fields");
                  return;
              }
              try {
+                 if (highlightImageType === 'upload' && currentHighlightFile && cloudinaryConfig) {
+                     const result = await uploadToCloudinary(currentHighlightFile, 'lumini_highlights');
+                     if (result) {
+                         imageUrl = result.url;
+                         cldPublicId = result.publicId;
+                         cldResourceType = result.resourceType;
+                     } else {
+                         showToast('Upload failed. Try again.');
+                         return;
+                     }
+                 }
                  await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'highlights'), {
                      title, 
                      imageUrl, 
                      link, 
+                     cloudinaryPublicId: cldPublicId || null,
+                     cloudinaryResourceType: cldResourceType || null,
                      createdAt: serverTimestamp(),
                      createdBy: currentUser.uid
                  });
                  document.getElementById('highlight-modal').classList.add('hidden');
+                 currentHighlightFile = null;
              } catch(e) {
                  console.error("Highlight save failed", e);
                  await showAlert("Failed to save highlight.", "Save failed");
@@ -3132,6 +3248,12 @@
         window.deleteHighlight = async (id) => {
              const confirmed = await showConfirm("Delete highlight?", "Delete highlight");
              if(confirmed) {
+                 try {
+                     const hlDoc = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'highlights', id));
+                     if (hlDoc.exists() && hlDoc.data().cloudinaryPublicId) {
+                         deleteFromCloudinary(hlDoc.data().cloudinaryPublicId, hlDoc.data().cloudinaryResourceType || 'image');
+                     }
+                 } catch(e) {}
                  await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'highlights', id));
              }
         };
@@ -3778,6 +3900,12 @@ ${mediaHtml}
         window.unsendMessage = async (msgId) => {
              const confirmed = await showConfirm("Unsend this message?", "Unsend message");
              if(confirmed) {
+                 try {
+                     const msgDoc = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'chats', currentChatId, 'messages', msgId));
+                     if (msgDoc.exists() && msgDoc.data().media && msgDoc.data().media.cloudinaryPublicId) {
+                         deleteFromCloudinary(msgDoc.data().media.cloudinaryPublicId, msgDoc.data().media.cloudinaryResourceType || 'image');
+                     }
+                 } catch(e) {}
                  await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'chats', currentChatId, 'messages', msgId));
              }
         };
@@ -3795,7 +3923,13 @@ ${mediaHtml}
             const confirmed = await showConfirm("Delete this conversation?", "Delete conversation");
             if(!confirmed) return;
             const s = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'chats', currentChatId, 'messages'));
-            s.docs.forEach(d => deleteDoc(d.ref));
+            s.docs.forEach(d => {
+                const mData = d.data();
+                if (mData.media && mData.media.cloudinaryPublicId) {
+                    deleteFromCloudinary(mData.media.cloudinaryPublicId, mData.media.cloudinaryResourceType || 'image');
+                }
+                deleteDoc(d.ref);
+            });
             await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'chats', currentChatId));
             
             document.getElementById('chat-messages').innerHTML = '';
@@ -3842,12 +3976,27 @@ ${mediaHtml}
 
                 // Add media/attachment if exists
                 if(chatAttachment) {
+                    let mediaData = chatAttachment.data;
+                    let chatCldPublicId = null;
+                    let chatCldResourceType = null;
+
+                    if (chatAttachment.file && cloudinaryConfig) {
+                        const cldResult = await uploadToCloudinary(chatAttachment.file, 'lumini_chats');
+                        if (cldResult) {
+                            mediaData = cldResult.url;
+                            chatCldPublicId = cldResult.publicId;
+                            chatCldResourceType = cldResult.resourceType;
+                        }
+                    }
+
                     payload.media = {
                         type: chatAttachment.type,
-                        data: chatAttachment.data,
+                        data: mediaData,
                         name: chatAttachment.name || '',
                         size: chatAttachment.size || '',
-                        mimeType: chatAttachment.mimeType || ''
+                        mimeType: chatAttachment.mimeType || '',
+                        cloudinaryPublicId: chatCldPublicId || null,
+                        cloudinaryResourceType: chatCldResourceType || null
                     };
                     if(chatAttachment.type === 'voice') {
                         payload.media.duration = chatAttachment.duration || 0;
@@ -4112,32 +4261,61 @@ ${mediaHtml}
         
         window.openStoryUploadModal = () => {
              document.getElementById('story-upload-modal').classList.remove('hidden');
-             // Reset UI
              document.getElementById('story-preview-img').classList.add('hidden');
              document.getElementById('story-preview-video').classList.add('hidden');
              document.getElementById('story-upload-placeholder').classList.remove('hidden');
+             document.getElementById('story-upload-progress').classList.add('hidden');
+             document.getElementById('story-url-input') && (document.getElementById('story-url-input').value = '');
+             const urlPreview = document.getElementById('story-url-preview');
+             if(urlPreview) { urlPreview.classList.add('hidden'); urlPreview.innerHTML = ''; }
              
              document.getElementById('btn-upload-story-public').disabled = true;
              document.getElementById('btn-upload-story-cf').disabled = true;
              
-             currentStoryUpload = { file: null, type: null, data: null };
+             currentStoryUpload = { file: null, type: null, data: null, sourceType: 'upload' };
+             setStorySourceType('upload');
         };
         
+        window.setStorySourceType = (type) => {
+            storySourceType = type;
+            if(type === 'upload') {
+                document.getElementById('btn-story-upload').className = 'flex-1 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition-all';
+                document.getElementById('btn-story-url').className = 'flex-1 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-500 transition-all';
+                document.getElementById('story-upload-area').classList.remove('hidden');
+                document.getElementById('story-url-area').classList.add('hidden');
+            } else {
+                document.getElementById('btn-story-upload').className = 'flex-1 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-500 transition-all';
+                document.getElementById('btn-story-url').className = 'flex-1 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition-all';
+                document.getElementById('story-upload-area').classList.add('hidden');
+                document.getElementById('story-url-area').classList.remove('hidden');
+            }
+        };
+
+        window.handleStoryUrlPaste = () => {
+            const url = document.getElementById('story-url-input').value.trim();
+            if(!url) return;
+            const isVideo = /\.(mp4|webm|mov|ogg|avi|mkv)($|\?)/i.test(url) || url.includes('/video/');
+            currentStoryUpload = { file: null, type: isVideo ? 'video' : 'image', data: url, sourceType: 'url', urlValue: url };
+            const preview = document.getElementById('story-url-preview');
+            preview.classList.remove('hidden');
+            if(isVideo) {
+                preview.innerHTML = `<video src="${url}" class="w-full h-full object-contain" controls></video>`;
+            } else {
+                preview.innerHTML = `<img src="${url}" class="w-full h-full object-contain">`;
+            }
+            document.getElementById('btn-upload-story-public').disabled = false;
+            document.getElementById('btn-upload-story-cf').disabled = false;
+        };
+
         window.handleStoryFileSelect = (input) => {
             if(input.files && input.files[0]) {
                 const file = input.files[0];
                 const isVideo = file.type.startsWith('video/');
                 
-                if(file.size > 800 * 1024) {
-                    showAlert("File too large. Max 800KB for stories.", "Upload limit");
-                    input.value = "";
-                    return;
-                }
-                
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     const res = e.target.result;
-                    currentStoryUpload = { file: file, type: isVideo ? 'video' : 'image', data: res };
+                    currentStoryUpload = { file: file, type: isVideo ? 'video' : 'image', data: res, sourceType: 'upload' };
                     
                     document.getElementById('story-upload-placeholder').classList.add('hidden');
                     if(isVideo) {
@@ -4175,25 +4353,55 @@ ${mediaHtml}
                 const now = new Date();
                 const expires = new Date(now.getTime() + 24 * 60 * 60 * 1000);
                 
+                let mediaUrl = currentStoryUpload.data;
+                let cldPublicId = null;
+                let cldResourceType = null;
+
+                if (currentStoryUpload.sourceType === 'url') {
+                    mediaUrl = currentStoryUpload.urlValue;
+                } else if (currentStoryUpload.file && cloudinaryConfig) {
+                    document.getElementById('story-upload-progress').classList.remove('hidden');
+                    document.getElementById('story-progress-fill').style.width = '40%';
+                    const result = await uploadToCloudinary(currentStoryUpload.file, 'lumini_stories');
+                    document.getElementById('story-progress-fill').style.width = '90%';
+                    if (result) {
+                        mediaUrl = result.url;
+                        cldPublicId = result.publicId;
+                        cldResourceType = result.resourceType;
+                    } else {
+                        showToast('Upload failed. Try again.');
+                        btnPublic.disabled = false;
+                        btnCf.disabled = false;
+                        document.getElementById('story-upload-progress').classList.add('hidden');
+                        return;
+                    }
+                }
+
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'stories'), {
                     uid: currentUser.uid,
                     name: currentUser.displayName,
                     photoURL: currentUser.photoURL,
-                    media: currentStoryUpload.data,
+                    media: mediaUrl,
                     type: currentStoryUpload.type,
                     likes: 0,
                     likedBy: [],
-                    visibility: visibility, // 'public' or 'close_friends'
+                    visibility: visibility,
                     targetAudience: targetAudience,
+                    cloudinaryPublicId: cldPublicId || null,
+                    cloudinaryResourceType: cldResourceType || null,
                     createdAt: serverTimestamp(),
                     expiresAt: expires
                 });
                 
+                document.getElementById('story-upload-progress').classList.add('hidden');
                 document.getElementById('story-upload-modal').classList.add('hidden');
             } catch(e) {
                 console.error("Story upload failed", e);
+                document.getElementById('story-upload-progress').classList.add('hidden');
                 await showAlert("Upload failed.", "Story upload");
             } finally {
+                btnPublic.disabled = false;
+                btnCf.disabled = false;
             }
         };
         
@@ -4327,6 +4535,9 @@ ${mediaHtml}
             const confirmed = await showConfirm("Delete this story?", "Delete story");
             if(confirmed) {
                 try {
+                    if (story.cloudinaryPublicId) {
+                        deleteFromCloudinary(story.cloudinaryPublicId, story.cloudinaryResourceType || 'image');
+                    }
                     await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'stories', story.id));
                     closeStoryViewer();
                 } catch(e) {
@@ -4945,7 +5156,7 @@ ${mediaHtml}
                     <p class="text-slate-700 text-sm whitespace-pre-line leading-relaxed">${post.text}</p>
                     <div class="mt-2 flex flex-wrap gap-2">${tags}</div>
                 </div>
-                ${post.attachment ? `<div class="mt-2 overflow-hidden bg-slate-100 flex items-center justify-center">${post.attachment.match(/\.(mp4|webm|mov|ogg)($|\?)/i) ? `<video src="${post.attachment}" class="w-full max-h-[500px] object-contain" controls preload="metadata"></video>` : `<img src="${post.attachment}" class="w-full max-h-[500px] object-contain hover:scale-[1.01] transition-transform duration-500 cursor-pointer" onclick="openLightbox(this.src)">`}</div>` : ''}
+                ${post.attachment ? `<div class="mt-2 overflow-hidden bg-slate-100 flex items-center justify-center">${(post.attachmentType === 'video' || post.attachment.match(/\.(mp4|webm|mov|ogg)($|\?)/i) || post.attachment.includes('/video/upload/')) ? `<div class="w-full relative group bg-black"><video src="${post.attachment}" class="w-full max-h-[500px] object-contain" controls preload="metadata" controlsList="nodownload" playsinline></video></div>` : `<img src="${post.attachment}" class="w-full max-h-[500px] object-contain hover:scale-[1.01] transition-transform duration-500 cursor-pointer" onclick="openLightbox(this.src)">`}</div>` : ''}
                 <div class="px-4 py-3 border-t border-slate-100 flex gap-1">
                     <button onclick="toggleLike('${post.id}')" class="flex-1 py-2 rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 text-slate-500 font-medium text-sm btn-bounce group"><i class="${likeIconClass} fa-heart text-lg transition-transform group-hover:scale-125"></i> <span class="${hasLiked ? 'text-blue-600' : ''}">${post.likes || 0}</span></button>
                     <button onclick="toggleCommentSection('${post.id}', '${context}')" class="flex-1 py-2 rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 text-slate-500 font-medium text-sm btn-bounce group"><i class="fa-regular fa-comment text-lg transition-transform group-hover:scale-125"></i> <span id="comment-count-${post.id}-${context}" class="comment-count-bubble ${(post.commentCount || 0) > 0 ? 'has-comments' : ''}">${post.commentCount || 0}</span></button>
@@ -4964,10 +5175,34 @@ ${mediaHtml}
             </div>`;
         }
 
+        function saveVideoStates(container) {
+             const states = {};
+             container.querySelectorAll('video').forEach(v => {
+                 const postEl = v.closest('[id^="post-"]');
+                 if (postEl) {
+                     states[postEl.id] = { time: v.currentTime, playing: !v.paused, src: v.src };
+                 }
+             });
+             return states;
+        }
+        function restoreVideoStates(container, states) {
+             Object.keys(states).forEach(pid => {
+                 const postEl = document.getElementById(pid);
+                 if (!postEl) return;
+                 const video = postEl.querySelector('video');
+                 if (video && states[pid].src === video.src) {
+                     video.currentTime = states[pid].time;
+                     if (states[pid].playing) video.play().catch(() => {});
+                 }
+             });
+        }
+
         window.renderFeed = (posts) => {
              const container = document.getElementById('feed-stream');
              if(!posts.length) { container.innerHTML = `<div class="text-center py-12 text-slate-400 animate-fade-in">No posts yet.</div>`; return; }
+             const vs = saveVideoStates(container);
              container.innerHTML = posts.map(p => createPostHTML(p, 'feed')).join('');
+             restoreVideoStates(container, vs);
         };
         
         window.renderSavedPosts = () => {
@@ -5000,7 +5235,9 @@ ${mediaHtml}
                  </div>`; 
                  return; 
              }
+             const vs = saveVideoStates(container);
              container.innerHTML = saved.map(p => createPostHTML(p, 'saved')).join('');
+             restoreVideoStates(container, vs);
         };
 
         window.renderCollaborate = () => {
@@ -5237,6 +5474,8 @@ ${mediaHtml}
             const p = allPostsCache.find(x => x.id === pid);
             if(!p) return;
             editModeId = pid;
+            currentAttachmentFile = null;
+            currentAttachmentType = p.attachmentType || null;
             
             document.getElementById('modal-title').innerText = "Edit Post";
             document.getElementById('post-input').value = p.text || "";
@@ -5251,9 +5490,24 @@ ${mediaHtml}
             
             if(p.attachment) {
                  currentAttachment = p.attachment;
-                 document.getElementById('preview-img').src = currentAttachment;
+                 const isVideo = p.attachmentType === 'video' || /\.(mp4|webm|mov|ogg)($|\?)/i.test(p.attachment) || p.attachment.includes('/video/upload/');
+                 const previewImg = document.getElementById('preview-img');
+                 const previewVid = document.getElementById('preview-vid');
+                 if(isVideo) {
+                     previewImg.classList.add('hidden');
+                     previewVid.src = currentAttachment;
+                     previewVid.classList.remove('hidden');
+                     currentAttachmentType = 'video';
+                 } else {
+                     previewVid.classList.add('hidden');
+                     previewImg.src = currentAttachment;
+                     previewImg.classList.remove('hidden');
+                 }
                  document.getElementById('attachment-preview').classList.remove('hidden');
             }
+            
+            document.getElementById('url-paste-container').classList.add('hidden');
+            document.getElementById('url-paste-input').value = '';
             
             window.taggedUsers = p.taggedUsers || [];
             renderTaggedUsers();
@@ -5264,9 +5518,15 @@ ${mediaHtml}
         window.openPostModal = (type='regular') => {
              editModeId = null;
              currentAttachment = null;
+             currentAttachmentFile = null;
+             currentAttachmentType = null;
              window.taggedUsers = [];
              renderTaggedUsers();
              document.getElementById('attachment-preview').classList.add('hidden');
+             document.getElementById('preview-img').classList.remove('hidden');
+             document.getElementById('preview-vid').classList.add('hidden');
+             document.getElementById('url-paste-input').value = '';
+             document.getElementById('url-paste-container').classList.add('hidden');
              document.getElementById('modal-title').innerText = "Create Post";
              document.getElementById('post-submit-btn').innerText = "Post";
              document.getElementById('post-input').value = "";
@@ -5286,6 +5546,28 @@ ${mediaHtml}
              if(!text.trim() && !currentAttachment) return;
              
              const userHeadline = document.getElementById('edit-headline').value || "Member";
+             const submitBtn = document.getElementById('post-submit-btn');
+             submitBtn.disabled = true;
+             submitBtn.innerText = currentAttachmentFile ? 'Uploading...' : 'Posting...';
+
+             let attachmentUrl = currentAttachment;
+             let cldPublicId = null;
+             let cldResourceType = null;
+             let attType = currentAttachmentType;
+
+             if (currentAttachmentFile && cloudinaryConfig) {
+                 const result = await uploadToCloudinary(currentAttachmentFile);
+                 if (result) {
+                     attachmentUrl = result.url;
+                     cldPublicId = result.publicId;
+                     cldResourceType = result.resourceType;
+                 } else {
+                     showToast('Upload failed. Try again.');
+                     submitBtn.disabled = false;
+                     submitBtn.innerText = editModeId ? 'Update Post' : 'Post';
+                     return;
+                 }
+             }
 
              closePostModal();
              
@@ -5296,13 +5578,20 @@ ${mediaHtml}
                  name: document.getElementById('menu-name').innerText,
                  photoURL: document.getElementById('nav-avatar').src,
                  headline: userHeadline, 
-                 attachment: currentAttachment,
+                 attachment: attachmentUrl || null,
+                 attachmentType: attType || null,
+                 cloudinaryPublicId: cldPublicId || null,
+                 cloudinaryResourceType: cldResourceType || null,
                  taggedUsers: window.taggedUsers,
                  tags: type==='project'? document.getElementById('tags-input').value.split(',').map(s=>s.trim().replace('#','')).filter(s=>s) : [],
                  lastEdited: serverTimestamp()
              };
 
              if (editModeId) {
+                 const oldPost = allPostsCache.find(p => p.id === editModeId);
+                 if (oldPost && oldPost.cloudinaryPublicId && oldPost.attachment !== attachmentUrl) {
+                     deleteFromCloudinary(oldPost.cloudinaryPublicId, oldPost.cloudinaryResourceType || 'image');
+                 }
                  await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'posts', editModeId), postData);
                  editModeId = null; 
              } else {
@@ -5328,8 +5617,12 @@ ${mediaHtml}
 
              document.getElementById('post-input').value = '';
              currentAttachment = null;
+             currentAttachmentFile = null;
+             currentAttachmentType = null;
              window.taggedUsers = [];
              document.getElementById('attachment-preview').classList.add('hidden');
+             submitBtn.disabled = false;
+             submitBtn.innerText = 'Post';
         };
 
         let postToDeleteOwnerUid = null;
@@ -5348,6 +5641,11 @@ ${mediaHtml}
 
         window.executeDelete = async () => {
              if(postToDeleteId) {
+                 const post = allPostsCache.find(p => p.id === postToDeleteId);
+                 if (post && post.cloudinaryPublicId) {
+                     deleteFromCloudinary(post.cloudinaryPublicId, post.cloudinaryResourceType || 'image');
+                 }
+
                  await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'posts', postToDeleteId));
                  
                  if(checkIsAdmin(currentUser.email) && postToDeleteOwnerUid !== currentUser.uid) {
@@ -5367,20 +5665,69 @@ ${mediaHtml}
 
         window.handleFileSelect = (input) => {
              if(input.files && input.files[0]) {
+                 const file = input.files[0];
+                 const isVideo = file.type.startsWith('video/');
+                 currentAttachmentFile = file;
+                 currentAttachmentType = isVideo ? 'video' : 'image';
                  const reader = new FileReader();
                  reader.onload = (e) => {
                      currentAttachment = e.target.result;
-                     document.getElementById('preview-img').src = currentAttachment;
+                     const previewImg = document.getElementById('preview-img');
+                     const previewVid = document.getElementById('preview-vid');
+                     if(isVideo) {
+                         previewImg.classList.add('hidden');
+                         previewVid.src = currentAttachment;
+                         previewVid.classList.remove('hidden');
+                     } else {
+                         previewVid.classList.add('hidden');
+                         previewImg.src = currentAttachment;
+                         previewImg.classList.remove('hidden');
+                     }
                      document.getElementById('attachment-preview').classList.remove('hidden');
                  };
-                 reader.readAsDataURL(input.files[0]);
+                 reader.readAsDataURL(file);
              }
         };
         
         window.clearAttachment = () => {
             currentAttachment = null;
+            currentAttachmentFile = null;
+            currentAttachmentType = null;
             document.getElementById('file-input').value = '';
+            document.getElementById('url-paste-input').value = '';
+            document.getElementById('preview-img').classList.remove('hidden');
+            document.getElementById('preview-vid').classList.add('hidden');
             document.getElementById('attachment-preview').classList.add('hidden');
+        };
+
+        window.handleUrlPaste = () => {
+            const url = document.getElementById('url-paste-input').value.trim();
+            if(!url) return;
+            const isVideo = /\.(mp4|webm|mov|ogg|avi|mkv)($|\?)/i.test(url) || url.includes('/video/');
+            currentAttachment = url;
+            currentAttachmentFile = null;
+            currentAttachmentType = isVideo ? 'video' : 'image';
+            const previewImg = document.getElementById('preview-img');
+            const previewVid = document.getElementById('preview-vid');
+            if(isVideo) {
+                previewImg.classList.add('hidden');
+                previewVid.src = url;
+                previewVid.classList.remove('hidden');
+            } else {
+                previewVid.classList.add('hidden');
+                previewImg.src = url;
+                previewImg.classList.remove('hidden');
+            }
+            document.getElementById('attachment-preview').classList.remove('hidden');
+            document.getElementById('url-paste-container').classList.add('hidden');
+        };
+
+        window.toggleUrlPasteInput = () => {
+            const container = document.getElementById('url-paste-container');
+            container.classList.toggle('hidden');
+            if(!container.classList.contains('hidden')) {
+                document.getElementById('url-paste-input').focus();
+            }
         };
 
         // ========== CHAT MEDIA & VOICE FUNCTIONS ==========
@@ -5422,7 +5769,6 @@ ${mediaHtml}
             if(!input.files || !input.files[0]) return;
             const file = input.files[0];
             const isVideo = file.type.startsWith('video/');
-            if(file.size > 10 * 1048576) { showToast('File too large (max 10 MB)'); input.value=''; return; }
             const reader = new FileReader();
             reader.onload = (e) => {
                 chatAttachment = {
@@ -5430,7 +5776,8 @@ ${mediaHtml}
                     data: e.target.result,
                     name: file.name,
                     size: formatFileSize(file.size),
-                    mimeType: file.type
+                    mimeType: file.type,
+                    file: file
                 };
                 showChatAttachPreview();
             };
@@ -5440,8 +5787,6 @@ ${mediaHtml}
         window.handleChatFileSelect = (input) => {
             if(!input.files || !input.files[0]) return;
             const file = input.files[0];
-            if(file.size > 10 * 1048576) { showToast('File too large (max 10 MB)'); input.value=''; return; }
-            // If it's an image or video, treat it as media
             if(file.type.startsWith('image/') || file.type.startsWith('video/')) {
                 return handleChatMediaSelect(input);
             }
@@ -5452,7 +5797,8 @@ ${mediaHtml}
                     data: e.target.result,
                     name: file.name,
                     size: formatFileSize(file.size),
-                    mimeType: file.type
+                    mimeType: file.type,
+                    file: file
                 };
                 showChatAttachPreview();
             };
@@ -5532,9 +5878,9 @@ ${mediaHtml}
             const duration = (Date.now() - voiceRecStartTime) / 1000;
             voiceMediaRecorder.onstop = () => {
                 const blob = new Blob(voiceChunks, { type: voiceMediaRecorder.mimeType || 'audio/webm' });
+                const voiceFile = new File([blob], 'voice_message.' + (blob.type.includes('webm') ? 'webm' : 'mp4'), { type: blob.type });
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    // Generate fake waveform from recording
                     const waveform = Array.from({length:28}, ()=>Math.random()*0.7+0.15);
                     chatAttachment = {
                         type: 'voice',
@@ -5543,7 +5889,8 @@ ${mediaHtml}
                         size: formatFileSize(blob.size),
                         mimeType: blob.type,
                         duration: duration,
-                        waveform: waveform
+                        waveform: waveform,
+                        file: voiceFile
                     };
                     // Auto-send voice message
                     document.getElementById('voice-rec-bar').classList.add('hidden');
@@ -5798,7 +6145,10 @@ ${mediaHtml}
              }
 
              const userPosts = allPostsCache.filter(p => p.uid === uid);
-             document.getElementById('profile-content-posts').innerHTML = userPosts.length ? userPosts.map(p => createPostHTML(p, 'profile')).join('') : '<p class="text-center text-slate-400 py-8 animate-fade-in">No posts yet.</p>';
+             const profilePostsContainer = document.getElementById('profile-content-posts');
+             const pvs = saveVideoStates(profilePostsContainer);
+             profilePostsContainer.innerHTML = userPosts.length ? userPosts.map(p => createPostHTML(p, 'profile')).join('') : '<p class="text-center text-slate-400 py-8 animate-fade-in">No posts yet.</p>';
+             restoreVideoStates(profilePostsContainer, pvs);
              
              router('profile');
         };
@@ -5875,11 +6225,9 @@ ${mediaHtml}
                  const reader = new FileReader();
                  reader.onload = async (e) => {
                      const dataUrl = e.target.result;
-                     // Save to profile
                      await setDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'main'), {
                          coverPhoto: dataUrl
                      }, { merge: true });
-                     // Update UI immediately
                      const coverImg = document.getElementById('profile-cover-img');
                      coverImg.src = dataUrl;
                      coverImg.classList.remove('hidden');
