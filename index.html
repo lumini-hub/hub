@@ -2544,6 +2544,8 @@
         const appId = "lumini_v1";
 
         // ADMIN CONFIGURATION
+        const SUPER_ADMIN_EMAIL = 'tenzing.jangseld2023@academy.bt';
+
         const ADMIN_EMAILS = [
             "tenzing.jangseld2023@academy.bt",
             "ugyen.rigpay2023@academy.bt",
@@ -2553,6 +2555,11 @@
             "tenzingjangseliscool@gmail.com"     
         ];
         
+        const isSuperAdmin = (email) => {
+            if (!email) return false;
+            return email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase();
+        };
+
         const checkIsAdmin = (email) => {
             if(!email) return false;
             return ADMIN_EMAILS.map(e => e.toLowerCase()).includes(email.toLowerCase());
@@ -8015,13 +8022,6 @@ ${mediaHtml}
         })();
 
         // ===== SUPER ADMIN & ADMIN ACCOUNT MANAGEMENT =====
-        const SUPER_ADMIN_EMAIL = 'tenzing.jangseld2023@academy.bt';
-
-        const isSuperAdmin = (email) => {
-            if (!email) return false;
-            return email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase();
-        };
-
         window.deleteUserAccount = async (uid) => {
             if (!currentUser || !isSuperAdmin(currentUser.email)) { showToast('Only the super admin can delete accounts.'); return; }
             if (uid === currentUser.uid) { showToast('You cannot delete your own account.'); return; }
